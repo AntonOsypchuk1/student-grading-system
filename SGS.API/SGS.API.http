@@ -1,0 +1,6 @@
+@SGS.API_HostAddress = http://localhost:5296
+
+GET {{SGS.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

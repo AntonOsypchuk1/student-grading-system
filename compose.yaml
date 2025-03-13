@@ -1,0 +1,6 @@
+﻿services:
+  sgs.api:
+    image: sgs.api
+    build:
+      context: .
+      dockerfile: SGS.API/Dockerfile
