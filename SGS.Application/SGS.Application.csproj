@@ -7,9 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Interfaces\" />
-      <Folder Include="Services\" />
-      <Folder Include="Validators\" />
+      <ProjectReference Include="..\SGS.Domain\SGS.Domain.csproj" />
+      <ProjectReference Include="..\SGS.Infrastructure\SGS.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AutoMapper" Version="14.0.0" />
     </ItemGroup>
 
 </Project>
