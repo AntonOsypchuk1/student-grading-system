@@ -30,5 +30,5 @@ public class Assignment : BaseEntity
     [ForeignKey(nameof(CourseId))]
     public Course Course { get; set; } = null!;
 
-    public ICollection<Document> Documents { get; set; } = new List<Document>();
+    public ICollection<Document> Documents { get; set; } = [];
 }

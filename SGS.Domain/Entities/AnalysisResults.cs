@@ -14,8 +14,7 @@ public class AnalysisResults : BaseEntity
     [Required]
     public Guid GradeId { get; set; }
 
-    [Required]
-    [StringLength(1000)]
+    [Required, StringLength(1000)]
     public string GeneratedSummary { get; set; } = null!;
 
     public bool IsApproved { get; set; }

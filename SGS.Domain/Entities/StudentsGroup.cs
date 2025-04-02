@@ -5,8 +5,7 @@ namespace SGS.Domain.Entities;
 
 public class StudentsGroup : BaseEntity
 {
-    [Required]
-    [MaxLength(100)]
+    [Required, MaxLength(100)]
     public string Name { get; set; } = null!;
 
     public ICollection<Student> Students { get; set; } = new List<Student>();
