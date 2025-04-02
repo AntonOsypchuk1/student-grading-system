@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using SGS.Domain.Entities;
+using SGS.Domain.Enums;
 
 namespace SGS.Infrastructure.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users { get; set; }
-    public DbSet<Role> Roles { get; set; }
     public DbSet<Student> Students { get; set; }
     public DbSet<Teacher> Teachers { get; set; }
     public DbSet<StudentsGroup> StudentGroups { get; set; }
@@ -19,8 +19,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // base.OnModelCreating(modelBuilder);
+        
         modelBuilder.Entity<User>().HasKey(u => u.Id);
-        modelBuilder.Entity<Role>().HasKey(r => r.Id);
         modelBuilder.Entity<Student>().HasKey(s => s.Id);
         modelBuilder.Entity<Teacher>().HasKey(t => t.Id);
         modelBuilder.Entity<StudentsGroup>().HasKey(sg => sg.Id);
@@ -32,10 +33,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<AnalysisResults>().HasKey(ar => ar.Id);
 
         modelBuilder.Entity<User>()
-            .HasOne<Role>(u => u.Role)
-            .WithMany(r => r.Users)
-            .HasForeignKey(u => u.RoleId);
-
+            .Property(u => u.Role)
+            .HasConversion<int>()
+            .IsRequired();
+        
         modelBuilder.Entity<Student>()
             .HasOne<StudentsGroup>(s => s.Group)
             .WithMany(g => g.Students)
@@ -61,6 +62,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasMany(t => t.Courses)
             .WithMany(c => c.Teachers)
             .UsingEntity(j => j.ToTable("CourseTeacher"));
+        
+        modelBuilder.Entity<Course>()
+            .HasMany(c => c.StudentsGroups)
+            .WithMany(g => g.Courses)
+            .UsingEntity(j => j.ToTable("GroupCourse"));
         
         modelBuilder.Entity<StudentsGroup>()
             .HasMany(g => g.Courses)
