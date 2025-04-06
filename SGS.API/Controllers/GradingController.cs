@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
@@ -24,6 +25,7 @@ public class GradingController(IGradingService gradingService) : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Policy = "RequireTeacherRole")]
     [HttpPut("edit")]
     public async Task<IActionResult> EditGrade([FromBody] EditGradeCommand command)
     {

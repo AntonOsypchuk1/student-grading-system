@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
@@ -8,6 +9,7 @@ namespace SGS.API.Controllers;
 [Route("api/courses")]
 public class CourseController(ICourseService courseService) : ControllerBase
 {
+    [Authorize(Policy = "RequireTeacherRole")]
     [HttpPost("create")]
     public async Task<IActionResult> CreateCourse([FromBody] CreateCourseCommand command)
     {
@@ -24,6 +26,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
         return Ok(courseDto);
     }
     
+    [Authorize(Policy = "RequireTeacherRole")]
     [HttpGet("teacher/{teacherId:guid}")]
     public async Task<IActionResult> GetCoursesByTeacher([FromRoute] Guid teacherId)
     {
@@ -31,6 +34,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
         return Ok(courses);
     }
     
+    [Authorize(Policy = "RequireStudentRole")]
     [HttpGet("student/{studentId:guid}")]
     public async Task<IActionResult> GetCoursesByStudent([FromRoute] Guid studentId)
     {
