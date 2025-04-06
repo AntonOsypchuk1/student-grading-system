@@ -16,6 +16,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Grade> Grades { get; set; }
     public DbSet<GradingCriteria> GradingCriteria { get; set; }
     public DbSet<AnalysisResults> AnalysisResults { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,6 +32,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Grade>().HasKey(g => g.Id);
         modelBuilder.Entity<GradingCriteria>().HasKey(gc => gc.Id);
         modelBuilder.Entity<AnalysisResults>().HasKey(ar => ar.Id);
+        modelBuilder.Entity<RefreshToken>().HasKey(rt => rt.Id);
 
         modelBuilder.Entity<User>()
             .Property(u => u.Role)

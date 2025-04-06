@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SGS.Domain.Entities;
 using SGS.Infrastructure.Data;
 using SGS.Infrastructure.Repositories.BaseRepository;
@@ -8,13 +9,16 @@ namespace SGS.Infrastructure.Repositories;
 public class RefreshTokenRepository(AppDbContext context)
     : BaseRepository<RefreshToken>(context), IRefreshTokenRepository
 {
-    public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
+    public async Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await Context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.Token == token, cancellationToken);
     }
 
-    public Task<IEnumerable<RefreshToken>> GetActiveTokensByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<RefreshToken>> GetActiveTokensByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await Context.RefreshTokens
+            .Where(rt => rt.UserId == userId && rt.Revoked == null && rt.Expires > DateTime.UtcNow)
+            .ToListAsync(cancellationToken);
     }
 }
