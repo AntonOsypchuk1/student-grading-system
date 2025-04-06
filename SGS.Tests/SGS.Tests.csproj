@@ -5,8 +5,17 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
+        <PreserveCompilationContext>true</PreserveCompilationContext>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <GenerateDependencyFile>true</GenerateDependencyFile>
+        <IsTestProject>true</IsTestProject>
+        <ShadowCopyAssets>false</ShadowCopyAssets>
     </PropertyGroup>
 
+    <ItemGroup>
+        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+    
     <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="6.0.2" />
         <PackageReference Include="FluentAssertions" Version="8.2.0" />
@@ -22,6 +31,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\SGS.API\SGS.API.csproj" />
       <ProjectReference Include="..\SGS.Application\SGS.Application.csproj" />
     </ItemGroup>
 
