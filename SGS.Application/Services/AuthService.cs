@@ -1,6 +1,9 @@
 using AutoMapper;
 using SGS.Application.DTOs;
+using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
+using SGS.Domain.Entities;
+using SGS.Domain.Enums;
 using SGS.Infrastructure.Repositories.Interfaces;
 
 namespace SGS.Application.Services;
@@ -15,9 +18,9 @@ public class AuthService(
     public async Task<AuthResponseDto> LoginAsync(string email, string password, CancellationToken cancellationToken = default)
     {
         var user = await userRepository.GetByEmailAsync(email, cancellationToken);
-        if (user == null || user.PasswordHash != HashPassword(password))
+        if (user == null || !PasswordHelper.VerifyPassword(password, user.PasswordHash))
         {
-            throw new Exception("Invalid credentials");
+            throw new Exception("Invalid credentials.");
         }
 
         var accessToken = tokenService.GenerateToken(user);
@@ -32,7 +35,20 @@ public class AuthService(
             User = userDto
         };
     }
+    
+    public async Task<UserDto> RegisterUserAsync(RegisterUserCommand command, CancellationToken cancellationToken = default)
+    {
+        var hashedPassword = PasswordHelper.HashPassword(command.Password);
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            FullName = command.FullName,
+            Email = command.Email,
+            PasswordHash = hashedPassword,
+            Role = Enum.TryParse<UserRole>(command.Role, true, out var role) ? role : UserRole.Student
+        };
 
-    // TODO: Dummy implementation for password hashing – replace with a secure one
-    private static string HashPassword(string password) => $"hashed-{password}";
+        await userRepository.CreateAsync(user, cancellationToken);
+        return mapper.Map<UserDto>(user);
+    }
 }
