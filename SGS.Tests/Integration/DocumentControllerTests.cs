@@ -15,7 +15,7 @@ public class DocumentControllerTests(CustomWebApplicationFactory factory)
     {
         var multipartContent = new MultipartFormDataContent();
         
-        byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes("Test file content");
+        var fileBytes = "Test file content"u8.ToArray();
         var fileContent = new ByteArrayContent(fileBytes);
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/pdf");
 
@@ -30,7 +30,7 @@ public class DocumentControllerTests(CustomWebApplicationFactory factory)
 
         var documentDto = await response.Content.ReadFromJsonAsync<DocumentDto>();
         documentDto.Should().NotBeNull();
-        documentDto!.Id.Should().NotBeEmpty();
+        documentDto.Id.Should().NotBeEmpty();
         documentDto.FilePath.Should().NotBeNullOrEmpty();
         documentDto.UploadedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
     }

@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using SGS.Domain.Entities;
-using SGS.Domain.Enums;
 
 namespace SGS.Infrastructure.Data;
 
@@ -20,8 +19,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // base.OnModelCreating(modelBuilder);
-        
         modelBuilder.Entity<User>().HasKey(u => u.Id);
         modelBuilder.Entity<Student>().HasKey(s => s.Id);
         modelBuilder.Entity<Teacher>().HasKey(t => t.Id);
