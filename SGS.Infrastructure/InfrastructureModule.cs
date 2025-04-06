@@ -25,12 +25,13 @@ public static class InfrastructureModule
         services.AddScoped<IGradeRepository, GradeRepository>();
         services.AddScoped<IGradingCriteriaRepository, GradingCriteriaRepository>();
         services.AddScoped<IStudentsGroupRepository, StudentsGroupRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
     }
     
     private static void AddContext(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
-        services.AddSingleton<AppDbContext>();
+        services.AddScoped<AppDbContext>();
     }
 }

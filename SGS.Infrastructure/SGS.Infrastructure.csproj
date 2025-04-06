@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <Folder Include="FileStorage\" />
+      <Folder Include="Migrations\" />
     </ItemGroup>
 
     <ItemGroup>
