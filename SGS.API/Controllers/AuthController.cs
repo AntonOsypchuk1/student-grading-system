@@ -12,13 +12,27 @@ namespace SGS.API.Controllers;
 [ApiController]
 [Route("api/auth")]
 public class AuthController(
-    IAuthService authService, 
+    IAuthService authService,
     ITokenService tokenService,
     IRefreshTokenService refreshTokenService,
     IUserRepository userRepository,
     IMapper mapper)
     : ControllerBase
 {
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterUserCommand command)
+    {
+        try
+        {
+            var userDto = await authService.RegisterUserAsync(command);
+            return Ok(userDto);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
@@ -32,7 +46,7 @@ public class AuthController(
             return Unauthorized(new { error = ex.Message });
         }
     }
-    
+
     [Authorize]
     [HttpGet("me")]
     public IActionResult GetCurrentUser()
@@ -43,9 +57,7 @@ public class AuthController(
         var role = User.FindFirst("role")?.Value;
 
         if (userIdClaim == null)
-        {
             return Unauthorized(new { error = "Invalid token." });
-        }
 
         var userDto = new UserDto
         {
@@ -57,15 +69,13 @@ public class AuthController(
 
         return Ok(userDto);
     }
-    
+
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
     {
         var existingRefreshToken = await refreshTokenService.GetRefreshTokenAsync(request.RefreshToken);
         if (existingRefreshToken is not { IsActive: true })
-        {
             return Unauthorized(new { error = "Invalid or expired refresh token." });
-        }
 
         await refreshTokenService.RevokeRefreshTokenAsync(request.RefreshToken);
 

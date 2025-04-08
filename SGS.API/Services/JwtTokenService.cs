@@ -1,10 +1,10 @@
-using Microsoft.IdentityModel.Tokens;
-using SGS.API.Settings;
-using SGS.Domain.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using SGS.API.Settings;
 using SGS.Application.Interfaces;
+using SGS.Domain.Entities;
 
 namespace SGS.API.Services;
 
@@ -14,10 +14,10 @@ public class JwtTokenService(JwtSettings jwtSettings) : ITokenService
     {
         var claims = new List<Claim>
         {
-            new (JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new ("fullname", user.FullName),
-            new (JwtRegisteredClaimNames.Email, user.Email),
-            new ("role", user.Role.ToString())
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new("fullname", user.FullName),
+            new(JwtRegisteredClaimNames.Email, user.Email),
+            new("role", user.Role.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret));

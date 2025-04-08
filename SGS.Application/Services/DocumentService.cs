@@ -12,7 +12,8 @@ public class DocumentService(
     IFileStorageService fileStorageService)
     : IDocumentService
 {
-    public async Task<DocumentDto> UploadDocumentAsync(UploadDocumentCommand command, CancellationToken cancellationToken = default)
+    public async Task<DocumentDto> UploadDocumentAsync(UploadDocumentCommand command,
+        CancellationToken cancellationToken = default)
     {
         var filePath = await fileStorageService.SaveFileAsync(command.FileName, command.FileContent, cancellationToken);
 
@@ -31,7 +32,8 @@ public class DocumentService(
         return document == null ? null : mapper.Map<DocumentDto>(document);
     }
 
-    public async Task<IEnumerable<DocumentDto>> GetDocumentsByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<DocumentDto>> GetDocumentsByUserIdAsync(Guid userId,
+        CancellationToken cancellationToken = default)
     {
         var documents = await documentRepository.GetDocumentsByUserIdAsync(userId, cancellationToken);
         return mapper.Map<IEnumerable<DocumentDto>>(documents);

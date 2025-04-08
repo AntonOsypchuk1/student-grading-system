@@ -15,7 +15,8 @@ public class RefreshTokenRepository(AppDbContext context)
             .FirstOrDefaultAsync(rt => rt.Token == token, cancellationToken);
     }
 
-    public async Task<IEnumerable<RefreshToken>> GetActiveTokensByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<RefreshToken>> GetActiveTokensByUserIdAsync(Guid userId,
+        CancellationToken cancellationToken = default)
     {
         return await Context.RefreshTokens
             .Where(rt => rt.UserId == userId && rt.Revoked == null && rt.Expires > DateTime.UtcNow)

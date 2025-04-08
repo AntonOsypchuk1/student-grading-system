@@ -1,12 +1,12 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using SGS.API.Services;
 using SGS.API.Settings;
-using SGS.Infrastructure;
 using SGS.Application;
 using SGS.Application.Interfaces;
-using Microsoft.OpenApi.Models;
+using SGS.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,12 +82,7 @@ var app = builder.Build();
 
 app.UseSwagger();
 if (!app.Environment.IsProduction())
-{
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "SGS API v1");
-    });
-}
+    app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "SGS API v1"); });
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -95,3 +90,5 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+public abstract partial class Program;

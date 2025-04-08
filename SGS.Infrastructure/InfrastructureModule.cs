@@ -27,7 +27,7 @@ public static class InfrastructureModule
         services.AddScoped<IStudentsGroupRepository, StudentsGroupRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
     }
-    
+
     private static void AddContext(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddDbContext<AppDbContext>(options =>

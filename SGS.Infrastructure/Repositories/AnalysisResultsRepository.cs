@@ -9,7 +9,8 @@ namespace SGS.Infrastructure.Repositories;
 public class AnalysisResultsRepository(AppDbContext context)
     : BaseRepository<AnalysisResults>(context), IAnalysisResultsRepository
 {
-    public async Task<IEnumerable<AnalysisResults>> GetByDocumentIdAsync(Guid documentId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<AnalysisResults>> GetByDocumentIdAsync(Guid documentId,
+        CancellationToken cancellationToken = default)
     {
         return await Context.Set<AnalysisResults>()
             .Where(ar => ar.DocumentId == documentId)

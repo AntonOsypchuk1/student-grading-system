@@ -20,7 +20,7 @@ public class GradingController(IGradingService gradingService) : ControllerBase
     public async Task<IActionResult> GetAnalysisResult([FromRoute] Guid docId)
     {
         var result = await gradingService.GetAnalysisResultByDocumentIdAsync(docId);
-        if(result == null)
+        if (result == null)
             return NotFound();
         return Ok(result);
     }

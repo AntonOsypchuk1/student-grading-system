@@ -35,12 +35,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .Property(u => u.Role)
             .HasConversion<int>()
             .IsRequired();
-        
+
         modelBuilder.Entity<Student>()
             .HasOne<StudentsGroup>(s => s.Group)
             .WithMany(g => g.Students)
             .HasForeignKey(s => s.GroupId);
-        
+
         modelBuilder.Entity<Document>()
             .HasOne<User>(d => d.User)
             .WithMany()
@@ -50,7 +50,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne<Assignment>(d => d.Assignment)
             .WithMany(a => a.Documents)
             .HasForeignKey(d => d.AssignmentId);
-        
+
         // Many-to-many relationships
         modelBuilder.Entity<Teacher>()
             .HasMany(t => t.StudentsGroups)
@@ -61,12 +61,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasMany(t => t.Courses)
             .WithMany(c => c.Teachers)
             .UsingEntity(j => j.ToTable("CourseTeacher"));
-        
+
         modelBuilder.Entity<Course>()
             .HasMany(c => c.StudentsGroups)
             .WithMany(g => g.Courses)
             .UsingEntity(j => j.ToTable("GroupCourse"));
-        
+
         modelBuilder.Entity<StudentsGroup>()
             .HasMany(g => g.Courses)
             .WithMany(c => c.StudentsGroups)

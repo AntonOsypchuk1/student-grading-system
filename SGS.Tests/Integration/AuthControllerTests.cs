@@ -9,8 +9,7 @@ using SGS.Application.DTOs;
 
 namespace SGS.Tests.Integration;
 
-public class AuthControllerTests(WebApplicationFactory<Program> factory)
-    : IClassFixture<WebApplicationFactory<Program>>
+public class AuthControllerTests(WebApplicationFactory<Program> factory) : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly HttpClient _client = factory.CreateClient();
 
@@ -20,7 +19,7 @@ public class AuthControllerTests(WebApplicationFactory<Program> factory)
         var loginDto = new LoginDto
         {
             Email = "teacher1@example.com", // Ensure these match seeded test data
-            Password = "your_password"      // Password should be set appropriately
+            Password = "your_password" // Password should be set appropriately
         };
 
         var response = await _client.PostAsJsonAsync("/api/auth/login", loginDto);
@@ -78,7 +77,7 @@ public class AuthControllerTests(WebApplicationFactory<Program> factory)
         var loginDto = new LoginDto
         {
             Email = "teacher1@example.com",
-            Password = "your_password"
+            Password = "teacher_password"
         };
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginDto);
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);

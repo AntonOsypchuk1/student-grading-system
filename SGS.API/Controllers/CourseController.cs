@@ -16,7 +16,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
         var courseDto = await courseService.CreateCourseAsync(command);
         return Ok(courseDto);
     }
-    
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetCourseById([FromRoute] Guid id)
     {
@@ -25,7 +25,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
             return NotFound();
         return Ok(courseDto);
     }
-    
+
     [Authorize(Policy = "RequireTeacherRole")]
     [HttpGet("teacher/{teacherId:guid}")]
     public async Task<IActionResult> GetCoursesByTeacher([FromRoute] Guid teacherId)
@@ -33,7 +33,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
         var courses = await courseService.GetCoursesByTeacherAsync(teacherId);
         return Ok(courses);
     }
-    
+
     [Authorize(Policy = "RequireStudentRole")]
     [HttpGet("student/{studentId:guid}")]
     public async Task<IActionResult> GetCoursesByStudent([FromRoute] Guid studentId)

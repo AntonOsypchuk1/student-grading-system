@@ -10,9 +10,10 @@ public class CourseService(ICourseRepository courseRepository, IUserRepository u
     : ICourseService
 {
     // May be used to lookup teacher/student associations
-    private readonly IUserRepository _userRepository = userRepository; 
+    private readonly IUserRepository _userRepository = userRepository;
 
-    public async Task<CourseDto> CreateCourseAsync(CreateCourseCommand command, CancellationToken cancellationToken = default)
+    public async Task<CourseDto> CreateCourseAsync(CreateCourseCommand command,
+        CancellationToken cancellationToken = default)
     {
         var course = new Course
         {
@@ -31,13 +32,15 @@ public class CourseService(ICourseRepository courseRepository, IUserRepository u
         return course == null ? null : mapper.Map<CourseDto>(course);
     }
 
-    public async Task<IEnumerable<CourseDto>> GetCoursesByTeacherAsync(Guid teacherId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<CourseDto>> GetCoursesByTeacherAsync(Guid teacherId,
+        CancellationToken cancellationToken = default)
     {
         var courses = await courseRepository.GetByTeacherIdAsync(teacherId, cancellationToken);
         return mapper.Map<IEnumerable<CourseDto>>(courses);
     }
 
-    public async Task<IEnumerable<CourseDto>> GetCoursesByStudentAsync(Guid studentId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<CourseDto>> GetCoursesByStudentAsync(Guid studentId,
+        CancellationToken cancellationToken = default)
     {
         // For simplicity, we assume that the student is associated with one or more groups,
         // and groups are associated with courses via a many-to-many relationship.

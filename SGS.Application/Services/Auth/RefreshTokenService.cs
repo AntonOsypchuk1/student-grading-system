@@ -14,7 +14,7 @@ public class RefreshTokenService(IRefreshTokenRepository refreshTokenRepository)
             UserId = userId,
             Token = GenerateRandomToken(),
             Created = DateTime.UtcNow,
-            Expires = DateTime.UtcNow.AddDays(7) // for example, valid for 7 days
+            Expires = DateTime.UtcNow.AddDays(1)
         };
 
         await refreshTokenRepository.CreateAsync(refreshToken, cancellationToken);

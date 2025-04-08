@@ -6,10 +6,11 @@ using SGS.Infrastructure.Repositories.Interfaces;
 
 namespace SGS.Infrastructure.Repositories;
 
-public class DocumentRepository(AppDbContext context) 
+public class DocumentRepository(AppDbContext context)
     : BaseRepository<Document>(context), IDocumentRepository
 {
-    public async Task<IEnumerable<Document>> GetDocumentsByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Document>> GetDocumentsByUserIdAsync(Guid userId,
+        CancellationToken cancellationToken = default)
     {
         return await Context.Documents
             .Where(doc => doc.UserId == userId)

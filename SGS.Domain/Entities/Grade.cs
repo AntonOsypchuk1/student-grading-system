@@ -1,6 +1,6 @@
-using SGS.Domain.Common;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using SGS.Domain.Common;
 
 namespace SGS.Domain.Entities;
 

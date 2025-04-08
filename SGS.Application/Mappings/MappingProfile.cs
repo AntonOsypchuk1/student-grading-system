@@ -13,18 +13,18 @@ public class MappingProfile : Profile
         CreateMap<Assignment, AssignmentDto>();
         CreateMap<Course, CourseDto>();
         CreateMap<AnalysisResults, AnalysisResultDto>();
-        
+
         CreateMap<UploadDocumentCommand, Document>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.FilePath, opt => opt.Ignore())
             .ForMember(dest => dest.UploadedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
-        
+
         CreateMap<User, UserDto>()
             .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()));
 
         CreateMap<CreateAssignmentCommand, Assignment>()
             .ForMember(dest => dest.Id, opt => opt.Ignore());
-        
+
         CreateMap<CreateCourseCommand, Course>()
             .ForMember(dest => dest.Id, opt => opt.Ignore());
     }

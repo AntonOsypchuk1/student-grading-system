@@ -5,32 +5,39 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <PreserveCompilationContext>true</PreserveCompilationContext>
+        <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <GenerateDependencyFile>true</GenerateDependencyFile>
+        <IsTestProject>true</IsTestProject>
+        <ShadowCopyAssets>false</ShadowCopyAssets>
     </PropertyGroup>
-
+    
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.3" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.3"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.0" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.7.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.0"/>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.7.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <Content Include="..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Middleware\" />
+        <Folder Include="Middleware\"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SGS.Application\SGS.Application.csproj" />
-      <ProjectReference Include="..\SGS.Infrastructure\SGS.Infrastructure.csproj" />
+        <ProjectReference Include="..\SGS.Application\SGS.Application.csproj"/>
+        <ProjectReference Include="..\SGS.Infrastructure\SGS.Infrastructure.csproj"/>
     </ItemGroup>
 
 </Project>

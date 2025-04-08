@@ -2,11 +2,13 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
 using SGS.Application.DTOs;
 
 namespace SGS.Tests.Integration;
-public class DocumentControllerTests(CustomWebApplicationFactory factory)
-    : IClassFixture<CustomWebApplicationFactory>
+
+public class DocumentControllerTests(WebApplicationFactory<Program> factory)
+    : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly HttpClient _client = factory.CreateClient();
 
@@ -14,7 +16,7 @@ public class DocumentControllerTests(CustomWebApplicationFactory factory)
     public async Task UploadDocument_ReturnsDocumentDto()
     {
         var multipartContent = new MultipartFormDataContent();
-        
+
         var fileBytes = "Test file content"u8.ToArray();
         var fileContent = new ByteArrayContent(fileBytes);
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/pdf");

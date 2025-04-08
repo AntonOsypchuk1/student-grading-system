@@ -1,4 +1,5 @@
 using SGS.Application.DTOs;
+using SGS.Domain.Entities;
 
 namespace SGS.Application.Interfaces;
 
