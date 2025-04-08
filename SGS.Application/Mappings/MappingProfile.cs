@@ -13,6 +13,7 @@ public class MappingProfile : Profile
         CreateMap<Assignment, AssignmentDto>();
         CreateMap<Course, CourseDto>();
         CreateMap<AnalysisResults, AnalysisResultDto>();
+        CreateMap<GradingCriteria, GradingCriteriaDto>();
 
         CreateMap<UploadDocumentCommand, Document>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -27,5 +28,9 @@ public class MappingProfile : Profile
 
         CreateMap<CreateCourseCommand, Course>()
             .ForMember(dest => dest.Id, opt => opt.Ignore());
+        
+        CreateMap<CreateGradingCriteriaCommand, GradingCriteria>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
     }
 }
