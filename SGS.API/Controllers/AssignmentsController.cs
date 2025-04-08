@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
@@ -8,6 +9,7 @@ namespace SGS.API.Controllers;
 [Route("api/assignments")]
 public class AssignmentController(IAssignmentService assignmentService) : ControllerBase
 {
+    [Authorize(Policy = "RequireTeacherRole")]
     [HttpPost("create")]
     public async Task<IActionResult> CreateAssignment([FromBody] CreateAssignmentCommand command)
     {

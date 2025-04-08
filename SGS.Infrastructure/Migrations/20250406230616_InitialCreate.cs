@@ -25,29 +25,19 @@ namespace SGS.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GradingCriteria",
+                name: "RefreshTokens",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CriteriaDescription = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    Expires = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Revoked = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GradingCriteria", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Roles",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    RoleName = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Roles", x => x.Id);
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -55,7 +45,7 @@ namespace SGS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -67,21 +57,15 @@ namespace SGS.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Login = table.Column<string>(type: "text", nullable: false),
+                    Login = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
-                    FullName = table.Column<string>(type: "text", nullable: false),
+                    FullName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uuid", nullable: false)
+                    Role = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Users_Roles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "Roles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -133,6 +117,26 @@ namespace SGS.Infrastructure.Migrations
                         name: "FK_GroupCourse_StudentGroups_StudentsGroupsId",
                         column: x => x.StudentsGroupsId,
                         principalTable: "StudentGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GradingCriteria",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CriteriaDescription = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GradingCriteria", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GradingCriteria_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -285,7 +289,7 @@ namespace SGS.Infrastructure.Migrations
                     DocumentId = table.Column<Guid>(type: "uuid", nullable: false),
                     CriteriaId = table.Column<Guid>(type: "uuid", nullable: false),
                     GradeId = table.Column<Guid>(type: "uuid", nullable: false),
-                    GeneratedSummary = table.Column<string>(type: "text", nullable: false),
+                    GeneratedSummary = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
                     IsApproved = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -358,6 +362,11 @@ namespace SGS.Infrastructure.Migrations
                 column: "DocumentId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_GradingCriteria_UserId",
+                table: "GradingCriteria",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_GroupCourse_StudentsGroupsId",
                 table: "GroupCourse",
                 column: "StudentsGroupsId");
@@ -381,11 +390,6 @@ namespace SGS.Infrastructure.Migrations
                 name: "IX_Teachers_UserId",
                 table: "Teachers",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_RoleId",
-                table: "Users",
-                column: "RoleId");
         }
 
         /// <inheritdoc />
@@ -399,6 +403,9 @@ namespace SGS.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "GroupCourse");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "Students");
@@ -429,9 +436,6 @@ namespace SGS.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "StudentGroups");
-
-            migrationBuilder.DropTable(
-                name: "Roles");
         }
     }
 }

@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using SGS.Infrastructure;
 using SGS.Infrastructure.Data;
 
 #nullable disable
@@ -13,7 +12,7 @@ using SGS.Infrastructure.Data;
 namespace SGS.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250314191013_InitialCreate")]
+    [Migration("20250406230616_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -56,7 +55,7 @@ namespace SGS.Infrastructure.Migrations
                     b.ToTable("CourseTeacher", (string)null);
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.AnalysisResults", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.AnalysisResults", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -73,7 +72,8 @@ namespace SGS.Infrastructure.Migrations
 
                     b.Property<string>("GeneratedSummary")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.Property<Guid>("GradeId")
                         .HasColumnType("uuid");
@@ -92,7 +92,7 @@ namespace SGS.Infrastructure.Migrations
                     b.ToTable("AnalysisResults");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Assignment", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.Assignment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -127,7 +127,7 @@ namespace SGS.Infrastructure.Migrations
                     b.ToTable("Assignments");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Course", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.Course", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -146,7 +146,7 @@ namespace SGS.Infrastructure.Migrations
                     b.ToTable("Courses");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Document", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.Document", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -177,7 +177,7 @@ namespace SGS.Infrastructure.Migrations
                     b.ToTable("Documents");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Grade", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.Grade", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -202,7 +202,7 @@ namespace SGS.Infrastructure.Migrations
                     b.ToTable("Grades");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.GradingCriteria", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.GradingCriteria", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -220,25 +220,39 @@ namespace SGS.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("GradingCriteria");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Role", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("RoleName")
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("Revoked")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Student", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.Student", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -259,7 +273,7 @@ namespace SGS.Infrastructure.Migrations
                     b.ToTable("Students");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.StudentsGroup", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.StudentsGroup", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -267,14 +281,15 @@ namespace SGS.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
                     b.ToTable("StudentGroups");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Teacher", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.Teacher", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -290,7 +305,7 @@ namespace SGS.Infrastructure.Migrations
                     b.ToTable("Teachers");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.User", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -302,22 +317,22 @@ namespace SGS.Infrastructure.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Login")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
 
                     b.ToTable("Users");
                 });
@@ -339,13 +354,13 @@ namespace SGS.Infrastructure.Migrations
 
             modelBuilder.Entity("CourseStudentsGroup", b =>
                 {
-                    b.HasOne("SGS.Infrastructure.Entities.Course", null)
+                    b.HasOne("SGS.Domain.Entities.Course", null)
                         .WithMany()
                         .HasForeignKey("CoursesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SGS.Infrastructure.Entities.StudentsGroup", null)
+                    b.HasOne("SGS.Domain.Entities.StudentsGroup", null)
                         .WithMany()
                         .HasForeignKey("StudentsGroupsId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -354,34 +369,34 @@ namespace SGS.Infrastructure.Migrations
 
             modelBuilder.Entity("CourseTeacher", b =>
                 {
-                    b.HasOne("SGS.Infrastructure.Entities.Course", null)
+                    b.HasOne("SGS.Domain.Entities.Course", null)
                         .WithMany()
                         .HasForeignKey("CoursesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SGS.Infrastructure.Entities.Teacher", null)
+                    b.HasOne("SGS.Domain.Entities.Teacher", null)
                         .WithMany()
                         .HasForeignKey("TeachersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.AnalysisResults", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.AnalysisResults", b =>
                 {
-                    b.HasOne("SGS.Infrastructure.Entities.GradingCriteria", "Criteria")
+                    b.HasOne("SGS.Domain.Entities.GradingCriteria", "Criteria")
                         .WithMany()
                         .HasForeignKey("CriteriaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SGS.Infrastructure.Entities.Document", "Document")
+                    b.HasOne("SGS.Domain.Entities.Document", "Document")
                         .WithMany()
                         .HasForeignKey("DocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SGS.Infrastructure.Entities.Grade", "Grade")
+                    b.HasOne("SGS.Domain.Entities.Grade", "Grade")
                         .WithMany()
                         .HasForeignKey("GradeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -394,15 +409,15 @@ namespace SGS.Infrastructure.Migrations
                     b.Navigation("Grade");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Assignment", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.Assignment", b =>
                 {
-                    b.HasOne("SGS.Infrastructure.Entities.Course", "Course")
+                    b.HasOne("SGS.Domain.Entities.Course", "Course")
                         .WithMany()
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SGS.Infrastructure.Entities.StudentsGroup", "Group")
+                    b.HasOne("SGS.Domain.Entities.StudentsGroup", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -413,15 +428,15 @@ namespace SGS.Infrastructure.Migrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Document", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.Document", b =>
                 {
-                    b.HasOne("SGS.Infrastructure.Entities.Assignment", "Assignment")
+                    b.HasOne("SGS.Domain.Entities.Assignment", "Assignment")
                         .WithMany("Documents")
                         .HasForeignKey("AssignmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SGS.Infrastructure.Entities.User", "User")
+                    b.HasOne("SGS.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -432,9 +447,9 @@ namespace SGS.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Grade", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.Grade", b =>
                 {
-                    b.HasOne("SGS.Infrastructure.Entities.Document", "Document")
+                    b.HasOne("SGS.Domain.Entities.Document", "Document")
                         .WithMany()
                         .HasForeignKey("DocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -443,15 +458,26 @@ namespace SGS.Infrastructure.Migrations
                     b.Navigation("Document");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Student", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.GradingCriteria", b =>
                 {
-                    b.HasOne("SGS.Infrastructure.Entities.StudentsGroup", "Group")
+                    b.HasOne("SGS.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SGS.Domain.Entities.Student", b =>
+                {
+                    b.HasOne("SGS.Domain.Entities.StudentsGroup", "Group")
                         .WithMany("Students")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SGS.Infrastructure.Entities.User", "User")
+                    b.HasOne("SGS.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -462,9 +488,9 @@ namespace SGS.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Teacher", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.Teacher", b =>
                 {
-                    b.HasOne("SGS.Infrastructure.Entities.User", "User")
+                    b.HasOne("SGS.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -473,43 +499,27 @@ namespace SGS.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.User", b =>
-                {
-                    b.HasOne("SGS.Infrastructure.Entities.Role", "Role")
-                        .WithMany("Users")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Role");
-                });
-
             modelBuilder.Entity("StudentsGroupTeacher", b =>
                 {
-                    b.HasOne("SGS.Infrastructure.Entities.StudentsGroup", null)
+                    b.HasOne("SGS.Domain.Entities.StudentsGroup", null)
                         .WithMany()
                         .HasForeignKey("StudentsGroupsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SGS.Infrastructure.Entities.Teacher", null)
+                    b.HasOne("SGS.Domain.Entities.Teacher", null)
                         .WithMany()
                         .HasForeignKey("TeachersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Assignment", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.Assignment", b =>
                 {
                     b.Navigation("Documents");
                 });
 
-            modelBuilder.Entity("SGS.Infrastructure.Entities.Role", b =>
-                {
-                    b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("SGS.Infrastructure.Entities.StudentsGroup", b =>
+            modelBuilder.Entity("SGS.Domain.Entities.StudentsGroup", b =>
                 {
                     b.Navigation("Students");
                 });

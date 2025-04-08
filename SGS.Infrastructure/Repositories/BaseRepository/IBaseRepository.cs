@@ -1,4 +1,3 @@
-using System.Collections;
 using SGS.Domain.Common;
 
 namespace SGS.Infrastructure.Repositories.BaseRepository;

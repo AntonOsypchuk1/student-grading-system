@@ -9,14 +9,16 @@ namespace SGS.Infrastructure.Repositories;
 public class CourseRepository(AppDbContext context)
     : BaseRepository<Course>(context), ICourseRepository
 {
-    public async Task<IEnumerable<Course>> GetByTeacherIdAsync(Guid teacherId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Course>> GetByTeacherIdAsync(Guid teacherId,
+        CancellationToken cancellationToken = default)
     {
         return await Context.Courses
             .Where(c => c.Teachers.Any(t => t.Id == teacherId))
             .ToListAsync(cancellationToken);
     }
-    
-    public async Task<IEnumerable<Course>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = default)
+
+    public async Task<IEnumerable<Course>> GetByStudentIdAsync(Guid studentId,
+        CancellationToken cancellationToken = default)
     {
         return await Context.Courses
             .Where(c => c.StudentsGroups.Any(g => g.Students.Any(s => s.UserId == studentId)))

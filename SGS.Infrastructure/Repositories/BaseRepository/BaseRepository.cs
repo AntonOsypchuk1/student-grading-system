@@ -30,7 +30,7 @@ public class BaseRepository<TEntity>(AppDbContext context) : IBaseRepository<TEn
             await Context.SaveChangesAsync(cancellationToken);
         }
     }
-    
+
     public async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await Context.Set<TEntity>().FindAsync([id], cancellationToken);

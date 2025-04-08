@@ -9,7 +9,8 @@ namespace SGS.Infrastructure.Repositories;
 public class AssignmentRepository(AppDbContext context)
     : BaseRepository<Assignment>(context), IAssignmentRepository
 {
-    public async Task<IEnumerable<Assignment>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Assignment>> GetByGroupIdAsync(Guid groupId,
+        CancellationToken cancellationToken = default)
     {
         return await Context.Assignments
             .Where(a => a.GroupId == groupId)

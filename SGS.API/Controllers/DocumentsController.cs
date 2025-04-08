@@ -12,10 +12,7 @@ public class DocumentController(IDocumentService documentService) : ControllerBa
     [HttpPost("upload")]
     public async Task<IActionResult> UploadDocument([FromForm] UploadDocumentDto apiDto)
     {
-        if (apiDto.File is null || apiDto.File.Length == 0)
-        {
-            return BadRequest("No file uploaded.");
-        }
+        if (apiDto.File.Length == 0) return BadRequest("No file uploaded.");
 
         byte[] fileContent;
         using (var memoryStream = new MemoryStream())

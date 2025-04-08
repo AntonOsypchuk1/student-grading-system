@@ -9,7 +9,8 @@ namespace SGS.Infrastructure.Repositories;
 public class StudentsGroupRepository(AppDbContext context)
     : BaseRepository<StudentsGroup>(context), IStudentsGroupRepository
 {
-    public async Task<IEnumerable<StudentsGroup>> GetGroupsByTeacherIdAsync(Guid teacherId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<StudentsGroup>> GetGroupsByTeacherIdAsync(Guid teacherId,
+        CancellationToken cancellationToken = default)
     {
         return await Context.StudentGroups
             .Where(g => g.Teachers.Any(t => t.Id == teacherId))

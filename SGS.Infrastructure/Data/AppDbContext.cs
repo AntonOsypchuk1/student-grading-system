@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using SGS.Domain.Entities;
-using SGS.Domain.Enums;
 
 namespace SGS.Infrastructure.Data;
 
@@ -16,11 +15,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Grade> Grades { get; set; }
     public DbSet<GradingCriteria> GradingCriteria { get; set; }
     public DbSet<AnalysisResults> AnalysisResults { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // base.OnModelCreating(modelBuilder);
-        
         modelBuilder.Entity<User>().HasKey(u => u.Id);
         modelBuilder.Entity<Student>().HasKey(s => s.Id);
         modelBuilder.Entity<Teacher>().HasKey(t => t.Id);
@@ -31,17 +29,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Grade>().HasKey(g => g.Id);
         modelBuilder.Entity<GradingCriteria>().HasKey(gc => gc.Id);
         modelBuilder.Entity<AnalysisResults>().HasKey(ar => ar.Id);
+        modelBuilder.Entity<RefreshToken>().HasKey(rt => rt.Id);
 
         modelBuilder.Entity<User>()
             .Property(u => u.Role)
             .HasConversion<int>()
             .IsRequired();
-        
+
         modelBuilder.Entity<Student>()
             .HasOne<StudentsGroup>(s => s.Group)
             .WithMany(g => g.Students)
             .HasForeignKey(s => s.GroupId);
-        
+
         modelBuilder.Entity<Document>()
             .HasOne<User>(d => d.User)
             .WithMany()
@@ -51,7 +50,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne<Assignment>(d => d.Assignment)
             .WithMany(a => a.Documents)
             .HasForeignKey(d => d.AssignmentId);
-        
+
         // Many-to-many relationships
         modelBuilder.Entity<Teacher>()
             .HasMany(t => t.StudentsGroups)
@@ -62,12 +61,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasMany(t => t.Courses)
             .WithMany(c => c.Teachers)
             .UsingEntity(j => j.ToTable("CourseTeacher"));
-        
+
         modelBuilder.Entity<Course>()
             .HasMany(c => c.StudentsGroups)
             .WithMany(g => g.Courses)
             .UsingEntity(j => j.ToTable("GroupCourse"));
-        
+
         modelBuilder.Entity<StudentsGroup>()
             .HasMany(g => g.Courses)
             .WithMany(c => c.StudentsGroups)

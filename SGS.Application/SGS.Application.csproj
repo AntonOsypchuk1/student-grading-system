@@ -7,12 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SGS.Domain\SGS.Domain.csproj" />
-      <ProjectReference Include="..\SGS.Infrastructure\SGS.Infrastructure.csproj" />
+        <ProjectReference Include="..\SGS.Domain\SGS.Domain.csproj"/>
+        <ProjectReference Include="..\SGS.Infrastructure\SGS.Infrastructure.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="AutoMapper" Version="14.0.0" />
+        <PackageReference Include="AutoMapper" Version="14.0.0"/>
+        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3"/>
     </ItemGroup>
 
 </Project>

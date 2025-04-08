@@ -2,11 +2,13 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
 using SGS.Application.DTOs;
 
 namespace SGS.Tests.Integration;
-public class DocumentControllerTests(CustomWebApplicationFactory factory)
-    : IClassFixture<CustomWebApplicationFactory>
+
+public class DocumentControllerTests(WebApplicationFactory<Program> factory)
+    : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly HttpClient _client = factory.CreateClient();
 
@@ -14,8 +16,8 @@ public class DocumentControllerTests(CustomWebApplicationFactory factory)
     public async Task UploadDocument_ReturnsDocumentDto()
     {
         var multipartContent = new MultipartFormDataContent();
-        
-        byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes("Test file content");
+
+        var fileBytes = "Test file content"u8.ToArray();
         var fileContent = new ByteArrayContent(fileBytes);
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/pdf");
 
@@ -30,7 +32,7 @@ public class DocumentControllerTests(CustomWebApplicationFactory factory)
 
         var documentDto = await response.Content.ReadFromJsonAsync<DocumentDto>();
         documentDto.Should().NotBeNull();
-        documentDto!.Id.Should().NotBeEmpty();
+        documentDto.Id.Should().NotBeEmpty();
         documentDto.FilePath.Should().NotBeNullOrEmpty();
         documentDto.UploadedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
     }

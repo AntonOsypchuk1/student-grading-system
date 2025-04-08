@@ -19,9 +19,10 @@ public static class ApplicationModule
         services.AddScoped<IAssignmentService, AssignmentService>();
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IGradingService, GradingService>();
-        // services.AddScoped<IAIService, SemanticKernelAIService>();
-        services.AddScoped<IUserService, UserService>();
-        
+        services.AddScoped<IAIService, SemanticKernelAiService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+
         services.AddScoped<IFileStorageService>(provider =>
             new DiskFileStorageService(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads")));
     }
