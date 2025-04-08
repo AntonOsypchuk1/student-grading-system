@@ -47,6 +47,7 @@ public class AuthController(
         }
     }
 
+    [Obsolete("This endpoint is deprecated. Use /api/user/me instead.")]
     [Authorize]
     [HttpGet("me")]
     public IActionResult GetCurrentUser()

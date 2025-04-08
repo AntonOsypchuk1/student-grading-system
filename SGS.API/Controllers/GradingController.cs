@@ -9,6 +9,7 @@ namespace SGS.API.Controllers;
 [Route("api/grading")]
 public class GradingController(IGradingService gradingService) : ControllerBase
 {
+    [Authorize(Policy = "RequireTeacherRole")]
     [HttpPost("analyze/{docId:guid}")]
     public async Task<IActionResult> AnalyzeDocument([FromRoute] Guid docId)
     {
@@ -31,5 +32,20 @@ public class GradingController(IGradingService gradingService) : ControllerBase
     {
         var updatedResult = await gradingService.EditGradeAsync(command);
         return Ok(updatedResult);
+    }
+    
+    [HttpGet("assignments/{assignmentId:guid}")]
+    public async Task<IActionResult> GetGradingResultsByAssignment(Guid assignmentId)
+    {
+        var results = await gradingService.GetGradingResultsByAssignmentAsync(assignmentId);
+        return Ok(results);
+    }
+
+    [Authorize(Policy = "RequireTeacherRole")]
+    [HttpPut("finalize/{gradeId:guid}")]
+    public async Task<IActionResult> FinalizeGrade(Guid gradeId)
+    {
+        var finalizedResult = await gradingService.FinalizeGradeAsync(gradeId);
+        return Ok(finalizedResult);
     }
 }
