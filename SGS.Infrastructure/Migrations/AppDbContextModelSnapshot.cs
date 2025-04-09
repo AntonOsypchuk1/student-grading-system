@@ -327,7 +327,8 @@ namespace SGS.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<int>("Role")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("Role");
 
                     b.HasKey("Id");
 

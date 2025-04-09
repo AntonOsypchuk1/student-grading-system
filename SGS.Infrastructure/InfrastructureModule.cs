@@ -32,8 +32,8 @@ public static class InfrastructureModule
     {
         // TODO: Use in-memory database for testing
         // For now just comment it out
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        // services.AddDbContext<AppDbContext>(options =>
+        //     options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<AppDbContext>();
     }
 }

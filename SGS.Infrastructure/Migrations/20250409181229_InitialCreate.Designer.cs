@@ -12,7 +12,7 @@ using SGS.Infrastructure.Data;
 namespace SGS.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250406230616_InitialCreate")]
+    [Migration("20250409181229_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -330,7 +330,8 @@ namespace SGS.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<int>("Role")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("Role");
 
                     b.HasKey("Id");
 

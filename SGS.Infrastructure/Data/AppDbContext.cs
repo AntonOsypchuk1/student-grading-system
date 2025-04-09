@@ -33,6 +33,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<User>()
             .Property(u => u.Role)
+            .HasColumnName("Role")
             .HasConversion<int>()
             .IsRequired();
 
