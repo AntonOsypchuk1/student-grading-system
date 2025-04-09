@@ -10,4 +10,8 @@ public interface IGradingService
         CancellationToken cancellationToken = default);
 
     Task<AnalysisResultDto> EditGradeAsync(EditGradeCommand command, CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<AnalysisResultDto>> GetGradingResultsByAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken = default);
+
+    Task<AnalysisResultDto> FinalizeGradeAsync(Guid gradeId, CancellationToken cancellationToken = default);
 }

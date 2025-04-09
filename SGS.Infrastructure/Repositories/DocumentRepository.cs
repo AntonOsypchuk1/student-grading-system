@@ -16,4 +16,11 @@ public class DocumentRepository(AppDbContext context)
             .Where(doc => doc.UserId == userId)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IEnumerable<Document>> GetDocumentsByAssignmentIdAsync(Guid assignmentId, CancellationToken cancellationToken = default)
+    {
+        return await Context.Documents
+            .Where(d => d.AssignmentId == assignmentId)
+            .ToListAsync(cancellationToken);
+    }
 }

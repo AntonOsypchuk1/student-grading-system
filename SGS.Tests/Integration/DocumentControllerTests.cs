@@ -7,10 +7,10 @@ using SGS.Application.DTOs;
 
 namespace SGS.Tests.Integration;
 
-public class DocumentControllerTests(WebApplicationFactory<Program> factory)
-    : IClassFixture<WebApplicationFactory<Program>>
+public class DocumentControllerTests(WebApplicationFactory<Program> webApplicationFactory)
+    : BaseWebApplication
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private readonly HttpClient _client = webApplicationFactory.CreateClient();
 
     [Fact]
     public async Task UploadDocument_ReturnsDocumentDto()

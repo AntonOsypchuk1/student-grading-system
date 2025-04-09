@@ -17,13 +17,17 @@ public static class ApplicationModule
     private static void AddServices(this IServiceCollection services)
     {
         services.AddScoped<IAssignmentService, AssignmentService>();
+        services.AddScoped<ICourseService, CourseService>();
         services.AddScoped<IDocumentService, DocumentService>();
+        services.AddScoped<IGradingCriteriaService, GradingCriteriaService>();
         services.AddScoped<IGradingService, GradingService>();
         services.AddScoped<IAIService, SemanticKernelAiService>();
+        services.AddScoped<IUserService, UserService>();
+        
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
-        services.AddScoped<IFileStorageService>(provider =>
+        services.AddScoped<IFileStorageService>(_ =>
             new DiskFileStorageService(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads")));
     }
 

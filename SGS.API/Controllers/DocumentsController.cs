@@ -41,4 +41,11 @@ public class DocumentController(IDocumentService documentService) : ControllerBa
             return NotFound();
         return Ok(document);
     }
+    
+    [HttpGet("user/{userId:guid}")]
+    public async Task<IActionResult> GetDocumentsByUserId(Guid userId)
+    {
+        var documents = await documentService.GetDocumentsByUserIdAsync(userId);
+        return Ok(documents);
+    }
 }
