@@ -14,7 +14,7 @@ public class GradingService(
     IAIService aiService)
     : IGradingService
 {
-    public async Task<AnalysisResultDto> AnalyzeDocumentAsync(Guid documentId,
+    public async Task<AnalysisResultDto?> AnalyzeDocumentAsync(Guid documentId,
         CancellationToken cancellationToken = default)
     {
         var document = await documentRepository.GetByIdAsync(documentId, cancellationToken);
@@ -57,7 +57,7 @@ public class GradingService(
         return analysisResult == null ? null : mapper.Map<AnalysisResultDto>(analysisResult);
     }
 
-    public async Task<AnalysisResultDto> EditGradeAsync(EditGradeCommand command,
+    public async Task<AnalysisResultDto?> EditGradeAsync(EditGradeCommand command,
         CancellationToken cancellationToken = default)
     {
         var grade = await gradeRepository.GetByIdAsync(command.GradeId, cancellationToken);
@@ -92,7 +92,7 @@ public class GradingService(
         return mapper.Map<IEnumerable<AnalysisResultDto>>(allResults);
     }
 
-    public async Task<AnalysisResultDto> FinalizeGradeAsync(Guid gradeId, CancellationToken cancellationToken = default)
+    public async Task<AnalysisResultDto?> FinalizeGradeAsync(Guid gradeId, CancellationToken cancellationToken = default)
     {
         var grade = await gradeRepository.GetByIdAsync(gradeId, cancellationToken);
         if (grade is null)

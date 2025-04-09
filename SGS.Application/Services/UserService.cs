@@ -26,7 +26,7 @@ public class UserService(IUserRepository userRepository, IMapper mapper) : IUser
         return mapper.Map<IEnumerable<UserDto>>(students);
     }
 
-    public async Task<IEnumerable<UserDto>> GetStudentsByGroupAsync(Guid groupId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<UserDto>?> GetStudentsByGroupAsync(Guid groupId, CancellationToken cancellationToken = default)
     {
         var groupStudents = await userRepository.GetStudentsByGroupAsync(groupId, cancellationToken);
         return mapper.Map<IEnumerable<UserDto>>(groupStudents);

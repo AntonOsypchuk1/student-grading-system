@@ -5,15 +5,17 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using SGS.API.DTOs;
 using SGS.Application.DTOs;
+using SGS.Tests.Integration.Bases;
+using SGS.Tests.Mocks;
 
 namespace SGS.Tests.Integration;
 
-public class AuthControllerTests(WebApplicationFactory<Program> webApplicationFactory)
-    : BaseWebApplication
+public class AuthControllerTests(CustomWebApplicationFactory<Program> factory)
+    : IClassFixture<CustomWebApplicationFactory<Program>>
 {
-    private readonly HttpClient _client = webApplicationFactory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
     private const string TeacherEmail = "teacher1@test.com";
-    private const string TeacherPassword = "Password123!";
+    private static readonly string TeacherPassword = string.Empty;
 
     [Fact]
     public async Task Login_WithValidCredentials_ReturnsAuthResponse()

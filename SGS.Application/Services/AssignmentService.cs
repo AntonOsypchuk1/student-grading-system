@@ -33,7 +33,7 @@ public class AssignmentService(IAssignmentRepository assignmentRepository, IMapp
         return assignment == null ? null : mapper.Map<AssignmentDto>(assignment);
     }
 
-    public async Task<IEnumerable<AssignmentDto>> GetAssignmentsByGroupAsync(Guid groupId,
+    public async Task<IEnumerable<AssignmentDto>?> GetAssignmentsByGroupAsync(Guid groupId,
         CancellationToken cancellationToken = default)
     {
         var assignments = await assignmentRepository.GetByGroupIdAsync(groupId, cancellationToken);

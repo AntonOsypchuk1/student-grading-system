@@ -32,7 +32,7 @@ public class DocumentService(
         return document == null ? null : mapper.Map<DocumentDto>(document);
     }
 
-    public async Task<IEnumerable<DocumentDto>> GetDocumentsByUserIdAsync(Guid userId,
+    public async Task<IEnumerable<DocumentDto>?> GetDocumentsByUserIdAsync(Guid userId,
         CancellationToken cancellationToken = default)
     {
         var documents = await documentRepository.GetDocumentsByUserIdAsync(userId, cancellationToken);

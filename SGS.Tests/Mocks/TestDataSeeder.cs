@@ -1,13 +1,20 @@
 using SGS.Domain.Entities;
 using SGS.Domain.Enums;
-using System;
-using SGS.Application.Helpers;
 using SGS.Infrastructure.Data;
 
 namespace SGS.Tests.Mocks;
 
 public static class TestDataSeeder
 {
+    public static Guid GuidTeacher = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    public static Guid GuidStudent = Guid.Parse("00000000-0000-0000-0000-000000000002");
+    public static Guid GuidGroup = Guid.Parse("00000000-0000-0000-0000-000000000003");
+    public static Guid GuidCourse1 = Guid.Parse("00000000-0000-0000-0000-000000000004");
+    public static Guid GuidCourse2 = Guid.Parse("00000000-0000-0000-0000-000000000005");
+    public static Guid GuidAssignment = Guid.Parse("00000000-0000-0000-0000-000000000006");
+    public static Guid GuidDocument = Guid.Parse("00000000-0000-0000-0000-000000000007");
+    public static Guid GuidCriteria = Guid.Parse("00000000-0000-0000-0000-000000000008");
+    
     public static void Seed(AppDbContext context)
     {
         // Avoid reseeding if data exists
@@ -16,20 +23,20 @@ public static class TestDataSeeder
         // Create teacher and student
         var teacher = new User
         {
-            Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+            Id = GuidTeacher,
             Login = "teacher1",
             Email = "teacher1@example.com",
             FullName = "Teacher One",
-            PasswordHash = PasswordHelper.HashPassword("Password123!"),
+            PasswordHash = string.Empty,
             Role = UserRole.Teacher
         };
         var student = new User
         {
-            Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
+            Id = GuidStudent,
             Login = "student1",
             Email = "student1@example.com",
             FullName = "Student One",
-            PasswordHash = PasswordHelper.HashPassword("Password123!"),
+            PasswordHash = string.Empty,
             Role = UserRole.Student
         };
 
@@ -37,7 +44,7 @@ public static class TestDataSeeder
         context.SaveChanges();
 
         // Insert group
-        var group = new StudentsGroup { Id = Guid.NewGuid(), Name = "Group A" };
+        var group = new StudentsGroup { Id = GuidGroup, Name = "Group A" };
         context.StudentGroups.Add(group);
         context.SaveChanges();
 
@@ -47,8 +54,8 @@ public static class TestDataSeeder
         context.SaveChanges();
 
         // Create courses
-        var course1 = new Course { Id = Guid.NewGuid(), Title = "Mathematics 101", Description = "Basic Mathematics" };
-        var course2 = new Course { Id = Guid.NewGuid(), Title = "Physics 101", Description = "Introduction to Physics" };
+        var course1 = new Course { Id = GuidCourse1, Title = "Mathematics 101", Description = "Basic Mathematics" };
+        var course2 = new Course { Id = GuidCourse2, Title = "Physics 101", Description = "Introduction to Physics" };
         context.Courses.AddRange(course1, course2);
         context.SaveChanges();
 
@@ -63,7 +70,7 @@ public static class TestDataSeeder
         // Create an assignment for group under course1 (Mathematics 101)
         var assignment = new Assignment
         {
-            Id = Guid.NewGuid(),
+            Id = GuidAssignment,
             GroupId = group.Id,
             CourseId = course1.Id,
             Title = "Algebra Test",
@@ -77,7 +84,7 @@ public static class TestDataSeeder
         // Create a document (simulate a file upload record)
         var document = new Document
         {
-            Id = Guid.NewGuid(),
+            Id = GuidDocument,
             UserId = student.Id,
             AssignmentId = assignment.Id,
             AttemptNumber = 1,
@@ -90,7 +97,7 @@ public static class TestDataSeeder
         // Create grading criteria by teacher
         var criteria = new GradingCriteria
         {
-            Id = Guid.NewGuid(),
+            Id = GuidCriteria,
             UserId = teacher.Id,
             CriteriaDescription = "Correctness of Solution",
             CreatedAt = DateTime.UtcNow
