@@ -5,9 +5,10 @@ using SGS.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var jwtSettings = new JwtSettings();
-builder.Configuration.Bind("JwtSettings", jwtSettings);
-builder.Services.AddSingleton(jwtSettings);
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+// Optionally: builder.Logging.AddEventSourceLogger(); // for ETW logging
 
 builder.Services.AddAuthServices(builder.Configuration);
 
@@ -24,6 +25,9 @@ app.UseSwagger();
 if (!app.Environment.IsProduction())
     app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "SGS API v1"); });
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

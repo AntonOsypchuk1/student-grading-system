@@ -10,5 +10,5 @@ public interface IUserService
     
     Task<IEnumerable<UserDto>> GetStudentsAsync(CancellationToken cancellationToken = default);
     
-    Task<IEnumerable<UserDto>> GetStudentsByGroupAsync(Guid groupId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<UserDto>?> GetStudentsByGroupAsync(Guid groupId, CancellationToken cancellationToken = default);
 }

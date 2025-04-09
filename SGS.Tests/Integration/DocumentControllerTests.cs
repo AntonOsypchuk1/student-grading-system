@@ -4,13 +4,14 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using SGS.Application.DTOs;
+using SGS.Tests.Integration.Bases;
 
 namespace SGS.Tests.Integration;
 
-public class DocumentControllerTests(WebApplicationFactory<Program> webApplicationFactory)
-    : BaseWebApplication
+public class DocumentControllerTests(CustomWebApplicationFactory<Program> factory)
+    : IClassFixture<CustomWebApplicationFactory<Program>>
 {
-    private readonly HttpClient _client = webApplicationFactory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task UploadDocument_ReturnsDocumentDto()

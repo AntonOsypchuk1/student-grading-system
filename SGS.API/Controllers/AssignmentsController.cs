@@ -11,25 +11,49 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
 {
     [Authorize(Policy = "RequireTeacherRole")]
     [HttpPost("create")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> CreateAssignment([FromBody] CreateAssignmentCommand command)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var assignmentDto = await assignmentService.CreateAssignmentAsync(command);
-        return Ok(assignmentDto);
+        return CreatedAtAction(nameof(GetAssignmentById), new { id = assignmentDto.Id }, assignmentDto);
     }
 
     [HttpGet("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAssignmentById([FromRoute] Guid id)
     {
+        if (id == Guid.Empty)
+            return BadRequest(new { error = "Invalid assignment ID." });
+
         var assignmentDto = await assignmentService.GetAssignmentByIdAsync(id);
-        if (assignmentDto == null)
-            return NotFound();
+        if (assignmentDto is null)
+            return NotFound(new { error = "Assignment not found." });
         return Ok(assignmentDto);
     }
 
     [HttpGet("group/{groupId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAssignmentsByGroup([FromRoute] Guid groupId)
     {
+        if (groupId == Guid.Empty)
+            return BadRequest(new { error = "Invalid group ID." });
+
         var assignments = await assignmentService.GetAssignmentsByGroupAsync(groupId);
+        if (assignments is null)
+            return NotFound(new { error = "Group not found." });
+        if (!assignments.Any())
+            return NoContent();
         return Ok(assignments);
     }
 }

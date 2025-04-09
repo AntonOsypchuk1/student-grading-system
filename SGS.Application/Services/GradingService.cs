@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 using SGS.Domain.Entities;
@@ -10,102 +11,188 @@ public class GradingService(
     IAnalysisResultsRepository analysisRepository,
     IGradeRepository gradeRepository,
     IDocumentRepository documentRepository,
-    IMapper mapper,
-    IAIService aiService)
+    IAIService aiService,
+    ILogger<GradingService> logger,
+    IMapper mapper)
     : IGradingService
 {
-    public async Task<AnalysisResultDto> AnalyzeDocumentAsync(Guid documentId,
+    public async Task<AnalysisResultDto?> AnalyzeDocumentAsync(Guid documentId,
         CancellationToken cancellationToken = default)
     {
-        var document = await documentRepository.GetByIdAsync(documentId, cancellationToken);
-        if (document == null)
-            throw new Exception("Document not found.");
+        logger.LogInformation("Starting document analysis for document ID: {DocumentId}", documentId);
 
-        var (summary, generatedGrade) = await aiService.AnalyzeDocumentAsync(document.FilePath, cancellationToken);
-
-        var gradeEntity = new Grade
+        try
         {
-            Id = Guid.NewGuid(),
-            DocumentId = documentId,
-            GeneratedGrade = generatedGrade,
-            EditedGrade = null,
-            IsFinalized = false
-        };
-        await gradeRepository.CreateAsync(gradeEntity, cancellationToken);
+            var document = await documentRepository.GetByIdAsync(documentId, cancellationToken);
+            if (document == null)
+            {
+                logger.LogWarning("Document not found with ID: {DocumentId}", documentId);
+                throw new Exception("Document not found.");
+            }
 
-        // TODO: Select the appropriate criteria from assignment or course.
-        var analysisEntity = new AnalysisResults
+            logger.LogInformation("Running AI analysis for document: {DocumentId}", documentId);
+            var (summary, generatedGrade) = await aiService.AnalyzeDocumentAsync(document.FilePath, cancellationToken);
+
+            var gradeEntity = new Grade
+            {
+                Id = Guid.NewGuid(),
+                DocumentId = documentId,
+                GeneratedGrade = generatedGrade,
+                EditedGrade = null,
+                IsFinalized = false
+            };
+            await gradeRepository.CreateAsync(gradeEntity, cancellationToken);
+            logger.LogInformation("Created grade record with ID: {GradeId} for document: {DocumentId}",
+                gradeEntity.Id, documentId);
+
+            var analysisEntity = new AnalysisResults
+            {
+                Id = Guid.NewGuid(),
+                DocumentId = documentId,
+                CriteriaId = Guid.NewGuid(),
+                GradeId = gradeEntity.Id,
+                GeneratedSummary = summary,
+                IsApproved = false,
+                CreatedAt = DateTime.UtcNow
+            };
+            await analysisRepository.CreateAsync(analysisEntity, cancellationToken);
+            logger.LogInformation("Created analysis result with ID: {AnalysisId} for document: {DocumentId}",
+                analysisEntity.Id, documentId);
+
+            return mapper.Map<AnalysisResultDto>(analysisEntity);
+        }
+        catch (Exception ex)
         {
-            Id = Guid.NewGuid(),
-            DocumentId = documentId,
-            CriteriaId = Guid.NewGuid(), // For now, we use a dummy criteria ID.
-            GradeId = gradeEntity.Id,
-            GeneratedSummary = summary,
-            IsApproved = false,
-            CreatedAt = DateTime.UtcNow
-        };
-        await analysisRepository.CreateAsync(analysisEntity, cancellationToken);
-
-        return mapper.Map<AnalysisResultDto>(analysisEntity);
+            logger.LogError(ex, "Error analyzing document with ID: {DocumentId}", documentId);
+            throw;
+        }
     }
 
     public async Task<AnalysisResultDto?> GetAnalysisResultByDocumentIdAsync(Guid documentId,
         CancellationToken cancellationToken = default)
     {
-        var results = await analysisRepository.GetByDocumentIdAsync(documentId, cancellationToken);
-        var analysisResult = results?.FirstOrDefault();
-        return analysisResult == null ? null : mapper.Map<AnalysisResultDto>(analysisResult);
+        logger.LogInformation("Retrieving analysis result for document ID: {DocumentId}", documentId);
+
+        try
+        {
+            var results = await analysisRepository.GetByDocumentIdAsync(documentId, cancellationToken);
+            var analysisResult = results?.FirstOrDefault();
+
+            if (analysisResult == null)
+            {
+                logger.LogWarning("No analysis result found for document ID: {DocumentId}", documentId);
+                return null;
+            }
+
+            logger.LogInformation("Successfully retrieved analysis result for document ID: {DocumentId}", documentId);
+            return mapper.Map<AnalysisResultDto>(analysisResult);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving analysis result for document ID: {DocumentId}", documentId);
+            throw;
+        }
     }
 
-    public async Task<AnalysisResultDto> EditGradeAsync(EditGradeCommand command,
+    public async Task<AnalysisResultDto?> EditGradeAsync(EditGradeCommand command,
         CancellationToken cancellationToken = default)
     {
-        var grade = await gradeRepository.GetByIdAsync(command.GradeId, cancellationToken);
-        if (grade == null)
-            throw new Exception("Grade not found.");
+        logger.LogInformation("Editing grade with ID: {GradeId}", command.GradeId);
 
-        grade.EditedGrade = command.EditedGrade;
-        grade.IsFinalized = command.IsFinalized;
-        await gradeRepository.UpdateAsync(grade, cancellationToken);
-
-        var analysisResults = await analysisRepository.GetByDocumentIdAsync(grade.DocumentId, cancellationToken);
-        var analysisResult = analysisResults?.FirstOrDefault();
-        if (analysisResult == null)
-            throw new Exception("Analysis result not found.");
-
-        return mapper.Map<AnalysisResultDto>(analysisResult);
-    }
-
-    public async Task<IEnumerable<AnalysisResultDto>> GetGradingResultsByAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken = default)
-    {
-        var documents = await documentRepository.GetDocumentsByAssignmentIdAsync(assignmentId, cancellationToken);
-        var allResults = new List<AnalysisResults>();
-
-        foreach (var doc in documents)
+        try
         {
-            var results = (List<AnalysisResults>?)await analysisRepository.GetByDocumentIdAsync(doc.Id, cancellationToken) ;
-            if (results is not null && results.Count != 0)
+            var grade = await gradeRepository.GetByIdAsync(command.GradeId, cancellationToken);
+            if (grade == null)
             {
-                allResults.AddRange(results);
+                logger.LogWarning("Grade not found with ID: {GradeId}", command.GradeId);
+                throw new Exception("Grade not found.");
             }
+
+            grade.EditedGrade = command.EditedGrade;
+            grade.IsFinalized = command.IsFinalized;
+            await gradeRepository.UpdateAsync(grade, cancellationToken);
+            logger.LogInformation("Updated grade ID: {GradeId} with edited grade: {EditedGrade}", 
+                grade.Id, grade.EditedGrade);
+
+            var analysisResults = await analysisRepository.GetByDocumentIdAsync(grade.DocumentId, cancellationToken);
+            var analysisResult = analysisResults?.FirstOrDefault();
+            if (analysisResult == null)
+            {
+                logger.LogWarning("Analysis result not found for document ID: {DocumentId}", grade.DocumentId);
+                throw new Exception("Analysis result not found.");
+            }
+
+            return mapper.Map<AnalysisResultDto>(analysisResult);
         }
-        return mapper.Map<IEnumerable<AnalysisResultDto>>(allResults);
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error editing grade with ID: {GradeId}", command.GradeId);
+            throw;
+        }
     }
 
-    public async Task<AnalysisResultDto> FinalizeGradeAsync(Guid gradeId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<AnalysisResultDto>> GetGradingResultsByAssignmentAsync(
+        Guid assignmentId, CancellationToken cancellationToken = default)
     {
-        var grade = await gradeRepository.GetByIdAsync(gradeId, cancellationToken);
-        if (grade is null)
-            throw new Exception("Grade not found.");
+        logger.LogInformation("Retrieving grading results for assignment ID: {AssignmentId}", assignmentId);
 
-        grade.IsFinalized = true;
-        await gradeRepository.UpdateAsync(grade, cancellationToken);
+        try
+        {
+            var documents = await documentRepository.GetDocumentsByAssignmentIdAsync(assignmentId, cancellationToken);
+            var allResults = new List<AnalysisResults>();
 
-        var analysisResults = (List<AnalysisResults>?)await analysisRepository.GetByDocumentIdAsync(grade.DocumentId, cancellationToken);
-        if (analysisResults is null || analysisResults.Count == 0)
-            throw new Exception("Associated analysis result not found.");
+            foreach (var doc in documents)
+            {
+                var results = (List<AnalysisResults>?)await analysisRepository.GetByDocumentIdAsync(doc.Id, cancellationToken);
+                if (results is not null && results.Count != 0)
+                {
+                    allResults.AddRange(results);
+                }
+            }
 
-        var finalizedAnalysis = analysisResults.First();
-        return mapper.Map<AnalysisResultDto>(finalizedAnalysis);
+            logger.LogInformation("Retrieved {Count} grading results for assignment ID: {AssignmentId}", 
+                allResults.Count, assignmentId);
+            return mapper.Map<IEnumerable<AnalysisResultDto>>(allResults);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving grading results for assignment ID: {AssignmentId}", assignmentId);
+            throw;
+        }
+    }
+
+    public async Task<AnalysisResultDto?> FinalizeGradeAsync(Guid gradeId,
+        CancellationToken cancellationToken = default)
+    {
+        logger.LogInformation("Finalizing grade with ID: {GradeId}", gradeId);
+
+        try
+        {
+            var grade = await gradeRepository.GetByIdAsync(gradeId, cancellationToken);
+            if (grade is null)
+            {
+                logger.LogWarning("Grade not found with ID: {GradeId}", gradeId);
+                throw new Exception("Grade not found.");
+            }
+
+            grade.IsFinalized = true;
+            await gradeRepository.UpdateAsync(grade, cancellationToken);
+            logger.LogInformation("Grade finalized with ID: {GradeId}", gradeId);
+
+            var analysisResults = (List<AnalysisResults>?)await analysisRepository
+                .GetByDocumentIdAsync(grade.DocumentId, cancellationToken);
+            if (analysisResults is null || analysisResults.Count == 0)
+            {
+                logger.LogWarning("No analysis results found for document ID: {DocumentId}", grade.DocumentId);
+                throw new Exception("Associated analysis result not found.");
+            }
+
+            return mapper.Map<AnalysisResultDto>(analysisResults.First());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error finalizing grade with ID: {GradeId}", gradeId);
+            throw;
+        }
     }
 }

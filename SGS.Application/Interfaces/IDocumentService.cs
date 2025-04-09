@@ -7,6 +7,6 @@ public interface IDocumentService
     Task<DocumentDto> UploadDocumentAsync(UploadDocumentCommand command, CancellationToken cancellationToken = default);
     Task<DocumentDto?> GetDocumentByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<DocumentDto>>
+    Task<IEnumerable<DocumentDto>?>
         GetDocumentsByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
 }

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
 using SGS.Application.Mappings;
 using SGS.Application.Services;
@@ -23,7 +24,7 @@ public static class ApplicationModule
         services.AddScoped<IGradingService, GradingService>();
         services.AddScoped<IAIService, SemanticKernelAiService>();
         services.AddScoped<IUserService, UserService>();
-        
+
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 

@@ -1,6 +1,82 @@
-@SGS.API_HostAddress = http://localhost:5296
+@baseUrl = http://localhost:5296/api
+@token = your_jwt_token_here
 
-GET {{SGS.API_HostAddress}}/weatherforecast/
-Accept: application/json
+// TODO: Find more about this
+### Auth
+
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Password123!",
+  "fullName": "Test User",
+  "role": "Student"
+}
+
+### 
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Password123!"
+}
 
 ###
+# @name refresh
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "your_refresh_token_here"
+}
+
+### Users
+
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{token}}
+
+###
+GET {{baseUrl}}/users/teachers
+
+###
+GET {{baseUrl}}/users/students
+
+### Criteria
+
+GET {{baseUrl}}/criteria/all
+
+###
+POST {{baseUrl}}/criteria/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Code Quality",
+  "description": "Evaluation of code quality standards",
+  "maxScore": 10
+}
+
+### Documents
+
+POST {{baseUrl}}/documents/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+Authorization: Bearer {{token}}
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="test.pdf"
+Content-Type: application/pdf
+
+< ./test.pdf
+------WebKitFormBoundary--
+
+### Grading
+
+GET {{baseUrl}}/grading/assignments/{{assignmentId}}
+
+###
+POST {{baseUrl}}/grading/analyze/{{documentId}}
+Authorization: Bearer {{token}}

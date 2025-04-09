@@ -30,8 +30,10 @@ public static class InfrastructureModule
 
     private static void AddContext(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        // TODO: Use in-memory database for testing
+        // For now just comment it out
+        // services.AddDbContext<AppDbContext>(options =>
+        //     options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<AppDbContext>();
     }
 }
