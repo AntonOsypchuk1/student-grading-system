@@ -27,7 +27,7 @@ public static class ApplicationModule
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
-        services.AddScoped<IFileStorageService>(provider =>
+        services.AddScoped<IFileStorageService>(_ =>
             new DiskFileStorageService(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads")));
     }
 

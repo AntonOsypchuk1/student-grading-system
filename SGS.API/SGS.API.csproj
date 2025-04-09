@@ -32,10 +32,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Middleware\"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\SGS.Application\SGS.Application.csproj"/>
         <ProjectReference Include="..\SGS.Infrastructure\SGS.Infrastructure.csproj"/>
     </ItemGroup>

@@ -2,8 +2,9 @@ namespace SGS.API.Settings;
 
 public class JwtSettings
 {
-    public string Secret { get; set; } = "MY_SUPER_SECRET_KEY_SHOULD_BE_LONG_AND_SECURE";
-    public int ExpirationInMinutes { get; set; } = 60;
-    public string Issuer { get; set; } = "SGS_API";
-    public string Audience { get; set; } = "SGS_CLIENTS";
+    public string Secret { get; init; } = string.Empty;
+    public string Issuer { get; init; } = string.Empty;
+    public string Audience { get; init; } = string.Empty;
+    public int ExpirationMinutes { get; init; }
+    public int RefreshTokenExpirationDays { get; init; }
 }

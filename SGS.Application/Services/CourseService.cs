@@ -9,7 +9,7 @@ namespace SGS.Application.Services;
 public class CourseService(ICourseRepository courseRepository, IUserRepository userRepository, IMapper mapper)
     : ICourseService
 {
-    // May be used to lookup teacher/student associations
+    // TODO: May be used to lookup teacher/student associations
     private readonly IUserRepository _userRepository = userRepository;
 
     public async Task<CourseDto> CreateCourseAsync(CreateCourseCommand command,
