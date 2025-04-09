@@ -12,6 +12,9 @@ public static class AuthExtensions
 {
     public static void AddAuthServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddScoped<ITokenService, JwtTokenService>();
+        services.AddScoped<JwtSettings>();
+
         var jwtSettingsSection = configuration.GetSection("JwtSettings");
         services.Configure<JwtSettings>(jwtSettingsSection);
         var jwtSettings = jwtSettingsSection.Get<JwtSettings>()!;
@@ -40,8 +43,6 @@ public static class AuthExtensions
             .AddAuthorizationBuilder()
             .AddPolicy("RequireTeacherRole", policy => policy.RequireRole("Teacher"))
             .AddPolicy("RequireStudentRole", policy => policy.RequireRole("Student"));
-
-        services.AddScoped<ITokenService, JwtTokenService>();
     }
 
     public static void AddSwaggerWithAuth(this IServiceCollection services)
