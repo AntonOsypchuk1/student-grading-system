@@ -4,17 +4,21 @@ using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 using SGS.Domain.Entities;
 using SGS.Domain.Enums;
+using SGS.Infrastructure.Data;
 using SGS.Infrastructure.Repositories.Interfaces;
+using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services;
 
 public class GradingCriteriaService(
-    IGradingCriteriaRepository criteriaRepository,
-    IUserRepository userRepository,
+    IUnitOfWork unitOfWork,
     ILogger<GradingCriteriaService> logger,
     IMapper mapper)
     : IGradingCriteriaService
 {
+    private readonly IGradingCriteriaRepository _criteriaRepository = unitOfWork.GradingCriteria;
+    private readonly IUserRepository _userRepository = unitOfWork.Users;
+    
     public async Task<GradingCriteriaDto> CreateCriteriaAsync
         (CreateGradingCriteriaCommand command, CancellationToken cancellationToken = default)
     {
@@ -22,7 +26,7 @@ public class GradingCriteriaService(
 
         try
         {
-            var user = await userRepository.GetByIdAsync(command.UserId, cancellationToken);
+            var user = await _userRepository.GetByIdAsync(command.UserId, cancellationToken);
             if (user is not { Role: UserRole.Teacher })
             {
                 logger.LogWarning("Unauthorized attempt to create criteria by user: {UserId}", command.UserId);
@@ -37,7 +41,7 @@ public class GradingCriteriaService(
                 CreatedAt = DateTime.UtcNow
             };
 
-            await criteriaRepository.CreateAsync(criteria, cancellationToken);
+            await _criteriaRepository.CreateAsync(criteria, cancellationToken);
             logger.LogInformation("Successfully created grading criteria with ID: {CriteriaId}", criteria.Id);
 
             return mapper.Map<GradingCriteriaDto>(criteria);
@@ -56,7 +60,7 @@ public class GradingCriteriaService(
 
         try
         {
-            var criteria = await criteriaRepository.GetByIdAsync(id, cancellationToken);
+            var criteria = await _criteriaRepository.GetByIdAsync(id, cancellationToken);
 
             if (criteria == null)
             {
@@ -81,7 +85,7 @@ public class GradingCriteriaService(
 
         try
         {
-            var criteriaList = await criteriaRepository.GetAllAsync(cancellationToken);
+            var criteriaList = await _criteriaRepository.GetAllAsync(cancellationToken);
             logger.LogInformation("Successfully retrieved {Count} grading criteria", 
                 criteriaList.Count());
 

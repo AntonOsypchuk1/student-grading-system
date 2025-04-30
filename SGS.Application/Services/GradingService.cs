@@ -3,19 +3,23 @@ using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 using SGS.Domain.Entities;
+using SGS.Infrastructure.Data;
 using SGS.Infrastructure.Repositories.Interfaces;
+using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services;
 
 public class GradingService(
-    IAnalysisResultsRepository analysisRepository,
-    IGradeRepository gradeRepository,
-    IDocumentRepository documentRepository,
+    IUnitOfWork unitOfWork,
     IAIService aiService,
     ILogger<GradingService> logger,
     IMapper mapper)
     : IGradingService
 {
+    private readonly IDocumentRepository _documentRepository = unitOfWork.Documents;
+    private readonly IAnalysisResultsRepository _analysisRepository = unitOfWork.AnalysisResults;
+    private readonly IGradeRepository _gradeRepository = unitOfWork.Grades;
+    
     public async Task<AnalysisResultDto?> AnalyzeDocumentAsync(Guid documentId,
         CancellationToken cancellationToken = default)
     {
@@ -23,7 +27,7 @@ public class GradingService(
 
         try
         {
-            var document = await documentRepository.GetByIdAsync(documentId, cancellationToken);
+            var document = await _documentRepository.GetByIdAsync(documentId, cancellationToken);
             if (document == null)
             {
                 logger.LogWarning("Document not found with ID: {DocumentId}", documentId);
@@ -41,7 +45,7 @@ public class GradingService(
                 EditedGrade = null,
                 IsFinalized = false
             };
-            await gradeRepository.CreateAsync(gradeEntity, cancellationToken);
+            await _gradeRepository.CreateAsync(gradeEntity, cancellationToken);
             logger.LogInformation("Created grade record with ID: {GradeId} for document: {DocumentId}",
                 gradeEntity.Id, documentId);
 
@@ -55,7 +59,7 @@ public class GradingService(
                 IsApproved = false,
                 CreatedAt = DateTime.UtcNow
             };
-            await analysisRepository.CreateAsync(analysisEntity, cancellationToken);
+            await _analysisRepository.CreateAsync(analysisEntity, cancellationToken);
             logger.LogInformation("Created analysis result with ID: {AnalysisId} for document: {DocumentId}",
                 analysisEntity.Id, documentId);
 
@@ -75,7 +79,7 @@ public class GradingService(
 
         try
         {
-            var results = await analysisRepository.GetByDocumentIdAsync(documentId, cancellationToken);
+            var results = await _analysisRepository.GetByDocumentIdAsync(documentId, cancellationToken);
             var analysisResult = results?.FirstOrDefault();
 
             if (analysisResult == null)
@@ -101,7 +105,7 @@ public class GradingService(
 
         try
         {
-            var grade = await gradeRepository.GetByIdAsync(command.GradeId, cancellationToken);
+            var grade = await _gradeRepository.GetByIdAsync(command.GradeId, cancellationToken);
             if (grade == null)
             {
                 logger.LogWarning("Grade not found with ID: {GradeId}", command.GradeId);
@@ -110,11 +114,11 @@ public class GradingService(
 
             grade.EditedGrade = command.EditedGrade;
             grade.IsFinalized = command.IsFinalized;
-            await gradeRepository.UpdateAsync(grade, cancellationToken);
+            _gradeRepository.Update(grade);
             logger.LogInformation("Updated grade ID: {GradeId} with edited grade: {EditedGrade}", 
                 grade.Id, grade.EditedGrade);
 
-            var analysisResults = await analysisRepository.GetByDocumentIdAsync(grade.DocumentId, cancellationToken);
+            var analysisResults = await _analysisRepository.GetByDocumentIdAsync(grade.DocumentId, cancellationToken);
             var analysisResult = analysisResults?.FirstOrDefault();
             if (analysisResult == null)
             {
@@ -138,12 +142,12 @@ public class GradingService(
 
         try
         {
-            var documents = await documentRepository.GetDocumentsByAssignmentIdAsync(assignmentId, cancellationToken);
+            var documents = await _documentRepository.GetDocumentsByAssignmentIdAsync(assignmentId, cancellationToken);
             var allResults = new List<AnalysisResults>();
 
             foreach (var doc in documents)
             {
-                var results = (List<AnalysisResults>?)await analysisRepository.GetByDocumentIdAsync(doc.Id, cancellationToken);
+                var results = (List<AnalysisResults>?)await _analysisRepository.GetByDocumentIdAsync(doc.Id, cancellationToken);
                 if (results is not null && results.Count != 0)
                 {
                     allResults.AddRange(results);
@@ -168,7 +172,7 @@ public class GradingService(
 
         try
         {
-            var grade = await gradeRepository.GetByIdAsync(gradeId, cancellationToken);
+            var grade = await _gradeRepository.GetByIdAsync(gradeId, cancellationToken);
             if (grade is null)
             {
                 logger.LogWarning("Grade not found with ID: {GradeId}", gradeId);
@@ -176,10 +180,10 @@ public class GradingService(
             }
 
             grade.IsFinalized = true;
-            await gradeRepository.UpdateAsync(grade, cancellationToken);
+            _gradeRepository.Update(grade);
             logger.LogInformation("Grade finalized with ID: {GradeId}", gradeId);
 
-            var analysisResults = (List<AnalysisResults>?)await analysisRepository
+            var analysisResults = (List<AnalysisResults>?)await _analysisRepository
                 .GetByDocumentIdAsync(grade.DocumentId, cancellationToken);
             if (analysisResults is null || analysisResults.Count == 0)
             {

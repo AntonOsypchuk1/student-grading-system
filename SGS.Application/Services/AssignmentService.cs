@@ -3,16 +3,20 @@ using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 using SGS.Domain.Entities;
+using SGS.Infrastructure.Data;
 using SGS.Infrastructure.Repositories.Interfaces;
+using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services;
 
 public class AssignmentService(
-    IAssignmentRepository assignmentRepository,
+    IUnitOfWork unitOfWork,
     ILogger<AssignmentService> logger,
     IMapper mapper)
     : IAssignmentService
 {
+    private readonly IAssignmentRepository _assignmentRepository = unitOfWork.Assignments;
+    
     public async Task<AssignmentDto> CreateAssignmentAsync(CreateAssignmentCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -31,7 +35,7 @@ public class AssignmentService(
                 CourseId = command.CourseId
             };
 
-            await assignmentRepository.CreateAsync(assignment, cancellationToken);
+            await _assignmentRepository.CreateAsync(assignment, cancellationToken);
             logger.LogInformation("Successfully created assignment with ID: {AssignmentId}", assignment.Id);
         
             return mapper.Map<AssignmentDto>(assignment);
@@ -50,7 +54,7 @@ public class AssignmentService(
 
         try
         {
-            var assignment = await assignmentRepository.GetByIdAsync(assignmentId, cancellationToken);
+            var assignment = await _assignmentRepository.GetByIdAsync(assignmentId, cancellationToken);
             if (assignment == null)
             {
                 logger.LogWarning("Assignment not found with ID: {AssignmentId}", assignmentId);
@@ -74,7 +78,7 @@ public class AssignmentService(
 
         try
         {
-            var assignments = await assignmentRepository.GetByGroupIdAsync(groupId, cancellationToken);
+            var assignments = await _assignmentRepository.GetByGroupIdAsync(groupId, cancellationToken);
             logger.LogInformation("Successfully retrieved {Count} assignments for group: {GroupId}", 
                 assignments.Count(), groupId);
 

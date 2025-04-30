@@ -3,17 +3,21 @@ using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 using SGS.Domain.Entities;
+using SGS.Infrastructure.Data;
 using SGS.Infrastructure.Repositories.Interfaces;
+using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services;
 
 public class DocumentService(
-    IDocumentRepository documentRepository,
+    IUnitOfWork unitOfWork,
     IFileStorageService fileStorageService,
     ILogger<DocumentService> logger,
     IMapper mapper)
     : IDocumentService
 {
+    private readonly IDocumentRepository _documentRepository = unitOfWork.Documents;
+    
     public async Task<DocumentDto> UploadDocumentAsync(UploadDocumentCommand command,
         CancellationToken cancellationToken = default)
     {
@@ -30,7 +34,7 @@ public class DocumentService(
             document.FilePath = filePath;
             document.UploadedAt = DateTime.UtcNow;
 
-            await documentRepository.CreateAsync(document, cancellationToken);
+            await _documentRepository.CreateAsync(document, cancellationToken);
             logger.LogInformation("Document record created with ID: {DocumentId}", document.Id);
 
             return mapper.Map<DocumentDto>(document);
@@ -49,7 +53,7 @@ public class DocumentService(
 
         try
         {
-            var document = await documentRepository.GetByIdAsync(id, cancellationToken);
+            var document = await _documentRepository.GetByIdAsync(id, cancellationToken);
 
             if (document == null)
             {
@@ -74,7 +78,7 @@ public class DocumentService(
 
         try
         {
-            var documents = await documentRepository.GetDocumentsByUserIdAsync(userId, cancellationToken);
+            var documents = await _documentRepository.GetDocumentsByUserIdAsync(userId, cancellationToken);
             logger.LogInformation("Successfully retrieved {Count} documents for user: {UserId}",
                 documents?.Count() ?? 0, userId);
 

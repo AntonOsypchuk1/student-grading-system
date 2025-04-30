@@ -1,23 +1,27 @@
 using AutoMapper;
 using SGS.Application.DTOs;
+using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
 using SGS.Domain.Entities;
 using SGS.Domain.Enums;
+using SGS.Infrastructure.Data;
 using SGS.Infrastructure.Repositories.Interfaces;
-using SGS.Application.Helpers;
+using SGS.Infrastructure.Repositories.UnitOfWork;
 
-namespace SGS.Application.Services;
+namespace SGS.Application.Services.Auth;
 
 public class AuthService(
-    IUserRepository userRepository,
+    IUnitOfWork unitOfWork,
     IMapper mapper,
     ITokenService tokenService,
     IRefreshTokenService refreshTokenService)
     : IAuthService
 {
+    private readonly IUserRepository _userRepository = unitOfWork.Users;
+    
     public async Task<AuthResponseDto> LoginAsync(string email, string password, CancellationToken cancellationToken = default)
     {
-        var user = await userRepository.GetByEmailAsync(email, cancellationToken);
+        var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
         if (user == null || !PasswordHelper.VerifyPassword(password, user.PasswordHash))
             throw new Exception("Invalid credentials.");
 
@@ -35,7 +39,7 @@ public class AuthService(
 
     public async Task<UserDto> RegisterUserAsync(RegisterUserCommand command, CancellationToken cancellationToken = default)
     {
-        var existingUser = await userRepository.GetByEmailAsync(command.Email, cancellationToken);
+        var existingUser = await _userRepository.GetByEmailAsync(command.Email, cancellationToken);
         if (existingUser != null)
             throw new Exception("User with this email already exists.");
 
@@ -53,7 +57,7 @@ public class AuthService(
             Role = role
         };
 
-        await userRepository.CreateAsync(user, cancellationToken);
+        await _userRepository.CreateAsync(user, cancellationToken);
         return mapper.Map<UserDto>(user);
     }
 }

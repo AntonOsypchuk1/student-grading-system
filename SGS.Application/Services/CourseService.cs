@@ -3,19 +3,21 @@ using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 using SGS.Domain.Entities;
+using SGS.Infrastructure.Data;
 using SGS.Infrastructure.Repositories.Interfaces;
+using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services;
 
 public class CourseService(
-    ICourseRepository courseRepository,
-    IUserRepository userRepository,
+    IUnitOfWork unitOfWork,
     ILogger<CourseService> logger,
     IMapper mapper)
     : ICourseService
 {
     // TODO: May be used to lookup teacher/student associations
-    private readonly IUserRepository _userRepository = userRepository;
+    private readonly IUserRepository _userRepository = unitOfWork.Users;
+    private readonly ICourseRepository _courseRepository = unitOfWork.Courses;
 
     public async Task<CourseDto> CreateCourseAsync(CreateCourseCommand command,
         CancellationToken cancellationToken = default)
@@ -30,7 +32,7 @@ public class CourseService(
                 Description = command.Description
             };
 
-            await courseRepository.CreateAsync(course, cancellationToken);
+            await _courseRepository.CreateAsync(course, cancellationToken);
             logger.LogInformation("Successfully created course with ID: {CourseId}", course.Id);
 
             return mapper.Map<CourseDto>(course);
@@ -48,7 +50,7 @@ public class CourseService(
 
         try
         {
-            var course = await courseRepository.GetByIdAsync(courseId, cancellationToken);
+            var course = await _courseRepository.GetByIdAsync(courseId, cancellationToken);
 
             if (course == null)
             {
@@ -73,7 +75,7 @@ public class CourseService(
 
         try
         {
-            var courses = await courseRepository.GetByTeacherIdAsync(teacherId, cancellationToken);
+            var courses = await _courseRepository.GetByTeacherIdAsync(teacherId, cancellationToken);
             logger.LogInformation("Successfully retrieved {Count} courses for teacher: {TeacherId}", 
                 courses.Count(), teacherId);
 
@@ -95,7 +97,7 @@ public class CourseService(
 
         try
         {
-            var courses = await courseRepository.GetByStudentIdAsync(studentId, cancellationToken);
+            var courses = await _courseRepository.GetByStudentIdAsync(studentId, cancellationToken);
             logger.LogInformation("Successfully retrieved {Count} courses for student: {StudentId}", 
                 courses.Count(), studentId);
 

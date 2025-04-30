@@ -1,12 +1,16 @@
 using System.Security.Cryptography;
 using SGS.Application.Interfaces;
 using SGS.Domain.Entities;
+using SGS.Infrastructure.Data;
 using SGS.Infrastructure.Repositories.Interfaces;
+using SGS.Infrastructure.Repositories.UnitOfWork;
 
-namespace SGS.Application.Services;
+namespace SGS.Application.Services.Auth;
 
-public class RefreshTokenService(IRefreshTokenRepository refreshTokenRepository) : IRefreshTokenService
+public class RefreshTokenService(IUnitOfWork unitOfWork) : IRefreshTokenService
 {
+    private readonly IRefreshTokenRepository _refreshTokenRepository = unitOfWork.RefreshTokens;
+    
     public async Task<RefreshToken> CreateRefreshTokenAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var refreshToken = new RefreshToken
@@ -17,13 +21,13 @@ public class RefreshTokenService(IRefreshTokenRepository refreshTokenRepository)
             Expires = DateTime.UtcNow.AddDays(1)
         };
 
-        await refreshTokenRepository.CreateAsync(refreshToken, cancellationToken);
+        await _refreshTokenRepository.CreateAsync(refreshToken, cancellationToken);
         return refreshToken;
     }
 
     public async Task<RefreshToken?> GetRefreshTokenAsync(string token, CancellationToken cancellationToken = default)
     {
-        return await refreshTokenRepository.GetByTokenAsync(token, cancellationToken);
+        return await _refreshTokenRepository.GetByTokenAsync(token, cancellationToken);
     }
 
     public async Task RevokeRefreshTokenAsync(string token, CancellationToken cancellationToken = default)
@@ -32,7 +36,7 @@ public class RefreshTokenService(IRefreshTokenRepository refreshTokenRepository)
         if (refreshToken is { IsActive: true })
         {
             refreshToken.Revoked = DateTime.UtcNow;
-            await refreshTokenRepository.UpdateAsync(refreshToken, cancellationToken);
+            _refreshTokenRepository.Update(refreshToken);
         }
     }
 

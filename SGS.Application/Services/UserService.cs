@@ -3,16 +3,20 @@ using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 using SGS.Domain.Enums;
+using SGS.Infrastructure.Data;
 using SGS.Infrastructure.Repositories.Interfaces;
+using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services;
 
 public class UserService(
-    IUserRepository userRepository,
+    IUnitOfWork unitOfWork,
     ILogger<UserService> logger,
     IMapper mapper)
     : IUserService
 {
+    private readonly IUserRepository _userRepository = unitOfWork.Users;
+    
     public async Task<UserDto?> GetUserByEmailAsync(string email,
         CancellationToken cancellationToken = default)
     {
@@ -20,7 +24,7 @@ public class UserService(
 
         try
         {
-            var user = await userRepository.GetByEmailAsync(email, cancellationToken);
+            var user = await _userRepository.GetByEmailAsync(email, cancellationToken);
             
             if (user == null)
             {
@@ -45,7 +49,7 @@ public class UserService(
 
         try
         {
-            var teachers = await userRepository.GetByRoleAsync(UserRole.Teacher, cancellationToken);
+            var teachers = await _userRepository.GetByRoleAsync(UserRole.Teacher, cancellationToken);
             logger.LogInformation("Successfully retrieved {Count} teachers", teachers.Count());
 
             return mapper.Map<IEnumerable<UserDto>>(teachers);
@@ -64,7 +68,7 @@ public class UserService(
 
         try
         {
-            var students = await userRepository.GetByRoleAsync(UserRole.Student, cancellationToken);
+            var students = await _userRepository.GetByRoleAsync(UserRole.Student, cancellationToken);
             logger.LogInformation("Successfully retrieved {Count} students", students.Count());
 
             return mapper.Map<IEnumerable<UserDto>>(students);
@@ -83,7 +87,7 @@ public class UserService(
 
         try
         {
-            var groupStudents = await userRepository.GetStudentsByGroupAsync(groupId, cancellationToken);
+            var groupStudents = await _userRepository.GetStudentsByGroupAsync(groupId, cancellationToken);
             logger.LogInformation("Successfully retrieved {Count} students for group: {GroupId}",
                 groupStudents.Count(), groupId);
 
