@@ -12,7 +12,6 @@ public class AssignmentRepository(AppDbContext context)
     public async Task<IEnumerable<Assignment>> GetByGroupIdAsync(Guid groupId,
         CancellationToken cancellationToken = default)
     {
-        var assignments = await Context.Assignments.ToListAsync(cancellationToken);
         return await Context.Assignments
             .Where(a => a.GroupId == groupId)
             .ToListAsync(cancellationToken);

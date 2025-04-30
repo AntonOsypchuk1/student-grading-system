@@ -11,6 +11,7 @@ public class UserRepository(AppDbContext context) : BaseRepository<User>(context
 {
     public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
+        var users = await Context.Users.ToListAsync(cancellationToken);
         return await Context.Users
             .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
     }

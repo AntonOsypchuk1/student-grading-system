@@ -12,23 +12,16 @@ public class BaseRepository<TEntity>(AppDbContext context) : IBaseRepository<TEn
     public async Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         await Context.Set<TEntity>().AddAsync(entity, cancellationToken);
-        await Context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public void Update(TEntity entity)
     {
         Context.Set<TEntity>().Update(entity);
-        await Context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public void Delete(TEntity entity)
     {
-        var existingEntity = await GetByIdAsync(entity.Id, cancellationToken);
-        if (existingEntity != null)
-        {
-            Context.Set<TEntity>().Remove(existingEntity);
-            await Context.SaveChangesAsync(cancellationToken);
-        }
+        Context.Set<TEntity>().Remove(entity);
     }
 
     public async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
