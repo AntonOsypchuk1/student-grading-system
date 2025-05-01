@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
+using SGS.Application.Services.Bases;
 using SGS.Domain.Entities;
 using SGS.Domain.Enums;
 using SGS.Infrastructure.Data;
@@ -14,66 +15,66 @@ public class GradingCriteriaService(
     IUnitOfWork unitOfWork,
     ILogger<GradingCriteriaService> logger,
     IMapper mapper)
-    : IGradingCriteriaService
+    : BaseService(unitOfWork, logger, mapper), IGradingCriteriaService
 {
-    private readonly IGradingCriteriaRepository _criteriaRepository = unitOfWork.GradingCriteria;
-    private readonly IUserRepository _userRepository = unitOfWork.Users;
-    
     public async Task<GradingCriteriaDto> CreateCriteriaAsync
         (CreateGradingCriteriaCommand command, CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Creating grading criteria for user: {UserId}", command.UserId);
-
-        try
+        return await ExecuteInTransactionAsync(async () =>
         {
-            var user = await _userRepository.GetByIdAsync(command.UserId, cancellationToken);
-            if (user is not { Role: UserRole.Teacher })
+            Logger.LogInformation("Creating grading criteria for user: {UserId}", command.UserId);
+
+            try
             {
-                logger.LogWarning("Unauthorized attempt to create criteria by user: {UserId}", command.UserId);
-                throw new Exception("Only teachers can create grading criteria.");
+                var user = await UnitOfWork.Users.GetByIdAsync(command.UserId, cancellationToken);
+                if (user is not { Role: UserRole.Teacher })
+                {
+                    Logger.LogWarning("Unauthorized attempt to create criteria by user: {UserId}", command.UserId);
+                    throw new Exception("Only teachers can create grading criteria.");
+                }
+
+                var criteria = new GradingCriteria
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = command.UserId,
+                    CriteriaDescription = command.CriteriaDescription,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await UnitOfWork.GradingCriteria.CreateAsync(criteria, cancellationToken);
+                Logger.LogInformation("Successfully created grading criteria with ID: {CriteriaId}", criteria.Id);
+
+                return Mapper.Map<GradingCriteriaDto>(criteria);
             }
-
-            var criteria = new GradingCriteria
+            catch (Exception ex)
             {
-                Id = Guid.NewGuid(),
-                UserId = command.UserId,
-                CriteriaDescription = command.CriteriaDescription,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _criteriaRepository.CreateAsync(criteria, cancellationToken);
-            logger.LogInformation("Successfully created grading criteria with ID: {CriteriaId}", criteria.Id);
-
-            return mapper.Map<GradingCriteriaDto>(criteria);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error creating grading criteria for user: {UserId}", command.UserId);
-            throw;
-        }
+                Logger.LogError(ex, "Error creating grading criteria for user: {UserId}", command.UserId);
+                throw;
+            }
+        }, cancellationToken);
     }
 
     public async Task<GradingCriteriaDto?> GetCriteriaByIdAsync
         (Guid id, CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Retrieving grading criteria with ID: {CriteriaId}", id);
+        Logger.LogInformation("Retrieving grading criteria with ID: {CriteriaId}", id);
 
         try
         {
-            var criteria = await _criteriaRepository.GetByIdAsync(id, cancellationToken);
+            var criteria = await UnitOfWork.GradingCriteria.GetByIdAsync(id, cancellationToken);
 
             if (criteria == null)
             {
-                logger.LogWarning("Grading criteria not found with ID: {CriteriaId}", id);
+                Logger.LogWarning("Grading criteria not found with ID: {CriteriaId}", id);
                 return null;
             }
 
-            logger.LogInformation("Successfully retrieved grading criteria with ID: {CriteriaId}", id);
-            return mapper.Map<GradingCriteriaDto>(criteria);
+            Logger.LogInformation("Successfully retrieved grading criteria with ID: {CriteriaId}", id);
+            return Mapper.Map<GradingCriteriaDto>(criteria);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error retrieving grading criteria with ID: {CriteriaId}", id);
+            Logger.LogError(ex, "Error retrieving grading criteria with ID: {CriteriaId}", id);
             throw;
         }
     }
@@ -81,19 +82,19 @@ public class GradingCriteriaService(
     public async Task<IEnumerable<GradingCriteriaDto>> GetAllCriteriaAsync
         (CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Retrieving all grading criteria");
+        Logger.LogInformation("Retrieving all grading criteria");
 
         try
         {
-            var criteriaList = await _criteriaRepository.GetAllAsync(cancellationToken);
-            logger.LogInformation("Successfully retrieved {Count} grading criteria", 
+            var criteriaList = await UnitOfWork.GradingCriteria.GetAllAsync(cancellationToken);
+            Logger.LogInformation("Successfully retrieved {Count} grading criteria", 
                 criteriaList.Count());
 
-            return mapper.Map<IEnumerable<GradingCriteriaDto>>(criteriaList);
+            return Mapper.Map<IEnumerable<GradingCriteriaDto>>(criteriaList);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error retrieving all grading criteria");
+            Logger.LogError(ex, "Error retrieving all grading criteria");
             throw;
         }
     }

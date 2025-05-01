@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
+using SGS.Application.Services.Bases;
 using SGS.Domain.Entities;
 using SGS.Infrastructure.Data;
 using SGS.Infrastructure.Repositories.Interfaces;
@@ -13,57 +14,61 @@ public class CourseService(
     IUnitOfWork unitOfWork,
     ILogger<CourseService> logger,
     IMapper mapper)
-    : ICourseService
+    : BaseService(unitOfWork, logger, mapper), ICourseService
 {
-    // TODO: May be used to lookup teacher/student associations
-    private readonly IUserRepository _userRepository = unitOfWork.Users;
-    private readonly ICourseRepository _courseRepository = unitOfWork.Courses;
+    /*
+     TODO: May be used to lookup teacher/student associations
+     private readonly IUserRepository _userRepository = unitOfWork.Users;
+    */
 
     public async Task<CourseDto> CreateCourseAsync(CreateCourseCommand command,
         CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Creating course with title: {Title}", command.Title);
-        try
+        return await ExecuteInTransactionAsync(async () =>
         {
-            var course = new Course
+            Logger.LogInformation("Creating course with title: {Title}", command.Title);
+            try
             {
-                Id = Guid.NewGuid(),
-                Title = command.Title,
-                Description = command.Description
-            };
+                var course = new Course
+                {
+                    Id = Guid.NewGuid(),
+                    Title = command.Title,
+                    Description = command.Description
+                };
 
-            await _courseRepository.CreateAsync(course, cancellationToken);
-            logger.LogInformation("Successfully created course with ID: {CourseId}", course.Id);
+                await UnitOfWork.Courses.CreateAsync(course, cancellationToken);
+                Logger.LogInformation("Successfully created course with ID: {CourseId}", course.Id);
 
-            return mapper.Map<CourseDto>(course);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error creating course with title: {Title}", command.Title);
-            throw;
-        }
+                return Mapper.Map<CourseDto>(course);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error creating course with title: {Title}", command.Title);
+                throw;
+            }
+        }, cancellationToken);
     }
 
     public async Task<CourseDto?> GetCourseByIdAsync(Guid courseId, CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Retrieving course with ID: {CourseId}", courseId);
+        Logger.LogInformation("Retrieving course with ID: {CourseId}", courseId);
 
         try
         {
-            var course = await _courseRepository.GetByIdAsync(courseId, cancellationToken);
+            var course = await UnitOfWork.Courses.GetByIdAsync(courseId, cancellationToken);
 
             if (course == null)
             {
-                logger.LogWarning("Course not found with ID: {CourseId}", courseId);
+                Logger.LogWarning("Course not found with ID: {CourseId}", courseId);
                 return null;
             }
 
-            logger.LogInformation("Successfully retrieved course with ID: {CourseId}", courseId);
-            return mapper.Map<CourseDto>(course);
+            Logger.LogInformation("Successfully retrieved course with ID: {CourseId}", courseId);
+            return Mapper.Map<CourseDto>(course);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error retrieving course with ID: {CourseId}", courseId);
+            Logger.LogError(ex, "Error retrieving course with ID: {CourseId}", courseId);
             throw;
         }
     }
@@ -71,19 +76,19 @@ public class CourseService(
     public async Task<IEnumerable<CourseDto>> GetCoursesByTeacherAsync(Guid teacherId,
         CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Retrieving courses for teacher with ID: {TeacherId}", teacherId);
+        Logger.LogInformation("Retrieving courses for teacher with ID: {TeacherId}", teacherId);
 
         try
         {
-            var courses = await _courseRepository.GetByTeacherIdAsync(teacherId, cancellationToken);
-            logger.LogInformation("Successfully retrieved {Count} courses for teacher: {TeacherId}", 
+            var courses = await UnitOfWork.Courses.GetByTeacherIdAsync(teacherId, cancellationToken);
+            Logger.LogInformation("Successfully retrieved {Count} courses for teacher: {TeacherId}", 
                 courses.Count(), teacherId);
 
-            return mapper.Map<IEnumerable<CourseDto>>(courses);
+            return Mapper.Map<IEnumerable<CourseDto>>(courses);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error retrieving courses for teacher with ID: {TeacherId}", teacherId);
+            Logger.LogError(ex, "Error retrieving courses for teacher with ID: {TeacherId}", teacherId);
             throw;
         }
     }
@@ -93,19 +98,19 @@ public class CourseService(
     {
         // For simplicity, we assume that the student is associated with one or more groups,
         // and groups are associated with courses via a many-to-many relationship.
-        logger.LogInformation("Retrieving courses for student with ID: {StudentId}", studentId);
+        Logger.LogInformation("Retrieving courses for student with ID: {StudentId}", studentId);
 
         try
         {
-            var courses = await _courseRepository.GetByStudentIdAsync(studentId, cancellationToken);
-            logger.LogInformation("Successfully retrieved {Count} courses for student: {StudentId}", 
+            var courses = await UnitOfWork.Courses.GetByStudentIdAsync(studentId, cancellationToken);
+            Logger.LogInformation("Successfully retrieved {Count} courses for student: {StudentId}", 
                 courses.Count(), studentId);
 
-            return mapper.Map<IEnumerable<CourseDto>>(courses);
+            return Mapper.Map<IEnumerable<CourseDto>>(courses);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error retrieving courses for student with ID: {StudentId}", studentId);
+            Logger.LogError(ex, "Error retrieving courses for student with ID: {StudentId}", studentId);
             throw;
         }
     }

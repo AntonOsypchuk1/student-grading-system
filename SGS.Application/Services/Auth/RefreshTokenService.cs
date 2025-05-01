@@ -1,7 +1,6 @@
 using System.Security.Cryptography;
 using SGS.Application.Interfaces;
 using SGS.Domain.Entities;
-using SGS.Infrastructure.Data;
 using SGS.Infrastructure.Repositories.Interfaces;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 
