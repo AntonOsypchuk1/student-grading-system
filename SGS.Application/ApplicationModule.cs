@@ -3,6 +3,7 @@ using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
 using SGS.Application.Mappings;
 using SGS.Application.Services;
+using SGS.Application.Services.Auth;
 
 namespace SGS.Application;
 

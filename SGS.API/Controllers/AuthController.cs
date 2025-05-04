@@ -30,7 +30,6 @@ public class AuthController(
         {
             var userDto = await authService.RegisterUserAsync(command);
             return CreatedAtAction(nameof(Login), new { id = userDto.Id }, userDto);
-            // return Ok(userDto);
         }
         catch (InvalidOperationException ex)
         {

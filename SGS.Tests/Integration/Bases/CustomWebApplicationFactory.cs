@@ -1,47 +1,66 @@
-using System.Data.Common;
-using Microsoft.AspNetCore.Hosting;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SGS.Infrastructure.Data;
 using SGS.Tests.Mocks;
 
 namespace SGS.Tests.Integration.Bases;
 
-public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
+public class CustomWebApplicationFactory<TStartup>
+    : WebApplicationFactory<TStartup> where TStartup : class
 {
-    // TODO: Find out how to override the DbContext to use the in-memory database.
-    // TODO: Find out how to override the JWT authentication to use a test token.
     protected override IHost CreateHost(IHostBuilder builder)
     {
         builder.ConfigureServices(services =>
         {
-            // Remove all registrations for DbContextOptions<AppDbContext>
-            services.RemoveAll(typeof(DbContextOptions<AppDbContext>));
-
-            // Remove any DbConnection registrations if they exist.
-            services.RemoveAll<DbConnection>();
-            
-            services.AddDbContext<AppDbContext>(options =>
-            {
-                options.UseInMemoryDatabase($"TestDb");
-            });
+            services.RemoveAll<AuthenticationSchemeOptions>();
+            services.AddAuthentication("Test")
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                    "Test", opts => { });
             
             var sp = services.BuildServiceProvider();
-            
-            using (var scope = sp.CreateScope())
-            {
-                var scopedServices = scope.ServiceProvider;
-                var db = scopedServices.GetRequiredService<AppDbContext>();
-                db.Database.EnsureCreated();
+
+            using var scope = sp.CreateScope();
+            var scopedServices = scope.ServiceProvider;
+            var db = scopedServices.GetRequiredService<AppDbContext>();
+            db.Database.EnsureCreated();
                 
-                TestDataSeeder.Seed(db);
-                db.SaveChanges();
-            }
-        });
+            TestDataSeeder.Seed(db);
+            db.SaveChanges();
+        }).UseEnvironment("Testing");
         
         return base.CreateHost(builder);
+    }
+    
+    public class TestAuthHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder,
+        TimeProvider timeProvider)
+        : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
+    {
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            var claims = new List<Claim>
+            {
+                new(JwtRegisteredClaimNames.Sub, "test-user-id"),
+                new("fullname", "Test User"),
+                new(JwtRegisteredClaimNames.Email, "test@example.com"),
+                new("role", "Administrator")
+            };
+            
+            var identity = new ClaimsIdentity(claims, "Test");
+            var principal = new ClaimsPrincipal(identity);
+            var ticket = new AuthenticationTicket(principal, "Test");
+            
+            return Task.FromResult(AuthenticateResult.Success(ticket));
+        }
     }
 }

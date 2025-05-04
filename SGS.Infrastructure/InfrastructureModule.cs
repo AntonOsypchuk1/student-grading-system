@@ -1,17 +1,22 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SGS.Infrastructure.Data;
 using SGS.Infrastructure.Repositories;
 using SGS.Infrastructure.Repositories.Interfaces;
+using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Infrastructure;
 
 public static class InfrastructureModule
 {
-    public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static void AddInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
-        services.AddContext(configuration);
+        services.AddContext(configuration, environment);
         services.AddPersistence();
     }
 
@@ -26,14 +31,26 @@ public static class InfrastructureModule
         services.AddScoped<IGradingCriteriaRepository, GradingCriteriaRepository>();
         services.AddScoped<IStudentsGroupRepository, StudentsGroupRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
 
-    private static void AddContext(this IServiceCollection services, IConfiguration configuration)
+    private static void AddContext(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment env)
     {
-        // TODO: Use in-memory database for testing
-        // For now just comment it out
-        // services.AddDbContext<AppDbContext>(options =>
-        //     options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        services.AddDbContext<AppDbContext>(options =>
+        {
+            if (env.EnvironmentName == "Testing")
+            {
+                options.UseInMemoryDatabase("TestDb");
+            }
+            else
+            {
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+            }
+        });
         services.AddScoped<AppDbContext>();
     }
 }

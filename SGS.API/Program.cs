@@ -5,6 +5,8 @@ using SGS.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// builder.WebHost.UseUrls("http://0.0.0.0:5296");
+
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
@@ -12,7 +14,7 @@ builder.Logging.AddDebug();
 
 builder.Services.AddAuthServices(builder.Configuration);
 
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddApplication();
 builder.Services.AddControllers();
 
