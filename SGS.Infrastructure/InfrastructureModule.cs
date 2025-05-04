@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,9 +11,12 @@ namespace SGS.Infrastructure;
 
 public static class InfrastructureModule
 {
-    public static void AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static void AddInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
-        services.AddContext(configuration);
+        services.AddContext(configuration, environment);
         services.AddPersistence();
     }
 
@@ -31,12 +35,22 @@ public static class InfrastructureModule
         services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
 
-    private static void AddContext(this IServiceCollection services, IConfiguration configuration)
+    private static void AddContext(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IWebHostEnvironment env)
     {
-        // TODO: Use in-memory database for testing
-        // For tests just comment it out
         services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        {
+            if (env.EnvironmentName == "Testing")
+            {
+                options.UseInMemoryDatabase("TestDb");
+            }
+            else
+            {
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+            }
+        });
         services.AddScoped<AppDbContext>();
     }
 }

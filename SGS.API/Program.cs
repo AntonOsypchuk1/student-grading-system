@@ -14,7 +14,7 @@ builder.Logging.AddDebug();
 
 builder.Services.AddAuthServices(builder.Configuration);
 
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddApplication();
 builder.Services.AddControllers();
 
