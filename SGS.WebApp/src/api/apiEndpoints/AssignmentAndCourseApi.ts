@@ -7,6 +7,11 @@ export const createAssignment = async (data: CreateAssignmentCommand): Promise<A
   return response.data;
 };
 
+export const getAssignments = async (): Promise<AssignmentDto[]> => {
+  const response = await api.get<AssignmentDto[]>(`/assignments`);
+  return response.data;
+}
+
 export const getAssignmentById = async (id: string): Promise<AssignmentDto> => {
   const response = await api.get<AssignmentDto>(`/assignments/${id}`);
   return response.data;
