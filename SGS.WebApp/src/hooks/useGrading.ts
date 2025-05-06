@@ -1,5 +1,5 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import * as gradingApi from "../services/apiEndpoints/GradingAndAnalysisApi";
+import * as gradingApi from "../api/apiEndpoints/GradingAndAnalysisApi";
 import {EditGradeCommand} from "../types/GradingTypes";
 
 export const useGrading = (docId?: string, assignmentId?: string) => {

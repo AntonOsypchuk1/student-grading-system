@@ -1,6 +1,6 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {CreateGradingCriteriaCommand} from "../types/GradingCriteriaTypes";
-import * as criteriaApi from "../services/apiEndpoints/GradingCriteriaApi";
+import * as criteriaApi from "../api/apiEndpoints/GradingCriteriaApi";
 
 export const useCriteria = (id?: string) => {
   const queryClient = useQueryClient();

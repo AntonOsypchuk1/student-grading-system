@@ -1,6 +1,6 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {CreateAssignmentCommand} from "../types/AssignmentTypes";
-import * as assignmentApi from "../services/apiEndpoints/AssignmentAndCourseApi"
+import * as assignmentApi from "../api/apiEndpoints/AssignmentAndCourseApi"
 
 interface UseAssignmentProps {
   assignmentId: string;

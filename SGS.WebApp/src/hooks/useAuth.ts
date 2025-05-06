@@ -1,7 +1,7 @@
 import {LoginDto, RegisterUserCommand} from "../types/AuthenticationTypes.ts";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import * as authApi from "../services/apiEndpoints/AuthApi.ts";
-import * as userApi from "../services/apiEndpoints/UserApi.ts";
+import * as authApi from "../api/apiEndpoints/AuthApi.ts";
+import * as userApi from "../api/apiEndpoints/UserApi.ts";
 import {RefreshTokenRequestDto} from "../types/TokenTypes.ts";
 
 export const useAuth = () => {
@@ -15,7 +15,7 @@ export const useAuth = () => {
 
       queryClient.setQueryData(["currentUser"], data.user);
     },
-});
+  });
 
   const registerMutation = useMutation({
     mutationFn: (data: RegisterUserCommand) => authApi.registerUser(data)
@@ -37,5 +37,5 @@ export const useAuth = () => {
     enabled: !!localStorage.getItem("accessToken"),
   });
 
-  return { loginMutation, registerMutation, refreshTokenMutation, currentUserQuery };
+  return {loginMutation, registerMutation, refreshTokenMutation, currentUserQuery};
 };

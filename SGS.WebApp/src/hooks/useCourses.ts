@@ -1,6 +1,6 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {CreateCourseCommand} from "../types/CourseTypes";
-import * as courseApi from "../services/apiEndpoints/AssignmentAndCourseApi"
+import * as courseApi from "../api/apiEndpoints/AssignmentAndCourseApi"
 
 interface UseCourseProps {
   courseId?: string;

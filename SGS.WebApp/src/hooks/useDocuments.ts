@@ -1,5 +1,5 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import * as documentApi from "../services/apiEndpoints/DocumentsApi.ts";
+import * as documentApi from "../api/apiEndpoints/DocumentsApi.ts";
 
 export const useDocuments = (userId: string) => {
   const queryClient = useQueryClient();
