@@ -14,25 +14,39 @@ public class UserController(IUserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetCurrentUser()
     {
         var email = User.FindFirst(ClaimTypes.Email)?.Value;
         if (string.IsNullOrEmpty(email))
             return Unauthorized(new { error = "Invalid token." });
         
-        var userDto = await userService.GetUserByEmailAsync(email);
-        if (userDto == null) return NotFound(new { error = "User not found." });
-        return Ok(userDto);
+        var result = await userService.GetUserByEmailAsync(email);
+        
+        if (!result.IsSuccess)
+            return StatusCode(500, new { error = result.Error });
+        
+        if (result.Data == null)
+            return NotFound(new { error = "User not found." });
+        
+        return Ok(result.Data);
     }
 
     [HttpGet("teachers")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetTeachers()
     {
-        var teachers = await userService.GetTeachersAsync();
-        if (!teachers.Any()) return NoContent();
-        return Ok(teachers);
+        var result = await userService.GetTeachersAsync();
+        
+        if (!result.IsSuccess)
+            return StatusCode(500, new { error = result.Error });
+        
+        if (result.Data is null || !result.Data.Any())
+            return NoContent();
+        
+        return Ok(result.Data);
     }
 
     [HttpGet("students")]
@@ -40,23 +54,39 @@ public class UserController(IUserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> GetStudents()
     {
-        var students = await userService.GetStudentsAsync();
-        if (!students.Any()) return NoContent();
-        return Ok(students);
+        var result = await userService.GetStudentsAsync();
+        
+        if (!result.IsSuccess)
+            return StatusCode(500, new { error = result.Error });
+        
+        if (result.Data is null || !result.Data.Any())
+            return NoContent();
+        
+        return Ok(result.Data);
     }
 
     [HttpGet("groups/{groupId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetStudentsByGroup(Guid groupId)
     {
         if (groupId == Guid.Empty)
             return BadRequest(new { error = "Invalid group ID." });
+
+        var result = await userService.GetStudentsByGroupAsync(groupId);
+        
+        if (!result.IsSuccess)
+            return StatusCode(500, new { error = result.Error });
             
-        var groupStudents = await userService.GetStudentsByGroupAsync(groupId);
-        if (groupStudents is null) return NotFound(new { error = "Group not found." });
-        if (!groupStudents.Any()) return NoContent();
-        return Ok(groupStudents);
+        if (result.Data == null) 
+            return NotFound(new { error = "Group not found." });
+            
+        if (!result.Data.Any()) 
+            return NoContent();
+            
+        return Ok(result.Data);
     }
 }

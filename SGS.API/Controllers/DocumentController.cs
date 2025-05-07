@@ -12,6 +12,7 @@ public class DocumentController(IDocumentService documentService) : ControllerBa
     [HttpPost("upload")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UploadDocument([FromForm] UploadDocumentDto apiDto)
     {
         if (apiDto.File is null || apiDto.File.Length == 0)
@@ -37,35 +38,56 @@ public class DocumentController(IDocumentService documentService) : ControllerBa
         };
 
         var result = await documentService.UploadDocumentAsync(command);
-        return CreatedAtAction(nameof(GetDocumentById), new { id = result.Id }, result);
+        
+        if (result.Data is null || !result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+            
+        return CreatedAtAction(nameof(GetDocumentById), new { id = result.Data.Id }, result.Data);
     }
 
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetDocumentById([FromRoute] Guid id)
     {
         if (id == Guid.Empty)
             return BadRequest(new { error = "Invalid document ID." });
 
-        var document = await documentService.GetDocumentByIdAsync(id);
-        if (document is null)
+        var result = await documentService.GetDocumentByIdAsync(id);
+        
+        if (!result.IsSuccess)
+            return StatusCode(500, new { error = result.Error });
+            
+        if (result.Data is null)
             return NotFound(new { error = "Document not found." });
-        return Ok(document);
+            
+        return Ok(result.Data);
     }
     
     [HttpGet("user/{userId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetDocumentsByUserId(Guid userId)
     {
         if (userId == Guid.Empty)
             return BadRequest(new { error = "Invalid user ID." });
 
-        var documents = await documentService.GetDocumentsByUserIdAsync(userId);
-        if (documents is null) return NotFound(new { error = "User not found." });
-        if (!documents.Any()) return NoContent();
-        return Ok(documents);
+        var result = await documentService.GetDocumentsByUserIdAsync(userId);
+        
+        if (!result.IsSuccess)
+            return StatusCode(500, new { error = result.Error });
+            
+        if (result.Data is null) 
+            return NotFound(new { error = "User not found." });
+            
+        if (!result.Data.Any()) 
+            return NoContent();
+            
+        return Ok(result.Data);
     }
 }

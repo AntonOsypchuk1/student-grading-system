@@ -15,28 +15,39 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateAssignment([FromBody] CreateAssignmentCommand command)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var assignmentDto = await assignmentService.CreateAssignmentAsync(command);
-        return CreatedAtAction(nameof(GetAssignmentById), new { id = assignmentDto.Id }, assignmentDto);
+        var result = await assignmentService.CreateAssignmentAsync(command);
+        
+        if (result.Data is null || !result.IsSuccess)
+            return BadRequest(new { error = result.Error });
+        
+        return CreatedAtAction(nameof(GetAssignmentById), new { id = result.Data.Id }, result.Data);
     }
 
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAssignmentById([FromRoute] Guid id)
     {
         if (id == Guid.Empty)
             return BadRequest(new { error = "Invalid assignment ID." });
 
-        var assignmentDto = await assignmentService.GetAssignmentByIdAsync(id);
-        if (assignmentDto is null)
+        var result = await assignmentService.GetAssignmentByIdAsync(id);
+        
+        if (!result.IsSuccess)
+            return StatusCode(500, new { error = result.Error });
+        
+        if (result.Data is null)
             return NotFound(new { error = "Assignment not found." });
-        return Ok(assignmentDto);
+        
+        return Ok(result.Data);
     }
 
     [HttpGet("group/{groupId:guid}")]
@@ -44,16 +55,23 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAssignmentsByGroup([FromRoute] Guid groupId)
     {
         if (groupId == Guid.Empty)
             return BadRequest(new { error = "Invalid group ID." });
 
-        var assignments = await assignmentService.GetAssignmentsByGroupAsync(groupId);
-        if (assignments is null)
+        var result = await assignmentService.GetAssignmentsByGroupAsync(groupId);
+        
+        if (!result.IsSuccess)
+            return StatusCode(500, new { error = result.Error });
+        
+        if (result.Data is null)
             return NotFound(new { error = "Group not found." });
-        if (!assignments.Any())
+        
+        if (!result.Data.Any())
             return NoContent();
-        return Ok(assignments);
+        
+        return Ok(result.Data);
     }
 }
