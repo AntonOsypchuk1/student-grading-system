@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SGS.API.Controllers.Base;
+using SGS.API.Extensions;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 
@@ -7,7 +9,7 @@ namespace SGS.API.Controllers;
 
 [ApiController]
 [Route("api/criteria")]
-public class CriteriaController(IGradingCriteriaService criteriaService) : ControllerBase
+public class CriteriaController(IGradingCriteriaService criteriaService) : BaseApiController
 {
     [Authorize(Policy = "RequireTeacherRole")]
     [HttpPost("create")]
@@ -22,12 +24,7 @@ public class CriteriaController(IGradingCriteriaService criteriaService) : Contr
             return BadRequest(ModelState);
 
         var result = await criteriaService.CreateCriteriaAsync(command);
-        
-        if (!result.IsSuccess || result.Data is null)
-            return BadRequest(new { error = result.Error });
-        
-        return CreatedAtAction(nameof(GetCriteria), new { id = result.Data.Id }, result.Data);
-    }
+        return HandleCreatedResult(result, nameof(GetCriteria), new { id = result.Data?.Id });}
 
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -35,18 +32,11 @@ public class CriteriaController(IGradingCriteriaService criteriaService) : Contr
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetCriteria(Guid id)
     {
-        if (id == Guid.Empty)
-            return BadRequest(new { error = "Invalid criteria ID." });
-
-        var result = await criteriaService.GetCriteriaByIdAsync(id);
+        if (!this.IsValidGuid(id, out var errorResult))
+            return errorResult;
         
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-            
-        if (result.Data is null)
-            return NotFound(new { error = "Criteria not found." });
-            
-        return Ok(result.Data);
+        var result = await criteriaService.GetCriteriaByIdAsync(id);
+        return HandleResult(result);
     }
 
     [HttpGet("all")]
@@ -55,13 +45,6 @@ public class CriteriaController(IGradingCriteriaService criteriaService) : Contr
     public async Task<IActionResult> GetAllCriteria()
     {
         var result = await criteriaService.GetAllCriteriaAsync();
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-            
-        if (result.Data is null || !result.Data.Any()) 
-            return NoContent();
-            
-        return Ok(result.Data);
+        return HandleCollectionResult(result);
     }
 }

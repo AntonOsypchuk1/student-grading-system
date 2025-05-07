@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using SGS.API.Controllers.Base;
 using SGS.API.DTOs;
+using SGS.API.Extensions;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 
@@ -7,7 +9,7 @@ namespace SGS.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class DocumentController(IDocumentService documentService) : ControllerBase
+public class DocumentController(IDocumentService documentService) : BaseApiController
 {
     [HttpPost("upload")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -38,11 +40,7 @@ public class DocumentController(IDocumentService documentService) : ControllerBa
         };
 
         var result = await documentService.UploadDocumentAsync(command);
-        
-        if (result.Data is null || !result.IsSuccess)
-            return BadRequest(new { error = result.Error });
-            
-        return CreatedAtAction(nameof(GetDocumentById), new { id = result.Data.Id }, result.Data);
+        return HandleCreatedResult(result, nameof(GetDocumentById), new { id = result.Data?.Id });
     }
 
     [HttpGet("{id:guid}")]
@@ -52,18 +50,11 @@ public class DocumentController(IDocumentService documentService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetDocumentById([FromRoute] Guid id)
     {
-        if (id == Guid.Empty)
-            return BadRequest(new { error = "Invalid document ID." });
+        if (!this.IsValidGuid(id, out var errorResult))
+            return errorResult;
 
         var result = await documentService.GetDocumentByIdAsync(id);
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-            
-        if (result.Data is null)
-            return NotFound(new { error = "Document not found." });
-            
-        return Ok(result.Data);
+        return HandleResult(result);
     }
     
     [HttpGet("user/{userId:guid}")]
@@ -74,20 +65,10 @@ public class DocumentController(IDocumentService documentService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetDocumentsByUserId(Guid userId)
     {
-        if (userId == Guid.Empty)
-            return BadRequest(new { error = "Invalid user ID." });
+        if (!this.IsValidGuid(userId, out var errorResult))
+            return errorResult;
 
         var result = await documentService.GetDocumentsByUserIdAsync(userId);
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-            
-        if (result.Data is null) 
-            return NotFound(new { error = "User not found." });
-            
-        if (!result.Data.Any()) 
-            return NoContent();
-            
-        return Ok(result.Data);
+        return HandleCollectionResult(result);
     }
 }

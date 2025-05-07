@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SGS.API.Controllers.Base;
+using SGS.API.Extensions;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 
@@ -7,7 +9,7 @@ namespace SGS.API.Controllers;
 
 [ApiController]
 [Route("api/assignments")]
-public class AssignmentController(IAssignmentService assignmentService) : ControllerBase
+public class AssignmentController(IAssignmentService assignmentService) : BaseApiController
 {
     [Authorize(Policy = "RequireTeacherRole")]
     [HttpPost("create")]
@@ -22,11 +24,7 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
             return BadRequest(ModelState);
 
         var result = await assignmentService.CreateAssignmentAsync(command);
-        
-        if (result.Data is null || !result.IsSuccess)
-            return BadRequest(new { error = result.Error });
-        
-        return CreatedAtAction(nameof(GetAssignmentById), new { id = result.Data.Id }, result.Data);
+        return HandleCreatedResult(result, nameof(GetAssignmentById), new { id = result.Data?.Id });
     }
 
     [HttpGet("{id:guid}")]
@@ -36,18 +34,11 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAssignmentById([FromRoute] Guid id)
     {
-        if (id == Guid.Empty)
-            return BadRequest(new { error = "Invalid assignment ID." });
-
+        if (!this.IsValidGuid(id, out var errorResult))
+            return errorResult;
+        
         var result = await assignmentService.GetAssignmentByIdAsync(id);
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-        
-        if (result.Data is null)
-            return NotFound(new { error = "Assignment not found." });
-        
-        return Ok(result.Data);
+        return HandleResult(result);
     }
 
     [HttpGet("group/{groupId:guid}")]
@@ -58,20 +49,10 @@ public class AssignmentController(IAssignmentService assignmentService) : Contro
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAssignmentsByGroup([FromRoute] Guid groupId)
     {
-        if (groupId == Guid.Empty)
-            return BadRequest(new { error = "Invalid group ID." });
+        if (!this.IsValidGuid(groupId, out var errorResult))
+            return errorResult;
 
         var result = await assignmentService.GetAssignmentsByGroupAsync(groupId);
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-        
-        if (result.Data is null)
-            return NotFound(new { error = "Group not found." });
-        
-        if (!result.Data.Any())
-            return NoContent();
-        
-        return Ok(result.Data);
+        return HandleCollectionResult(result);
     }
 }

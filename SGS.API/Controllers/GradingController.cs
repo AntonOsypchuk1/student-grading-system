@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SGS.API.Controllers.Base;
+using SGS.API.Extensions;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 
@@ -7,7 +9,7 @@ namespace SGS.API.Controllers;
 
 [ApiController]
 [Route("api/grading")]
-public class GradingController(IGradingService gradingService) : ControllerBase
+public class GradingController(IGradingService gradingService) : BaseApiController
 {
     [Authorize(Policy = "RequireTeacherRole")]
     [HttpPost("analyze/{docId:guid}")]
@@ -19,18 +21,11 @@ public class GradingController(IGradingService gradingService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> AnalyzeDocument([FromRoute] Guid docId)
     {
-        if (docId == Guid.Empty)
-            return BadRequest(new { error = "Invalid document ID." });
+        if (!this.IsValidGuid(docId, out var errorResult))
+            return errorResult;
 
         var result = await gradingService.AnalyzeDocumentAsync(docId);
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-            
-        if (result.Data is null)
-            return NotFound(new { error = "Document not found." });
-            
-        return Ok(result.Data);
+        return HandleCreatedResult(result, nameof(GetAnalysisResult), new { id = result.Data?.Id });
     }
 
     [HttpGet("results/{docId:guid}")]
@@ -40,18 +35,11 @@ public class GradingController(IGradingService gradingService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAnalysisResult([FromRoute] Guid docId)
     {
-        if (docId == Guid.Empty)
-            return BadRequest(new { error = "Invalid document ID." });
-
-        var result = await gradingService.GetAnalysisResultByDocumentIdAsync(docId);
+        if (!this.IsValidGuid(docId, out var errorResult))
+            return errorResult;
         
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-            
-        if (result.Data is null)
-            return NotFound(new { error = "Analysis result not found." });
-            
-        return Ok(result.Data);
+        var result = await gradingService.GetAnalysisResultByDocumentIdAsync(docId);
+        return HandleResult(result);
     }
 
     [Authorize(Policy = "RequireTeacherRole")]
@@ -67,14 +55,7 @@ public class GradingController(IGradingService gradingService) : ControllerBase
             return BadRequest(ModelState);
 
         var result = await gradingService.EditGradeAsync(command);
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-            
-        if (result.Data is null)
-            return NotFound(new { error = "Grade not found." });
-            
-        return Ok(result.Data);
+        return HandleResult(result);
     }
     
     [HttpGet("assignments/{assignmentId:guid}")]
@@ -82,18 +63,11 @@ public class GradingController(IGradingService gradingService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> GetGradingResultsByAssignment(Guid assignmentId)
     {
-        if (assignmentId == Guid.Empty)
-            return BadRequest(new { error = "Invalid assignment ID." });
-
-        var result = await gradingService.GetGradingResultsByAssignmentAsync(assignmentId);
+        if (!this.IsValidGuid(assignmentId, out var errorResult))
+            return errorResult;
         
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-            
-        if (result.Data is null || !result.Data.Any()) 
-            return NoContent();
-            
-        return Ok(result.Data);
+        var result = await gradingService.GetGradingResultsByAssignmentAsync(assignmentId);
+        return HandleCollectionResult(result);
     }
 
     [Authorize(Policy = "RequireTeacherRole")]
@@ -105,17 +79,10 @@ public class GradingController(IGradingService gradingService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> FinalizeGrade(Guid gradeId)
     {
-        if (gradeId == Guid.Empty)
-            return BadRequest(new { error = "Invalid grade ID." });
-
-        var result = await gradingService.FinalizeGradeAsync(gradeId);
+        if (!this.IsValidGuid(gradeId, out var errorResult))
+            return errorResult;
         
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-            
-        if (result.Data is null)
-            return NotFound(new { error = "Grade not found." });
-            
-        return Ok(result.Data);
+        var result = await gradingService.FinalizeGradeAsync(gradeId);
+        return HandleResult(result);
     }
 }
