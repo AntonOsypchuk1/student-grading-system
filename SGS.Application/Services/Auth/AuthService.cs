@@ -4,8 +4,6 @@ using SGS.Application.DTOs;
 using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
 using SGS.Application.Services.Auth.Helpers;
-using SGS.Application.Services.Bases;
-using SGS.Domain.Entities;
 using SGS.Domain.Enums;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 
@@ -19,8 +17,6 @@ public class AuthService(
     IRefreshTokenService refreshTokenService)
     : BaseService(unitOfWork, logger, mapper), IAuthService
 {
-    // TODO: Implement logout functionality
-    
     public async Task<Result<AuthResponseDto>> LoginAsync(string email, string password, CancellationToken cancellationToken = default)
     {
         var user = await UnitOfWork.Users.GetByEmailAsync(email, cancellationToken);
@@ -53,7 +49,7 @@ public class AuthService(
             if (!Enum.TryParse(command.Role, true, out UserRole role))
                 throw new Exception("Invalid role provided.");
 
-            var user = new User
+            var user = new Domain.Entities.User
             {
                 Id = Guid.NewGuid(),
                 Login = command.Login,

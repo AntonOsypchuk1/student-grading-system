@@ -3,13 +3,9 @@ using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
 using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
-using SGS.Application.Services.Bases;
-using SGS.Domain.Entities;
-using SGS.Infrastructure.Data;
-using SGS.Infrastructure.Repositories.Interfaces;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 
-namespace SGS.Application.Services;
+namespace SGS.Application.Services.Document;
 
 public class DocumentService(
     IUnitOfWork unitOfWork,
@@ -32,7 +28,7 @@ public class DocumentService(
                     await fileStorageService.SaveFileAsync(command.FileName, command.FileContent, cancellationToken);
                 Logger.LogInformation("File saved successfully at: {FilePath}", filePath);
 
-                var document = Mapper.Map<Document>(command);
+                var document = Mapper.Map<Domain.Entities.Document>(command);
                 document.Id = Guid.NewGuid();
                 document.FilePath = filePath;
                 document.UploadedAt = DateTime.UtcNow;

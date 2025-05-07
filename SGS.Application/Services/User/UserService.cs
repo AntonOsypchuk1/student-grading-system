@@ -3,13 +3,10 @@ using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
 using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
-using SGS.Application.Services.Bases;
 using SGS.Domain.Enums;
-using SGS.Infrastructure.Data;
-using SGS.Infrastructure.Repositories.Interfaces;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 
-namespace SGS.Application.Services;
+namespace SGS.Application.Services.User;
 
 public class UserService(
     IUnitOfWork unitOfWork,

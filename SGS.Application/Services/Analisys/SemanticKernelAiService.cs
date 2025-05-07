@@ -1,6 +1,6 @@
 using SGS.Application.Interfaces;
 
-namespace SGS.Application.Services;
+namespace SGS.Application.Services.Analisys;
 
 public class SemanticKernelAiService : IAIService
 {

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using SGS.Application.Helpers;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 
-namespace SGS.Application.Services.Bases;
+namespace SGS.Application.Services;
 
 /// <summary>
 /// Base service class that provides transaction management capabilities for service operations.
