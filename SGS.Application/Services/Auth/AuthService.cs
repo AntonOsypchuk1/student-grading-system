@@ -3,10 +3,10 @@ using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
 using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
+using SGS.Application.Services.Auth.Helpers;
 using SGS.Application.Services.Bases;
 using SGS.Domain.Entities;
 using SGS.Domain.Enums;
-using SGS.Infrastructure.Repositories.Interfaces;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services.Auth;
@@ -19,7 +19,9 @@ public class AuthService(
     IRefreshTokenService refreshTokenService)
     : BaseService(unitOfWork, logger, mapper), IAuthService
 {
-    public async Task<AuthResponseDto> LoginAsync(string email, string password, CancellationToken cancellationToken = default)
+    // TODO: Implement logout functionality
+    
+    public async Task<Result<AuthResponseDto>> LoginAsync(string email, string password, CancellationToken cancellationToken = default)
     {
         var user = await UnitOfWork.Users.GetByEmailAsync(email, cancellationToken);
         if (user == null || !PasswordHelper.VerifyPassword(password, user.PasswordHash))
@@ -27,17 +29,20 @@ public class AuthService(
 
         var accessToken = tokenService.GenerateToken(user);
         var refreshToken = await refreshTokenService.CreateRefreshTokenAsync(user.Id, cancellationToken);
+        if (!refreshToken.IsSuccess || refreshToken.Data == null)
+            throw new Exception("Failed to create refresh token.");
+        
         var userDto = Mapper.Map<UserDto>(user);
 
-        return new AuthResponseDto
+        return Result<AuthResponseDto>.Success(new AuthResponseDto
         {
             Token = accessToken,
-            RefreshToken = refreshToken.Token,
+            RefreshToken = refreshToken.Data.Token,
             User = userDto
-        };
+        });
     }
 
-    public async Task<UserDto> RegisterUserAsync(RegisterUserCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<UserDto>> RegisterUserAsync(RegisterUserCommand command, CancellationToken cancellationToken = default)
     {
         return await ExecuteInTransactionAsync(async () =>
         {
@@ -48,20 +53,18 @@ public class AuthService(
             if (!Enum.TryParse(command.Role, true, out UserRole role))
                 throw new Exception("Invalid role provided.");
 
-            var hashedPassword = PasswordHelper.HashPassword(command.Password);
-
             var user = new User
             {
                 Id = Guid.NewGuid(),
                 Login = command.Login,
                 FullName = command.FullName,
                 Email = command.Email,
-                PasswordHash = hashedPassword,
+                PasswordHash = PasswordHelper.HashPassword(command.Password),
                 Role = role
             };
 
             await UnitOfWork.Users.CreateAsync(user, cancellationToken);
-            return Mapper.Map<UserDto>(user);
+            return Result<UserDto>.Success(Mapper.Map<UserDto>(user));
         }, cancellationToken);
     }
 }

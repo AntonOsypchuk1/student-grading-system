@@ -1,12 +1,13 @@
 using SGS.Application.DTOs;
+using SGS.Application.Helpers;
 
 namespace SGS.Application.Interfaces;
 
 public interface IGradingCriteriaService
 {
-    Task<GradingCriteriaDto> CreateCriteriaAsync(CreateGradingCriteriaCommand command, CancellationToken cancellationToken = default);
+    Task<Result<GradingCriteriaDto>> CreateCriteriaAsync(CreateGradingCriteriaCommand command, CancellationToken cancellationToken = default);
     
-    Task<GradingCriteriaDto?> GetCriteriaByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Result<GradingCriteriaDto?>> GetCriteriaByIdAsync(Guid id, CancellationToken cancellationToken = default);
     
-    Task<IEnumerable<GradingCriteriaDto>> GetAllCriteriaAsync(CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<GradingCriteriaDto>>> GetAllCriteriaAsync(CancellationToken cancellationToken = default);
 }

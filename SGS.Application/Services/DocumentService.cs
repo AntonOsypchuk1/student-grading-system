@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
+using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
 using SGS.Application.Services.Bases;
 using SGS.Domain.Entities;
@@ -17,7 +18,7 @@ public class DocumentService(
     IMapper mapper)
     : BaseService(unitOfWork, logger, mapper), IDocumentService
 {
-    public async Task<DocumentDto> UploadDocumentAsync(UploadDocumentCommand command,
+    public async Task<Result<DocumentDto>> UploadDocumentAsync(UploadDocumentCommand command,
         CancellationToken cancellationToken = default)
     {
         return await ExecuteInTransactionAsync(async () =>
@@ -39,17 +40,17 @@ public class DocumentService(
                 await UnitOfWork.Documents.CreateAsync(document, cancellationToken);
                 Logger.LogInformation("Document record created with ID: {DocumentId}", document.Id);
 
-                return Mapper.Map<DocumentDto>(document);
+                return Result<DocumentDto>.Success(Mapper.Map<DocumentDto>(document));
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error uploading document: {FileName}", command.FileName);
-                throw;
+                return Result<DocumentDto>.Failure($"Failed to upload document: {ex.Message}");
             }
         }, cancellationToken);
     }
 
-    public async Task<DocumentDto?> GetDocumentByIdAsync(Guid id,
+    public async Task<Result<DocumentDto?>> GetDocumentByIdAsync(Guid id,
         CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Retrieving document with ID: {DocumentId}", id);
@@ -61,20 +62,20 @@ public class DocumentService(
             if (document == null)
             {
                 Logger.LogWarning("Document not found with ID: {DocumentId}", id);
-                return null;
+                return Result<DocumentDto?>.Success(null);
             }
 
             Logger.LogInformation("Successfully retrieved document with ID: {DocumentId}", id);
-            return Mapper.Map<DocumentDto>(document);
+            return Result<DocumentDto?>.Success(Mapper.Map<DocumentDto>(document));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error retrieving document with ID: {DocumentId}", id);
-            throw;
+            return Result<DocumentDto?>.Failure($"Failed to retrieve document: {ex.Message}");
         }
     }
 
-    public async Task<IEnumerable<DocumentDto>?> GetDocumentsByUserIdAsync(Guid userId,
+    public async Task<Result<IEnumerable<DocumentDto>?>> GetDocumentsByUserIdAsync(Guid userId,
         CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Retrieving documents for user with ID: {UserId}", userId);
@@ -85,12 +86,12 @@ public class DocumentService(
             Logger.LogInformation("Successfully retrieved {Count} documents for user: {UserId}",
                 documents?.Count() ?? 0, userId);
 
-            return Mapper.Map<IEnumerable<DocumentDto>>(documents);
+            return Result<IEnumerable<DocumentDto>?>.Success(Mapper.Map<IEnumerable<DocumentDto>>(documents));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error retrieving documents for user with ID: {UserId}", userId);
-            throw;
+            return Result<IEnumerable<DocumentDto>?>.Failure($"Failed to retrieve documents: {ex.Message}");
         }
     }
 }

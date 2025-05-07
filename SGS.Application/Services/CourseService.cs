@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
+using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
 using SGS.Application.Services.Bases;
 using SGS.Domain.Entities;
@@ -21,7 +22,7 @@ public class CourseService(
      private readonly IUserRepository _userRepository = unitOfWork.Users;
     */
 
-    public async Task<CourseDto> CreateCourseAsync(CreateCourseCommand command,
+    public async Task<Result<CourseDto>> CreateCourseAsync(CreateCourseCommand command,
         CancellationToken cancellationToken = default)
     {
         return await ExecuteInTransactionAsync(async () =>
@@ -39,17 +40,17 @@ public class CourseService(
                 await UnitOfWork.Courses.CreateAsync(course, cancellationToken);
                 Logger.LogInformation("Successfully created course with ID: {CourseId}", course.Id);
 
-                return Mapper.Map<CourseDto>(course);
+                return Result<CourseDto>.Success(Mapper.Map<CourseDto>(course));
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error creating course with title: {Title}", command.Title);
-                throw;
+                return Result<CourseDto>.Failure($"Failed to create course: {ex.Message}");
             }
         }, cancellationToken);
     }
 
-    public async Task<CourseDto?> GetCourseByIdAsync(Guid courseId, CancellationToken cancellationToken = default)
+    public async Task<Result<CourseDto?>> GetCourseByIdAsync(Guid courseId, CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Retrieving course with ID: {CourseId}", courseId);
 
@@ -60,20 +61,20 @@ public class CourseService(
             if (course == null)
             {
                 Logger.LogWarning("Course not found with ID: {CourseId}", courseId);
-                return null;
+                return Result<CourseDto?>.Success(null);
             }
 
             Logger.LogInformation("Successfully retrieved course with ID: {CourseId}", courseId);
-            return Mapper.Map<CourseDto>(course);
+            return Result<CourseDto?>.Success(Mapper.Map<CourseDto>(course));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error retrieving course with ID: {CourseId}", courseId);
-            throw;
+            return Result<CourseDto?>.Failure($"Failed to retrieve course: {ex.Message}");
         }
     }
 
-    public async Task<IEnumerable<CourseDto>> GetCoursesByTeacherAsync(Guid teacherId,
+    public async Task<Result<IEnumerable<CourseDto>>> GetCoursesByTeacherAsync(Guid teacherId,
         CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Retrieving courses for teacher with ID: {TeacherId}", teacherId);
@@ -84,16 +85,16 @@ public class CourseService(
             Logger.LogInformation("Successfully retrieved {Count} courses for teacher: {TeacherId}", 
                 courses.Count(), teacherId);
 
-            return Mapper.Map<IEnumerable<CourseDto>>(courses);
+            return Result<IEnumerable<CourseDto>>.Success(Mapper.Map<IEnumerable<CourseDto>>(courses));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error retrieving courses for teacher with ID: {TeacherId}", teacherId);
-            throw;
+            return Result<IEnumerable<CourseDto>>.Failure($"Failed to retrieve courses: {ex.Message}");
         }
     }
 
-    public async Task<IEnumerable<CourseDto>> GetCoursesByStudentAsync(Guid studentId,
+    public async Task<Result<IEnumerable<CourseDto>>> GetCoursesByStudentAsync(Guid studentId,
         CancellationToken cancellationToken = default)
     {
         // For simplicity, we assume that the student is associated with one or more groups,
@@ -106,12 +107,12 @@ public class CourseService(
             Logger.LogInformation("Successfully retrieved {Count} courses for student: {StudentId}", 
                 courses.Count(), studentId);
 
-            return Mapper.Map<IEnumerable<CourseDto>>(courses);
+            return Result<IEnumerable<CourseDto>>.Success(Mapper.Map<IEnumerable<CourseDto>>(courses));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error retrieving courses for student with ID: {StudentId}", studentId);
-            throw;
+            return Result<IEnumerable<CourseDto>>.Failure($"Failed to retrieve courses: {ex.Message}");
         }
     }
 }

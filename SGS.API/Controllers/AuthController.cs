@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SGS.API.DTOs;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
-using SGS.Infrastructure.Repositories.Interfaces;
+using SGS.Domain.Entities;
 
 namespace SGS.API.Controllers;
 
@@ -13,32 +13,26 @@ public class AuthController(
     IAuthService authService,
     ITokenService tokenService,
     IRefreshTokenService refreshTokenService,
-    IUserRepository userRepository,
+    IUserService userService,
     IMapper mapper)
     : ControllerBase
 {
+    // TODO: Implement logout functionality
+    
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Register([FromBody] RegisterUserCommand command)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        try
-        {
-            var userDto = await authService.RegisterUserAsync(command);
-            return CreatedAtAction(nameof(Login), new { id = userDto.Id }, userDto);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Conflict(new { error = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var result = await authService.RegisterUserAsync(command);
+        
+        if (result.IsSuccess)
+            return CreatedAtAction(nameof(Login), new { id = result.Data?.Id }, result.Data);
+
+        return BadRequest(new { error = result.Error });
     }
 
     [HttpPost("login")]
@@ -50,19 +44,12 @@ public class AuthController(
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        try
-        {
-            var authResponse = await authService.LoginAsync(dto.Email, dto.Password);
-            return Ok(authResponse);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized(new { error = "Invalid email or password." });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var result = await authService.LoginAsync(dto.Email, dto.Password);
+        
+        if (!result.IsSuccess)
+            return Unauthorized(new { error = result.Error });
+
+        return Ok(result.Data);
     }
 
     [HttpPost("refresh")]
@@ -77,31 +64,34 @@ public class AuthController(
         if (string.IsNullOrEmpty(request.RefreshToken))
             return BadRequest(new { error = "Refresh token is required." });
 
-        var existingRefreshToken = await refreshTokenService.GetRefreshTokenAsync(request.RefreshToken);
+        var tokenResult = await refreshTokenService.GetRefreshTokenAsync(request.RefreshToken);
+        if (!tokenResult.IsSuccess)
+            return BadRequest(new { error = tokenResult.Error });
+        
+        var existingRefreshToken = tokenResult.Data;
         if (existingRefreshToken is not { IsActive: true })
             return Unauthorized(new { error = "Invalid or expired refresh token." });
 
-        try
+        var revokeResult = await refreshTokenService.RevokeRefreshTokenAsync(request.RefreshToken);
+        if (!revokeResult.IsSuccess)
+            return BadRequest(new { error = revokeResult.Error });
+        
+        var userResult = await userService.GetUserByIdAsync(existingRefreshToken.UserId);
+        if (!userResult.IsSuccess || userResult.Data == null)
+            return Unauthorized(new { error = userResult.Error ?? "User not found." });
+
+        var user = userResult.Data;
+        var accessToken = tokenService.GenerateToken(mapper.Map<User>(user));
+        
+        var newTokenResult = await refreshTokenService.CreateRefreshTokenAsync(user.Id);
+        if (!newTokenResult.IsSuccess || newTokenResult.Data == null)
+            return BadRequest(new { error = newTokenResult.Error });
+        
+        return Ok(new AuthResponseDto
         {
-            await refreshTokenService.RevokeRefreshTokenAsync(request.RefreshToken);
-
-            var user = await userRepository.GetByIdAsync(existingRefreshToken.UserId, CancellationToken.None);
-            if (user is null)
-                return Unauthorized(new { error = "User not found." });
-
-            var accessToken = tokenService.GenerateToken(user);
-            var newRefreshToken = await refreshTokenService.CreateRefreshTokenAsync(user.Id);
-
-            return Ok(new AuthResponseDto
-            {
-                Token = accessToken,
-                RefreshToken = newRefreshToken.Token,
-                User = mapper.Map<UserDto>(user)
-            });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+            Token = accessToken,
+            RefreshToken = newTokenResult.Data.Token,
+            User = user
+        });
     }
 }

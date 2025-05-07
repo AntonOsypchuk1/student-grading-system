@@ -1,10 +1,11 @@
 using SGS.Application.DTOs;
+using SGS.Application.Helpers;
 
 namespace SGS.Application.Interfaces;
 
 public interface IAuthService
 {
-    Task<AuthResponseDto> LoginAsync(string email, string password, CancellationToken cancellationToken = default);
+    Task<Result<AuthResponseDto>> LoginAsync(string email, string password, CancellationToken cancellationToken = default);
     
-    Task<UserDto> RegisterUserAsync(RegisterUserCommand command, CancellationToken cancellationToken = default);
+    Task<Result<UserDto>> RegisterUserAsync(RegisterUserCommand command, CancellationToken cancellationToken = default);
 }
