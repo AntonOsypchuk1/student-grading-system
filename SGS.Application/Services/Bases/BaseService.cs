@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using SGS.Application.Helpers;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services.Bases;
@@ -26,7 +27,7 @@ public abstract class BaseService(
     /// <param name="cancellationToken">Cancellation token for canceling the operation</param>
     /// <returns>The result of the operation</returns>
     /// <exception cref="Exception">Rethrows any exceptions that occur during the operation after rollback</exception>
-    protected async Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> operation,
+    protected async Task<Result<T>> ExecuteInTransactionAsync<T>(Func<Task<Result<T>>> operation,
         CancellationToken cancellationToken = default)
     {
         await UnitOfWork.BeginTransactionAsync(cancellationToken);
@@ -34,14 +35,18 @@ public abstract class BaseService(
         try
         {
             var result = await operation();
-            await UnitOfWork.CommitTransactionAsync(cancellationToken);
+            
+            if (result.IsSuccess)
+                await UnitOfWork.CommitTransactionAsync(cancellationToken);
+            else
+                await UnitOfWork.RollbackTransactionAsync(cancellationToken);
             return result;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error executing transaction");
+            Logger.LogError(ex, "Transaction failed");
             await UnitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            return Result<T>.Failure($"An unexpected error occured: {ex.Message}");
         }
     }
     

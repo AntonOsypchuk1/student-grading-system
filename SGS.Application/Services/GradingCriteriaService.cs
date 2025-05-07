@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
+using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
 using SGS.Application.Services.Bases;
 using SGS.Domain.Entities;
@@ -17,7 +18,7 @@ public class GradingCriteriaService(
     IMapper mapper)
     : BaseService(unitOfWork, logger, mapper), IGradingCriteriaService
 {
-    public async Task<GradingCriteriaDto> CreateCriteriaAsync
+    public async Task<Result<GradingCriteriaDto>> CreateCriteriaAsync
         (CreateGradingCriteriaCommand command, CancellationToken cancellationToken = default)
     {
         return await ExecuteInTransactionAsync(async () =>
@@ -44,17 +45,17 @@ public class GradingCriteriaService(
                 await UnitOfWork.GradingCriteria.CreateAsync(criteria, cancellationToken);
                 Logger.LogInformation("Successfully created grading criteria with ID: {CriteriaId}", criteria.Id);
 
-                return Mapper.Map<GradingCriteriaDto>(criteria);
+                return Result<GradingCriteriaDto>.Success(Mapper.Map<GradingCriteriaDto>(criteria));
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error creating grading criteria for user: {UserId}", command.UserId);
-                throw;
+                return Result<GradingCriteriaDto>.Failure($"Failed to create grading criteria: {ex.Message}");
             }
         }, cancellationToken);
     }
 
-    public async Task<GradingCriteriaDto?> GetCriteriaByIdAsync
+    public async Task<Result<GradingCriteriaDto?>> GetCriteriaByIdAsync
         (Guid id, CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Retrieving grading criteria with ID: {CriteriaId}", id);
@@ -66,20 +67,20 @@ public class GradingCriteriaService(
             if (criteria == null)
             {
                 Logger.LogWarning("Grading criteria not found with ID: {CriteriaId}", id);
-                return null;
+                return Result<GradingCriteriaDto?>.Success(null);
             }
 
             Logger.LogInformation("Successfully retrieved grading criteria with ID: {CriteriaId}", id);
-            return Mapper.Map<GradingCriteriaDto>(criteria);
+            return Result<GradingCriteriaDto?>.Success(Mapper.Map<GradingCriteriaDto>(criteria));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error retrieving grading criteria with ID: {CriteriaId}", id);
-            throw;
+            return Result<GradingCriteriaDto?>.Failure($"Failed to retrieve grading criteria: {ex.Message}");
         }
     }
 
-    public async Task<IEnumerable<GradingCriteriaDto>> GetAllCriteriaAsync
+    public async Task<Result<IEnumerable<GradingCriteriaDto>>> GetAllCriteriaAsync
         (CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Retrieving all grading criteria");
@@ -90,12 +91,12 @@ public class GradingCriteriaService(
             Logger.LogInformation("Successfully retrieved {Count} grading criteria", 
                 criteriaList.Count());
 
-            return Mapper.Map<IEnumerable<GradingCriteriaDto>>(criteriaList);
+            return Result<IEnumerable<GradingCriteriaDto>>.Success(Mapper.Map<IEnumerable<GradingCriteriaDto>>(criteriaList));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error retrieving all grading criteria");
-            throw;
+            return Result<IEnumerable<GradingCriteriaDto>>.Failure($"Failed to retrieve grading criteria: {ex.Message}");
         }
     }
 }

@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
+using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
 using SGS.Application.Services.Bases;
 using SGS.Domain.Entities;
@@ -16,7 +17,7 @@ public class AssignmentService(
     IMapper mapper)
     : BaseService(unitOfWork, logger, mapper), IAssignmentService
 {
-    public async Task<AssignmentDto> CreateAssignmentAsync(CreateAssignmentCommand command,
+    public async Task<Result<AssignmentDto>> CreateAssignmentAsync(CreateAssignmentCommand command,
         CancellationToken cancellationToken = default)
     {
         return await ExecuteInTransactionAsync(async () =>
@@ -39,17 +40,17 @@ public class AssignmentService(
                 await UnitOfWork.Assignments.CreateAsync(assignment, cancellationToken);
                 Logger.LogInformation("Successfully created assignment with ID: {AssignmentId}", assignment.Id);
         
-                return Mapper.Map<AssignmentDto>(assignment);
+                return Result<AssignmentDto>.Success(Mapper.Map<AssignmentDto>(assignment));
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error creating assignment with title: {Title}", command.Title);
-                throw;
+                return Result<AssignmentDto>.Failure($"Failed to create assignment: {ex.Message}");
             }
         }, cancellationToken);
     }
 
-    public async Task<AssignmentDto?> GetAssignmentByIdAsync(Guid assignmentId,
+    public async Task<Result<AssignmentDto?>> GetAssignmentByIdAsync(Guid assignmentId,
         CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Retrieving assignment with ID: {AssignmentId}", assignmentId);
@@ -60,20 +61,20 @@ public class AssignmentService(
             if (assignment == null)
             {
                 Logger.LogWarning("Assignment not found with ID: {AssignmentId}", assignmentId);
-                return null;
+                return Result<AssignmentDto?>.Success(null);
             }
-            Logger.LogInformation("Successfully retrieved assignment with ID: {AssignmentId}", assignmentId);
             
-            return Mapper.Map<AssignmentDto>(assignment);
+            Logger.LogInformation("Successfully retrieved assignment with ID: {AssignmentId}", assignmentId);
+            return Result<AssignmentDto?>.Success(Mapper.Map<AssignmentDto>(assignment));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error retrieving assignment with ID: {AssignmentId}", assignmentId);
-            throw;
+            return Result<AssignmentDto?>.Failure($"Failed to retrieve assignment: {ex.Message}");
         }
     }
 
-    public async Task<IEnumerable<AssignmentDto>?> GetAssignmentsByGroupAsync(Guid groupId,
+    public async Task<Result<IEnumerable<AssignmentDto>?>> GetAssignmentsByGroupAsync(Guid groupId,
         CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Retrieving assignments for group with ID: {GroupId}", groupId);
@@ -84,12 +85,12 @@ public class AssignmentService(
             Logger.LogInformation("Successfully retrieved {Count} assignments for group: {GroupId}", 
                 assignments.Count(), groupId);
 
-            return Mapper.Map<IEnumerable<AssignmentDto>>(assignments);
+            return Result<IEnumerable<AssignmentDto>?>.Success(Mapper.Map<IEnumerable<AssignmentDto>>(assignments));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error retrieving assignments for group with ID: {GroupId}", groupId);
-            throw;
+            return Result<IEnumerable<AssignmentDto>?>.Failure($"Failed to retrieve assignments: {ex.Message}");
         }
     }
 }

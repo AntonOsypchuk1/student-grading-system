@@ -1,4 +1,4 @@
-namespace SGS.Application.Helpers;
+namespace SGS.Application.Services.Auth.Helpers;
 
 public static class PasswordHelper
 {

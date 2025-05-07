@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
+using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
 using SGS.Application.Services.Bases;
 using SGS.Domain.Entities;
@@ -17,7 +18,7 @@ public class GradingService(
     IMapper mapper)
     : BaseService(unitOfWork, logger, mapper), IGradingService
 {
-    public async Task<AnalysisResultDto?> AnalyzeDocumentAsync(Guid documentId,
+    public async Task<Result<AnalysisResultDto?>> AnalyzeDocumentAsync(Guid documentId,
         CancellationToken cancellationToken = default)
     {
         return await ExecuteInTransactionAsync(async () =>
@@ -62,17 +63,17 @@ public class GradingService(
                 Logger.LogInformation("Created analysis result with ID: {AnalysisId} for document: {DocumentId}",
                     analysisEntity.Id, documentId);
 
-                return Mapper.Map<AnalysisResultDto>(analysisEntity);
+                return Result<AnalysisResultDto?>.Success(Mapper.Map<AnalysisResultDto>(analysisEntity));
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex, "Error analyzing document with ID: {DocumentId}", documentId);
-                throw;
+                return Result<AnalysisResultDto?>.Failure($"Failed to analyze document: {ex.Message}");
             }
         }, cancellationToken);
     }
 
-    public async Task<AnalysisResultDto?> GetAnalysisResultByDocumentIdAsync(Guid documentId,
+    public async Task<Result<AnalysisResultDto?>> GetAnalysisResultByDocumentIdAsync(Guid documentId,
         CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Retrieving analysis result for document ID: {DocumentId}", documentId);
@@ -85,20 +86,20 @@ public class GradingService(
             if (analysisResult == null)
             {
                 Logger.LogWarning("No analysis result found for document ID: {DocumentId}", documentId);
-                return null;
+                return Result<AnalysisResultDto?>.Success(null);
             }
 
             Logger.LogInformation("Successfully retrieved analysis result for document ID: {DocumentId}", documentId);
-            return Mapper.Map<AnalysisResultDto>(analysisResult);
+            return Result<AnalysisResultDto?>.Success(Mapper.Map<AnalysisResultDto>(analysisResult));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error retrieving analysis result for document ID: {DocumentId}", documentId);
-            throw;
+            return Result<AnalysisResultDto?>.Failure($"Failed to retrieve analysis result: {ex.Message}");
         }
     }
 
-    public async Task<AnalysisResultDto?> EditGradeAsync(EditGradeCommand command,
+    public async Task<Result<AnalysisResultDto?>> EditGradeAsync(EditGradeCommand command,
         CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Editing grade with ID: {GradeId}", command.GradeId);
@@ -126,16 +127,16 @@ public class GradingService(
                 throw new Exception("Analysis result not found.");
             }
 
-            return Mapper.Map<AnalysisResultDto>(analysisResult);
+            return Result<AnalysisResultDto?>.Success(Mapper.Map<AnalysisResultDto>(analysisResult));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error editing grade with ID: {GradeId}", command.GradeId);
-            throw;
+            return Result<AnalysisResultDto?>.Failure($"Failed to edit grade: {ex.Message}");
         }
     }
 
-    public async Task<IEnumerable<AnalysisResultDto>> GetGradingResultsByAssignmentAsync(
+    public async Task<Result<IEnumerable<AnalysisResultDto>>> GetGradingResultsByAssignmentAsync(
         Guid assignmentId, CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Retrieving grading results for assignment ID: {AssignmentId}", assignmentId);
@@ -156,16 +157,16 @@ public class GradingService(
 
             Logger.LogInformation("Retrieved {Count} grading results for assignment ID: {AssignmentId}", 
                 allResults.Count, assignmentId);
-            return Mapper.Map<IEnumerable<AnalysisResultDto>>(allResults);
+            return Result<IEnumerable<AnalysisResultDto>>.Success(Mapper.Map<IEnumerable<AnalysisResultDto>>(allResults));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error retrieving grading results for assignment ID: {AssignmentId}", assignmentId);
-            throw;
+            return Result<IEnumerable<AnalysisResultDto>>.Failure($"Failed to retrieve grading results: {ex.Message}");
         }
     }
 
-    public async Task<AnalysisResultDto?> FinalizeGradeAsync(Guid gradeId,
+    public async Task<Result<AnalysisResultDto?>> FinalizeGradeAsync(Guid gradeId,
         CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Finalizing grade with ID: {GradeId}", gradeId);
@@ -191,12 +192,12 @@ public class GradingService(
                 throw new Exception("Associated analysis result not found.");
             }
 
-            return Mapper.Map<AnalysisResultDto>(analysisResults.First());
+            return Result<AnalysisResultDto?>.Success(Mapper.Map<AnalysisResultDto>(analysisResults.First()));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error finalizing grade with ID: {GradeId}", gradeId);
-            throw;
+            return Result<AnalysisResultDto?>.Failure($"Failed to finalize grade: {ex.Message}");
         }
     }
 }
