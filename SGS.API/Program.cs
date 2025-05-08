@@ -1,4 +1,5 @@
 using SGS.API.Extensions;
+using SGS.API.Extensions.Configurations;
 using SGS.API.Middleware;
 using SGS.Application;
 using SGS.Infrastructure;
@@ -15,7 +16,7 @@ builder.Logging.AddDebug();
 builder.Services.AddAuthServices(builder.Configuration);
 
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
-builder.Services.AddApplication();
+builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
