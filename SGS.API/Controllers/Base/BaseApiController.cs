@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using SGS.Application.Helpers;
+using SGS.Application.Models;
 
 namespace SGS.API.Controllers.Base;
 
