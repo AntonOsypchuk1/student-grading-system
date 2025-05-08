@@ -16,6 +16,9 @@ public class Document : BaseEntity
     public int AttemptNumber { get; set; }
 
     [Required]
+    public string FileName { get; set; } = null!;
+    
+    [Required]
     public string FilePath { get; set; } = null!;
 
     [Required]

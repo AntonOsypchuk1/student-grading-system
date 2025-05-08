@@ -1,13 +1,15 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SGS.API.Controllers.Base;
+using SGS.API.Extensions;
 using SGS.Application.Interfaces;
 
 namespace SGS.API.Controllers;
 
 [ApiController]
 [Route("api/users")]
-public class UserController(IUserService userService) : ControllerBase
+public class UserController(IUserService userService) : BaseApiController
 {
     [Authorize]
     [HttpGet("me")]
@@ -22,14 +24,7 @@ public class UserController(IUserService userService) : ControllerBase
             return Unauthorized(new { error = "Invalid token." });
         
         var result = await userService.GetUserByEmailAsync(email);
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-        
-        if (result.Data == null)
-            return NotFound(new { error = "User not found." });
-        
-        return Ok(result.Data);
+        return HandleResult(result);
     }
 
     [HttpGet("teachers")]
@@ -39,14 +34,7 @@ public class UserController(IUserService userService) : ControllerBase
     public async Task<IActionResult> GetTeachers()
     {
         var result = await userService.GetTeachersAsync();
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-        
-        if (result.Data is null || !result.Data.Any())
-            return NoContent();
-        
-        return Ok(result.Data);
+        return HandleCollectionResult(result);
     }
 
     [HttpGet("students")]
@@ -55,14 +43,7 @@ public class UserController(IUserService userService) : ControllerBase
     public async Task<IActionResult> GetStudents()
     {
         var result = await userService.GetStudentsAsync();
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-        
-        if (result.Data is null || !result.Data.Any())
-            return NoContent();
-        
-        return Ok(result.Data);
+        return HandleCollectionResult(result);
     }
 
     [HttpGet("groups/{groupId:guid}")]
@@ -73,20 +54,10 @@ public class UserController(IUserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetStudentsByGroup(Guid groupId)
     {
-        if (groupId == Guid.Empty)
-            return BadRequest(new { error = "Invalid group ID." });
-
-        var result = await userService.GetStudentsByGroupAsync(groupId);
+        if (!this.IsValidGuid(groupId, out var errorResult))
+            return errorResult;
         
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-            
-        if (result.Data == null) 
-            return NotFound(new { error = "Group not found." });
-            
-        if (!result.Data.Any()) 
-            return NoContent();
-            
-        return Ok(result.Data);
+        var result = await userService.GetStudentsByGroupAsync(groupId);
+        return HandleCollectionResult(result);
     }
 }

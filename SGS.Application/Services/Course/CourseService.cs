@@ -1,15 +1,11 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
-using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
-using SGS.Application.Services.Bases;
-using SGS.Domain.Entities;
-using SGS.Infrastructure.Data;
-using SGS.Infrastructure.Repositories.Interfaces;
+using SGS.Application.Models;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 
-namespace SGS.Application.Services;
+namespace SGS.Application.Services.Course;
 
 public class CourseService(
     IUnitOfWork unitOfWork,
@@ -30,7 +26,7 @@ public class CourseService(
             Logger.LogInformation("Creating course with title: {Title}", command.Title);
             try
             {
-                var course = new Course
+                var course = new Domain.Entities.Course
                 {
                     Id = Guid.NewGuid(),
                     Title = command.Title,

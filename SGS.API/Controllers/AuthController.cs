@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using SGS.API.Controllers.Base;
 using SGS.API.DTOs;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
@@ -15,10 +16,8 @@ public class AuthController(
     IRefreshTokenService refreshTokenService,
     IUserService userService,
     IMapper mapper)
-    : ControllerBase
+    : BaseApiController
 {
-    // TODO: Implement logout functionality
-    
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -28,11 +27,7 @@ public class AuthController(
             return BadRequest(ModelState);
 
         var result = await authService.RegisterUserAsync(command);
-        
-        if (result.IsSuccess)
-            return CreatedAtAction(nameof(Login), new { id = result.Data?.Id }, result.Data);
-
-        return BadRequest(new { error = result.Error });
+        return HandleCreatedResult(result, nameof(Login), new { email = command.Email });
     }
 
     [HttpPost("login")]
@@ -45,11 +40,35 @@ public class AuthController(
             return BadRequest(ModelState);
 
         var result = await authService.LoginAsync(dto.Email, dto.Password);
-        
+
         if (!result.IsSuccess)
-            return Unauthorized(new { error = result.Error });
+            return Unauthorized(new ProblemDetails { Detail = result.Error });
 
         return Ok(result.Data);
+    }
+    
+    [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Logout([FromBody] RefreshTokenRequestDto request)
+    {
+        if (string.IsNullOrEmpty(request.RefreshToken))
+            return BadRequest(new ProblemDetails { Detail = "Refresh token is required." });
+
+        var tokenResult = await refreshTokenService.GetRefreshTokenAsync(request.RefreshToken);
+        if (!tokenResult.IsSuccess)
+            return BadRequest(new ProblemDetails { Detail = tokenResult.Error });
+
+        var existingRefreshToken = tokenResult.Data;
+        if (existingRefreshToken is not { IsActive: true })
+            return Unauthorized(new ProblemDetails { Detail = "Invalid or expired refresh token." });
+
+        var revokeResult = await refreshTokenService.RevokeRefreshTokenAsync(request.RefreshToken);
+        if (!revokeResult.IsSuccess)
+            return BadRequest(new ProblemDetails { Detail = revokeResult.Error });
+
+        return Ok(new { message = "Logged out successfully" });
     }
 
     [HttpPost("refresh")]
@@ -62,31 +81,31 @@ public class AuthController(
             return BadRequest(ModelState);
 
         if (string.IsNullOrEmpty(request.RefreshToken))
-            return BadRequest(new { error = "Refresh token is required." });
+            return BadRequest(new ProblemDetails { Detail = "Refresh token is required." });
 
         var tokenResult = await refreshTokenService.GetRefreshTokenAsync(request.RefreshToken);
         if (!tokenResult.IsSuccess)
-            return BadRequest(new { error = tokenResult.Error });
-        
+            return BadRequest(new ProblemDetails { Detail = tokenResult.Error });
+
         var existingRefreshToken = tokenResult.Data;
         if (existingRefreshToken is not { IsActive: true })
-            return Unauthorized(new { error = "Invalid or expired refresh token." });
+            return Unauthorized(new ProblemDetails { Detail = "Invalid or expired refresh token." });
 
         var revokeResult = await refreshTokenService.RevokeRefreshTokenAsync(request.RefreshToken);
         if (!revokeResult.IsSuccess)
-            return BadRequest(new { error = revokeResult.Error });
+            return BadRequest(new ProblemDetails { Detail = revokeResult.Error });
         
         var userResult = await userService.GetUserByIdAsync(existingRefreshToken.UserId);
-        if (!userResult.IsSuccess || userResult.Data == null)
-            return Unauthorized(new { error = userResult.Error ?? "User not found." });
+        if (!userResult.IsSuccess || userResult.Data is null)
+            return Unauthorized(new ProblemDetails { Detail = userResult.Error ?? "User not found." });
 
         var user = userResult.Data;
         var accessToken = tokenService.GenerateToken(mapper.Map<User>(user));
-        
+
         var newTokenResult = await refreshTokenService.CreateRefreshTokenAsync(user.Id);
-        if (!newTokenResult.IsSuccess || newTokenResult.Data == null)
-            return BadRequest(new { error = newTokenResult.Error });
-        
+        if (!newTokenResult.IsSuccess || newTokenResult.Data is null)
+            return BadRequest(new ProblemDetails { Detail = newTokenResult.Error });
+
         return Ok(new AuthResponseDto
         {
             Token = accessToken,

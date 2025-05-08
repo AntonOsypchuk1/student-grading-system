@@ -1,4 +1,4 @@
-namespace SGS.Application.Helpers;
+namespace SGS.Application.Models;
 
 public class Result<T>
 {

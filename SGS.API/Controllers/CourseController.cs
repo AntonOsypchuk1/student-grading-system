@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SGS.API.Controllers.Base;
+using SGS.API.Extensions;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 
@@ -7,7 +9,7 @@ namespace SGS.API.Controllers;
 
 [ApiController]
 [Route("api/courses")]
-public class CourseController(ICourseService courseService) : ControllerBase
+public class CourseController(ICourseService courseService) : BaseApiController
 {
     [Authorize(Policy = "RequireTeacherRole")]
     [HttpPost("create")]
@@ -22,11 +24,7 @@ public class CourseController(ICourseService courseService) : ControllerBase
             return BadRequest(ModelState);
         
         var result = await courseService.CreateCourseAsync(command);
-        
-        if (result.Data is null || !result.IsSuccess)
-            return BadRequest(new { error = result.Error });
-        
-        return CreatedAtAction(nameof(GetCourseById), new { id = result.Data.Id }, result.Data);
+        return HandleCreatedResult(result, nameof(GetCourseById), new { id = result.Data?.Id });
     }
 
     [HttpGet("{id:guid}")]
@@ -36,18 +34,11 @@ public class CourseController(ICourseService courseService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetCourseById([FromRoute] Guid id)
     {
-        if (id == Guid.Empty)
-            return BadRequest(new { error = "Invalid course ID." });
+        if (!this.IsValidGuid(id, out var errorResult))
+            return errorResult;
 
         var result = await courseService.GetCourseByIdAsync(id);
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-        
-        if (result.Data is null)
-            return NotFound(new { error = "Course not found." });
-        
-        return Ok(result.Data);
+        return HandleResult(result);
     }
 
     [Authorize(Policy = "RequireTeacherRole")]
@@ -60,18 +51,11 @@ public class CourseController(ICourseService courseService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetCoursesByTeacher([FromRoute] Guid teacherId)
     {
-        if (teacherId == Guid.Empty)
-            return BadRequest(new { error = "Invalid teacher ID." });
+        if (!this.IsValidGuid(teacherId, out var errorResult))
+            return errorResult;
 
         var result = await courseService.GetCoursesByTeacherAsync(teacherId);
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-        
-        if (result.Data is null || !result.Data.Any()) 
-            return NoContent();
-        
-        return Ok(result.Data);
+        return HandleCollectionResult(result);
     }
 
     [Authorize(Policy = "RequireStudentRole")]
@@ -84,17 +68,10 @@ public class CourseController(ICourseService courseService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetCoursesByStudent([FromRoute] Guid studentId)
     {
-        if (studentId == Guid.Empty)
-            return BadRequest(new { error = "Invalid student ID." });
+        if (!this.IsValidGuid(studentId, out var errorResult))
+            return errorResult;
 
         var result = await courseService.GetCoursesByStudentAsync(studentId);
-        
-        if (!result.IsSuccess)
-            return StatusCode(500, new { error = result.Error });
-        
-        if (result.Data is null || !result.Data.Any())
-            return NoContent();
-        
-        return Ok(result.Data);
+        return HandleCollectionResult(result);
     }
 }

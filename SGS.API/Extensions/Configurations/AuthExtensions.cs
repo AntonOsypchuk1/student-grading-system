@@ -6,7 +6,7 @@ using SGS.API.Services;
 using SGS.API.Settings;
 using SGS.Application.Interfaces;
 
-namespace SGS.API.Extensions;
+namespace SGS.API.Extensions.Configurations;
 
 public static class AuthExtensions
 {
