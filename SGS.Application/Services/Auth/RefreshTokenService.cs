@@ -1,8 +1,8 @@
 using System.Security.Cryptography;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using SGS.Application.Helpers;
 using SGS.Application.Interfaces;
+using SGS.Application.Models;
 using SGS.Domain.Entities;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 

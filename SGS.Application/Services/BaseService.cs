@@ -1,6 +1,6 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using SGS.Application.Helpers;
+using SGS.Application.Models;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services;

@@ -1,5 +1,5 @@
 using SGS.Application.DTOs;
-using SGS.Application.Helpers;
+using SGS.Application.Models;
 
 namespace SGS.Application.Interfaces;
 
