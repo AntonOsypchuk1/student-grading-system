@@ -79,7 +79,7 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
         if (!documentResult.IsSuccess || documentResult.Data == null)
             return NotFound(new { error = documentResult.Error });
             
-        var contentResult = await documentService.GetDocumentContentAsync(id);
+        var contentResult = await documentService.GetDocumentContentBytesAsync(id);
         if (!contentResult.IsSuccess)
             return StatusCode(500, new { error = contentResult.Error });
             

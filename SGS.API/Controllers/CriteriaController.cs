@@ -47,4 +47,17 @@ public class CriteriaController(IGradingCriteriaService criteriaService) : BaseA
         var result = await criteriaService.GetAllCriteriaAsync();
         return HandleCollectionResult(result);
     }
+    
+    [HttpGet("by-assignment/{assignmentId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetCriteriaByAssignment(Guid assignmentId)
+    {
+        if (!this.IsValidGuid(assignmentId, out var errorResult))
+            return errorResult; 
+        
+        var result = await criteriaService.GetCriteriaByAssignmentAsync(assignmentId);
+        return HandleCollectionResult(result);
+    }
 }
