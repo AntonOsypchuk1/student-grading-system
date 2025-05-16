@@ -5,5 +5,5 @@ namespace SGS.Infrastructure.Repositories.Interfaces;
 
 public interface IGradingCriteriaRepository : IBaseRepository<GradingCriteria>
 {
-    Task<IEnumerable<GradingCriteria>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<GradingCriteria>> GetByAssignmentIdAsync(Guid assignmentId, CancellationToken cancellationToken = default);
 }

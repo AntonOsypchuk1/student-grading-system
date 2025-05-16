@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using SGS.API.DTOs;
 using SGS.Application.DTOs;
 using SGS.Tests.Integration.Bases;
-using SGS.Tests.Mocks;
 
 namespace SGS.Tests.Integration;
 

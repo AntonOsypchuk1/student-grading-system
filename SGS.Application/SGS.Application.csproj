@@ -9,6 +9,7 @@
     <ItemGroup>
         <ProjectReference Include="..\SGS.Domain\SGS.Domain.csproj"/>
         <ProjectReference Include="..\SGS.Infrastructure\SGS.Infrastructure.csproj"/>
+        <ProjectReference Include="..\SGS.SemanticAnalysis\SGS.SemanticAnalysis.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -9,7 +9,9 @@ namespace SGS.API.Controllers;
 
 [ApiController]
 [Route("api/grading")]
-public class GradingController(IGradingService gradingService) : BaseApiController
+public class GradingController(
+    IGradingService gradingService,
+    IAnalysisService analysisService) : BaseApiController
 {
     [Authorize(Policy = "RequireTeacherRole")]
     [HttpPost("analyze/{docId:guid}")]
@@ -24,7 +26,7 @@ public class GradingController(IGradingService gradingService) : BaseApiControll
         if (!this.IsValidGuid(docId, out var errorResult))
             return errorResult;
 
-        var result = await gradingService.AnalyzeDocumentAsync(docId);
+        var result = await analysisService.AnalyzeDocumentAsync(docId);
         return HandleCreatedResult(result, nameof(GetAnalysisResult), new { id = result.Data?.Id });
     }
 
@@ -38,7 +40,7 @@ public class GradingController(IGradingService gradingService) : BaseApiControll
         if (!this.IsValidGuid(docId, out var errorResult))
             return errorResult;
         
-        var result = await gradingService.GetAnalysisResultByDocumentIdAsync(docId);
+        var result = await analysisService.GetAnalysisResultByDocumentIdAsync(docId);
         return HandleResult(result);
     }
 

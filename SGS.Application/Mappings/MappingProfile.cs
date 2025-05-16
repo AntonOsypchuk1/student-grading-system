@@ -28,9 +28,8 @@ public class MappingProfile : Profile
 
         CreateMap<CreateCourseCommand, Course>()
             .ForMember(dest => dest.Id, opt => opt.Ignore());
-        
+
         CreateMap<CreateGradingCriteriaCommand, GradingCriteria>()
-            .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
+            .ForMember(dest => dest.Id, opt => opt.Ignore());
     }
 }

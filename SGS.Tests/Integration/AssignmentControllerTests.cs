@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using SGS.Application.DTOs;
 using SGS.Tests.Integration.Bases;
-using SGS.Tests.Mocks;
+using SGS.Tests.SeedData;
 
 namespace SGS.Tests.Integration;
 
