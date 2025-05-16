@@ -9,7 +9,9 @@ public interface IDocumentService
     
     Task<Result<DocumentDto?>> GetDocumentByIdAsync(Guid id, CancellationToken cancellationToken = default);
     
-    Task<Result<byte[]>> GetDocumentContentAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Result<byte[]>> GetDocumentContentBytesAsync(Guid id, CancellationToken cancellationToken = default);
+    
+    Task<Result<string>> GetDocumentContentTextAsync(Guid id, CancellationToken cancellationToken = default);
     
     Task<Result<IEnumerable<DocumentDto>?>> GetDocumentsByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
     

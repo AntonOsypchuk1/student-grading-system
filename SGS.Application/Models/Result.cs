@@ -3,7 +3,7 @@ namespace SGS.Application.Models;
 public class Result<T>
 {
     public bool IsSuccess { get; }
-    public T? Data { get; }
+    public T? Data { get; set; }
     public string? Error { get; }
 
     private Result(bool isSuccess, T? data, string? error)

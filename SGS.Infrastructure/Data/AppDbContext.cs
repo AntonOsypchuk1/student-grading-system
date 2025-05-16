@@ -19,58 +19,88 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<User>().HasKey(u => u.Id);
-        modelBuilder.Entity<Student>().HasKey(s => s.Id);
-        modelBuilder.Entity<Teacher>().HasKey(t => t.Id);
-        modelBuilder.Entity<StudentsGroup>().HasKey(sg => sg.Id);
-        modelBuilder.Entity<Course>().HasKey(c => c.Id);
-        modelBuilder.Entity<Assignment>().HasKey(a => a.Id);
-        modelBuilder.Entity<Document>().HasKey(d => d.Id);
-        modelBuilder.Entity<Grade>().HasKey(g => g.Id);
-        modelBuilder.Entity<GradingCriteria>().HasKey(gc => gc.Id);
-        modelBuilder.Entity<AnalysisResults>().HasKey(ar => ar.Id);
-        modelBuilder.Entity<RefreshToken>().HasKey(rt => rt.Id);
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(u => u.Id);
+            entity.Property(u => u.Role)
+                .HasColumnName("Role")
+                .HasConversion<int>()
+                .IsRequired();
+        });
 
-        modelBuilder.Entity<User>()
-            .Property(u => u.Role)
-            .HasColumnName("Role")
-            .HasConversion<int>()
-            .IsRequired();
+        modelBuilder.Entity<Student>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.HasOne<StudentsGroup>(s => s.Group)
+                .WithMany(g => g.Students)
+                .HasForeignKey(s => s.GroupId);
+        });
 
-        modelBuilder.Entity<Student>()
-            .HasOne<StudentsGroup>(s => s.Group)
-            .WithMany(g => g.Students)
-            .HasForeignKey(s => s.GroupId);
+        modelBuilder.Entity<Teacher>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+            entity.HasOne<User>(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId);
+            entity.HasMany(t => t.StudentsGroups)
+                .WithMany(g => g.Teachers)
+                .UsingEntity(j => j.ToTable("TeacherGroup"));
+            entity.HasMany(t => t.Courses)
+                .WithMany(c => c.Teachers)
+                .UsingEntity(j => j.ToTable("CourseTeacher"));
+        });
+        
+        modelBuilder.Entity<StudentsGroup>(entity =>
+        {
+            entity.HasKey(sg => sg.Id);
+            entity.HasMany(g => g.Courses)
+                .WithMany(c => c.StudentsGroups)
+                .UsingEntity(j => j.ToTable("GroupCourse"));
+        });
 
-        modelBuilder.Entity<Document>()
-            .HasOne<User>(d => d.User)
-            .WithMany()
-            .HasForeignKey(d => d.UserId);
+        modelBuilder.Entity<Course>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.HasMany(c => c.StudentsGroups)
+                .WithMany(g => g.Courses)
+                .UsingEntity(j => j.ToTable("GroupCourse"));
+        });
 
-        modelBuilder.Entity<Document>()
-            .HasOne<Assignment>(d => d.Assignment)
-            .WithMany(a => a.Documents)
-            .HasForeignKey(d => d.AssignmentId);
+        modelBuilder.Entity<Assignment>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+        });
 
-        // Many-to-many relationships
-        modelBuilder.Entity<Teacher>()
-            .HasMany(t => t.StudentsGroups)
-            .WithMany(g => g.Teachers)
-            .UsingEntity(j => j.ToTable("TeacherGroup"));
+        modelBuilder.Entity<Document>(entity =>
+        {
+            entity.HasKey(d => d.Id);
+            entity.HasOne<User>(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId);
+            entity.HasOne<Assignment>(d => d.Assignment)
+                .WithMany(a => a.Documents)
+                .HasForeignKey(d => d.AssignmentId);
 
-        modelBuilder.Entity<Teacher>()
-            .HasMany(t => t.Courses)
-            .WithMany(c => c.Teachers)
-            .UsingEntity(j => j.ToTable("CourseTeacher"));
+        });
 
-        modelBuilder.Entity<Course>()
-            .HasMany(c => c.StudentsGroups)
-            .WithMany(g => g.Courses)
-            .UsingEntity(j => j.ToTable("GroupCourse"));
+        modelBuilder.Entity<Grade>(entity =>
+        {
+            entity.HasKey(g => g.Id);
+        });
 
-        modelBuilder.Entity<StudentsGroup>()
-            .HasMany(g => g.Courses)
-            .WithMany(c => c.StudentsGroups)
-            .UsingEntity(j => j.ToTable("GroupCourse"));
+        modelBuilder.Entity<GradingCriteria>(entity =>
+        {
+            entity.HasKey(gc => gc.Id);
+        });
+
+        modelBuilder.Entity<AnalysisResults>(entity =>
+        {
+            entity.HasKey(ar => ar.Id);
+        });
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(rt => rt.Id);
+        });
     }
 }

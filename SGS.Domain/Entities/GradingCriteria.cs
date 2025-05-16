@@ -7,14 +7,20 @@ namespace SGS.Domain.Entities;
 public class GradingCriteria : BaseEntity
 {
     [Required]
-    public Guid UserId { get; set; }
-
+    public string Title { get; set; }
+    
     [Required]
-    public string CriteriaDescription { get; set; } = null!;
-
+    public string Description { get; set; }
+    
     [Required]
-    public DateTime CreatedAt { get; set; }
-
-    [ForeignKey(nameof(UserId))]
-    public User User { get; set; } = null!;
+    public double MaxGrade { get; set; }
+    
+    [Required]
+    public double Weight { get; set; }
+    
+    [Required]
+    public Guid AssignmentId { get; set; }
+    
+    [ForeignKey(nameof(AssignmentId))]
+    public Assignment Assignment { get; set; } = null!;
 }

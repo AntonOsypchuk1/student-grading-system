@@ -155,6 +155,10 @@ namespace SGS.Infrastructure.Migrations
                     b.Property<int>("AttemptNumber")
                         .HasColumnType("integer");
 
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("FilePath")
                         .IsRequired()
                         .HasColumnType("text");
@@ -205,19 +209,23 @@ namespace SGS.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<Guid>("AssignmentId")
+                        .HasColumnType("uuid");
 
-                    b.Property<string>("CriteriaDescription")
+                    b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("Weight")
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("AssignmentId");
 
                     b.ToTable("GradingCriteria");
                 });
@@ -458,13 +466,13 @@ namespace SGS.Infrastructure.Migrations
 
             modelBuilder.Entity("SGS.Domain.Entities.GradingCriteria", b =>
                 {
-                    b.HasOne("SGS.Domain.Entities.User", "User")
+                    b.HasOne("SGS.Domain.Entities.Assignment", "Assignment")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("AssignmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("Assignment");
                 });
 
             modelBuilder.Entity("SGS.Domain.Entities.Student", b =>
