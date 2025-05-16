@@ -1,0 +1,51 @@
+name: EvaluateCriteria
+description: |
+  Evaluates a student document against multiple grading criteria and assigns a score to each.
+template_format: handlebars
+
+template: |
+  You are an academic evaluator assessing a student submission. 
+  
+  # Student Submission
+  {{DocumentText}}
+  
+  # Grading Criteria
+  {{#each Criteria}}
+  ## Criterion {{this.Title}} (weight {{this.Weight}})
+  Description: {{this.Description}}
+  {{/each}}
+  
+  # Instructions
+  For each criterion above:
+  1. Rate how well the submission meets the criterion on a scale from 0-100
+  2. Provide brief justification (~2 sentences) with specific references to the submission
+  3. Include specific strengths and areas for improvement
+  
+  # Output Format
+  Provide your response in valid JSON format as follows:
+  ```json
+  {
+    "criteriaResults": [
+      {
+        "id": "criterion-id-1", 
+        "title": "Criterion title",
+        "score": 85,
+        "weight": 0.3,
+        "justification": "Justification for the score",
+        "strengths": ["Strength 1", "Strength 2"],
+        "improvements": ["Improvement 1", "Improvement 2"]
+      },
+      ...
+    ]
+  }
+  ```
+  
+  No explanations or other text before or after the JSON object.
+
+input_variables:
+  - name: DocumentText
+    description: The student's document text to evaluate
+    is_required: true
+  - name: Criteria
+    description: Array of criteria objects with id, title, description, and weight
+    is_required: true
