@@ -2,7 +2,7 @@ using Microsoft.Extensions.Options;
 using SGS.Application.Common.Options;
 using SGS.Application.Interfaces;
 
-namespace SGS.Application.Services.Document;
+namespace SGS.Application.Services.Document.Storage;
 
 public class DiskFileStorageService : IFileStorageService
 {

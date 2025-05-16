@@ -3,7 +3,7 @@ using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Configuration;
 using SGS.Application.Interfaces;
 
-namespace SGS.Application.Services.Document;
+namespace SGS.Application.Services.Document.Storage;
 
 public class BlobStorageService : IFileStorageService
 {

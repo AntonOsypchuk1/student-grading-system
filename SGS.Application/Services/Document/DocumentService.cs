@@ -1,15 +1,18 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
+using SGS.Application.Extensions;
 using SGS.Application.Interfaces;
 using SGS.Application.Models;
+using SGS.Application.Services.Document.Extraction;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services.Document;
 
 public class DocumentService(
-    IUnitOfWork unitOfWork,
+    DocumentTextExtractionManager extractionManager,
     IFileStorageService fileStorageService,
+    IUnitOfWork unitOfWork,
     ILogger<DocumentService> logger,
     IMapper mapper)
     : BaseService(unitOfWork, logger, mapper), IDocumentService
@@ -75,7 +78,7 @@ public class DocumentService(
         }
     }
 
-    public async Task<Result<byte[]>> GetDocumentContentAsync(Guid id,
+    public async Task<Result<byte[]>> GetDocumentContentBytesAsync(Guid id,
         CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Retrieving content for document with ID: {DocumentId}", id);
@@ -99,6 +102,34 @@ public class DocumentService(
         {
             Logger.LogError(ex, "Error retrieving document content with ID: {DocumentId}", id);
             return Result<byte[]>.Failure($"Failed to retrieve document content: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<string>> GetDocumentContentTextAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        Logger.LogInformation("Retrieving content for document with ID: {DocumentId}", id);
+        
+        try
+        {
+            var document = await UnitOfWork.Documents.GetByIdAsync(id, cancellationToken);
+
+            if (document == null)
+            {
+                Logger.LogWarning("Document not found with ID: {DocumentId}", id);
+                return Result<string>.Failure("Document not found.");
+            }
+                
+            var filePath = document.FilePath;
+                
+            var fileContent = await fileStorageService.GetFileTextAsync(filePath, extractionManager, cancellationToken);
+            Logger.LogInformation("Successfully retrieved content for document with ID: {DocumentId}", id);
+
+            return Result<string>.Success(fileContent);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error extracting text from document {DocumentId}", id);
+            return Result<string>.Failure($"Failed to retrieve document content: {ex.Message}");
         }
     }
 
