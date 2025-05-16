@@ -6,104 +6,206 @@ namespace SGS.Tests.SeedData;
 
 public static class TestDataSeeder
 {
-    public static Guid GuidTeacher = Guid.Parse("00000000-0000-0000-0000-000000000001");
-    public static Guid GuidStudent = Guid.Parse("00000000-0000-0000-0000-000000000002");
-    public static Guid GuidGroup = Guid.Parse("00000000-0000-0000-0000-000000000003");
-    public static Guid GuidCourse1 = Guid.Parse("00000000-0000-0000-0000-000000000004");
-    public static Guid GuidCourse2 = Guid.Parse("00000000-0000-0000-0000-000000000005");
-    public static Guid GuidAssignment = Guid.Parse("00000000-0000-0000-0000-000000000006");
-    public static Guid GuidDocument = Guid.Parse("00000000-0000-0000-0000-000000000007");
-    public static Guid GuidCriteria = Guid.Parse("00000000-0000-0000-0000-000000000008");
+    // Static Guids for test entities
+    public static readonly Guid GuidTeacher = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    public static readonly Guid GuidStudent = Guid.Parse("00000000-0000-0000-0000-000000000002");
+    public static readonly Guid GuidGroup = Guid.Parse("00000000-0000-0000-0000-000000000003");
+    public static readonly Guid GuidCourse1 = Guid.Parse("00000000-0000-0000-0000-000000000004");
+    public static readonly Guid GuidCourse2 = Guid.Parse("00000000-0000-0000-0000-000000000005");
+    public static readonly Guid GuidAssignment = Guid.Parse("00000000-0000-0000-0000-000000000006");
+    public static readonly Guid GuidDocument = Guid.Parse("00000000-0000-0000-0000-000000000007");
+    public static readonly Guid GuidCriteria = Guid.Parse("00000000-0000-0000-0000-000000000008");
     
+    // Static properties for entity references
+    public static User Teacher { get; private set; }
+    public static User Student { get; private set; }
+    public static StudentsGroup Group { get; private set; }
+    public static Course Course1 { get; private set; }
+    public static Course Course2 { get; private set; }
+    public static Assignment Assignment { get; private set; }
+    public static Document Document { get; private set; }
+    public static GradingCriteria Criteria { get; private set; }
+    
+    // Track if the seeder has been initialized
+    private static bool _isInitialized;
+    private static readonly object _lockObj = new();
+
+    /// <summary>
+    /// Seeds the database with test data and initializes static entity references
+    /// </summary>
     public static void Seed(AppDbContext context)
     {
-        // Avoid reseeding if data exists
-        if (context.Users.Any()) return;
-
+        lock (_lockObj)
+        {
+            if (_isInitialized) return;
+            
+            // Only seed if no users exist
+            bool needSeeding = !context.Users.Any();
+            
+            if (needSeeding)
+            {
+                SeedDatabase(context);
+            }
+            
+            // Load entity references regardless if we just seeded
+            LoadEntityReferences(context);
+            
+            _isInitialized = true;
+        }
+    }
+    
+    private static void SeedDatabase(AppDbContext context)
+    {
         // Create teacher and student
-        var teacher = new User
+        Teacher = new User
         {
             Id = GuidTeacher,
             Login = "teacher1",
             Email = "teacher1@example.com",
             FullName = "Teacher One",
-            PasswordHash = string.Empty,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
             Role = UserRole.Teacher
         };
-        var student = new User
+        
+        Student = new User
         {
             Id = GuidStudent,
             Login = "student1",
             Email = "student1@example.com",
             FullName = "Student One",
-            PasswordHash = string.Empty,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
             Role = UserRole.Student
         };
 
-        context.Users.AddRange(teacher, student);
+        context.Users.AddRange(Teacher, Student);
         context.SaveChanges();
 
         // Insert group
-        var group = new StudentsGroup { Id = GuidGroup, Name = "Group A" };
-        context.StudentGroups.Add(group);
+        Group = new StudentsGroup { Id = GuidGroup, Name = "Group A" };
+        context.StudentGroups.Add(Group);
         context.SaveChanges();
 
         // Insert teacher and student profiles if separate tables exist
-        context.Teachers.Add(new Teacher { UserId = teacher.Id });
-        context.Students.Add(new Student { UserId = student.Id, GroupId = group.Id });
+        context.Teachers.Add(new Teacher { UserId = Teacher.Id });
+        context.Students.Add(new Student { UserId = Student.Id, GroupId = Group.Id });
         context.SaveChanges();
 
         // Create courses
-        var course1 = new Course { Id = GuidCourse1, Title = "Mathematics 101", Description = "Basic Mathematics" };
-        var course2 = new Course { Id = GuidCourse2, Title = "Physics 101", Description = "Introduction to Physics" };
-        context.Courses.AddRange(course1, course2);
+        Course1 = new Course { Id = GuidCourse1, Title = "Mathematics 101", Description = "Basic Mathematics" };
+        Course2 = new Course { Id = GuidCourse2, Title = "Physics 101", Description = "Introduction to Physics" };
+        context.Courses.AddRange(Course1, Course2);
         context.SaveChanges();
 
         // Setup GroupCourse and CourseTeacher relationships using navigation properties
-        group.Courses.Add(course1);
-        group.Courses.Add(course2);
+        Group.Courses.Add(Course1);
+        Group.Courses.Add(Course2);
         // TODO: Add logic to ensure that the teacher and courses are linked correctly in the database.
-        // teacher.Courses.Add(course1);
-        // teacher.Courses.Add(course2);
         context.SaveChanges();
 
         // Create an assignment for group under course1 (Mathematics 101)
-        var assignment = new Assignment
+        Assignment = new Assignment
         {
             Id = GuidAssignment,
-            GroupId = group.Id,
-            CourseId = course1.Id,
+            GroupId = Group.Id,
+            CourseId = Course1.Id,
             Title = "Algebra Test",
             Description = "Solve Algebra problems",
             MaxAttempts = 3,
             DueDate = DateTime.UtcNow.AddDays(30)
         };
-        context.Assignments.Add(assignment);
+        context.Assignments.Add(Assignment);
         context.SaveChanges();
 
         // Create a document (simulate a file upload record)
-        var document = new Document
+        Document = new Document
         {
             Id = GuidDocument,
-            UserId = student.Id,
-            AssignmentId = assignment.Id,
+            UserId = Student.Id,
+            AssignmentId = Assignment.Id,
             AttemptNumber = 1,
+            FileName = "algebra_test_student1.pdf",
             FilePath = "/uploads/algebra_test_student1.pdf",
             UploadedAt = DateTime.UtcNow
         };
-        context.Documents.Add(document);
+        context.Documents.Add(Document);
         context.SaveChanges();
 
         // Create grading criteria by teacher
-        var criteria = new GradingCriteria
+        Criteria = new GradingCriteria
         {
             Id = GuidCriteria,
             Title = "Solution Correctness",
             Description = "Correctness of the solution and mathematical approach",
             Weight = 0.8,
-            AssignmentId = assignment.Id
+            AssignmentId = Assignment.Id
         };
-        context.GradingCriteria.Add(criteria);
+        context.GradingCriteria.Add(Criteria);
         context.SaveChanges();
     }
+    
+    private static void LoadEntityReferences(AppDbContext context)
+    {
+        // Load all entity references from the database
+        Teacher = context.Users.FirstOrDefault(u => u.Id == GuidTeacher);
+        Student = context.Users.FirstOrDefault(u => u.Id == GuidStudent);
+        Group = context.StudentGroups.FirstOrDefault(g => g.Id == GuidGroup);
+        Course1 = context.Courses.FirstOrDefault(c => c.Id == GuidCourse1);
+        Course2 = context.Courses.FirstOrDefault(c => c.Id == GuidCourse2);
+        Assignment = context.Assignments.FirstOrDefault(a => a.Id == GuidAssignment);
+        Document = context.Documents.FirstOrDefault(d => d.Id == GuidDocument);
+        Criteria = context.GradingCriteria.FirstOrDefault(c => c.Id == GuidCriteria);
+    }
+    
+    /// <summary>
+    /// Creates and adds a new test assignment to the database.
+    /// </summary>
+    public static async Task<Assignment> CreateTestAssignmentAsync(
+        AppDbContext context, 
+        string title = "Test Assignment",
+        string description = "Test Description")
+    {
+        var assignment = new Assignment
+        {
+            Id = Guid.NewGuid(),
+            GroupId = GuidGroup,
+            CourseId = GuidCourse1,
+            Title = title,
+            Description = description,
+            MaxAttempts = 3,
+            DueDate = DateTime.UtcNow.AddDays(7)
+        };
+        
+        context.Assignments.Add(assignment);
+        await context.SaveChangesAsync();
+        
+        return assignment;
+    }
+    
+    /// <summary>
+    /// Creates a test document
+    /// </summary>
+    public static async Task<Document> CreateTestDocumentAsync(
+        AppDbContext context,
+        Guid assignmentId,
+        Guid userId,
+        string fileName = "test_document.pdf")
+    {
+        var document = new Document
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            AssignmentId = assignmentId,
+            AttemptNumber = 1,
+            FileName = fileName,
+            FilePath = $"/uploads/{fileName}",
+            UploadedAt = DateTime.UtcNow
+        };
+        
+        context.Documents.Add(document);
+        await context.SaveChangesAsync();
+        
+        return document;
+    }
+    
+    // Add more helper methods for other entity types as needed
 }
