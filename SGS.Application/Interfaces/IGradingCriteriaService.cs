@@ -10,4 +10,6 @@ public interface IGradingCriteriaService
     Task<Result<GradingCriteriaDto?>> GetCriteriaByIdAsync(Guid id, CancellationToken cancellationToken = default);
     
     Task<Result<IEnumerable<GradingCriteriaDto>>> GetAllCriteriaAsync(CancellationToken cancellationToken = default);
+    
+    Task<Result<IEnumerable<GradingCriteriaDto>>> GetCriteriaByAssignmentAsync(Guid assignmentId, CancellationToken cancellationToken = default);
 }
