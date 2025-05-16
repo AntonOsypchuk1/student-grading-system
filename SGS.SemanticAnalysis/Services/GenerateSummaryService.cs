@@ -9,7 +9,7 @@ using SGS.SemanticAnalysis.Structures.PromptResponses;
 
 namespace SGS.SemanticAnalysis.Services;
 
-public class GenerateSummaryService(SemanticKernelFactory semanticKernelFactory)
+public class GenerateSummaryService(SemanticKernelFactory semanticKernelFactory, IPromptBuilder promptBuilder)
     : BasePromptService, IPromptService<GenerateSummaryRequest, GenerateSummaryResponse>
 {
     protected override string GetYamlFileName() => "GenerateSummary.prompt.yaml";
@@ -21,7 +21,7 @@ public class GenerateSummaryService(SemanticKernelFactory semanticKernelFactory)
             PromptYaml,
             promptTemplateFactory: new HandlebarsPromptTemplateFactory());
 
-        var input = PromptBuilder.BuildSummaryInputs(request);
+        var input = promptBuilder.BuildSummaryInputs(request);
 
         var functionResult = await kernelFunction.InvokeAsync(kernel, input, cancellationToken);
         var result = functionResult.GetValue<string>();

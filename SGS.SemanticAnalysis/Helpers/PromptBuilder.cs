@@ -5,9 +5,9 @@ using SGS.SemanticAnalysis.Structures.PromptRequests;
 
 namespace SGS.SemanticAnalysis.Helpers;
 
-public abstract class PromptBuilder
+public abstract class PromptBuilder : IPromptBuilder
 {
-    public static KernelArguments BuildCriterionInputs(EvaluateCriteriaRequest request)
+    public KernelArguments BuildCriterionInputs(EvaluateCriteriaRequest request)
     {
         var settings = new OpenAIPromptExecutionSettings { ToolCallBehavior = null };
         return new KernelArguments(settings)
@@ -17,7 +17,7 @@ public abstract class PromptBuilder
         };
     }
 
-    public static KernelArguments BuildSummaryInputs(GenerateSummaryRequest request)
+    public KernelArguments BuildSummaryInputs(GenerateSummaryRequest request)
     {
         var settings = new OpenAIPromptExecutionSettings { ToolCallBehavior = null };
         return new KernelArguments(settings)

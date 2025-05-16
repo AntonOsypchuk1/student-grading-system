@@ -9,7 +9,7 @@ using SGS.SemanticAnalysis.Structures.PromptResponses;
 
 namespace SGS.SemanticAnalysis.Services;
 
-public class EvaluateCriterionService(SemanticKernelFactory semanticKernelFactory)
+public class EvaluateCriterionService(SemanticKernelFactory semanticKernelFactory, IPromptBuilder promptBuilder) 
     : BasePromptService, IPromptService<EvaluateCriteriaRequest, EvaluateCriteriaResponse>
 {
     protected override string GetYamlFileName() => "EvaluateCriterion.prompt.yaml";
@@ -21,7 +21,7 @@ public class EvaluateCriterionService(SemanticKernelFactory semanticKernelFactor
             PromptYaml,
             promptTemplateFactory: new HandlebarsPromptTemplateFactory());
 
-        var input = PromptBuilder.BuildCriterionInputs(request);
+        var input = promptBuilder.BuildCriterionInputs(request);
 
         var functionResult = await kernelFunction.InvokeAsync(kernel, input, cancellationToken);
         var result = functionResult.GetValue<string>();
