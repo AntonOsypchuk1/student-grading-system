@@ -122,26 +122,6 @@ namespace SGS.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GradingCriteria",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CriteriaDescription = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_GradingCriteria", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_GradingCriteria_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Students",
                 columns: table => new
                 {
@@ -192,6 +172,7 @@ namespace SGS.Infrastructure.Migrations
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     AssignmentId = table.Column<Guid>(type: "uuid", nullable: false),
                     AttemptNumber = table.Column<int>(type: "integer", nullable: false),
+                    FileName = table.Column<string>(type: "text", nullable: false),
                     FilePath = table.Column<string>(type: "text", nullable: false),
                     UploadedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -208,6 +189,28 @@ namespace SGS.Infrastructure.Migrations
                         name: "FK_Documents_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GradingCriteria",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    MaxGrade = table.Column<double>(type: "double precision", nullable: false),
+                    Weight = table.Column<double>(type: "double precision", nullable: false),
+                    AssignmentId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GradingCriteria", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GradingCriteria_Assignments_AssignmentId",
+                        column: x => x.AssignmentId,
+                        principalTable: "Assignments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -362,9 +365,9 @@ namespace SGS.Infrastructure.Migrations
                 column: "DocumentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GradingCriteria_UserId",
+                name: "IX_GradingCriteria_AssignmentId",
                 table: "GradingCriteria",
-                column: "UserId");
+                column: "AssignmentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GroupCourse_StudentsGroupsId",
