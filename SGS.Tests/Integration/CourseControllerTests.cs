@@ -5,7 +5,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using SGS.Application.DTOs;
 using SGS.Tests.Integration.Bases;
-using SGS.Tests.Mocks;
+using SGS.Tests.SeedData;
 
 namespace SGS.Tests.Integration;
 

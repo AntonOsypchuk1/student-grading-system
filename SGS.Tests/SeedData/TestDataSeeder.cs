@@ -2,7 +2,7 @@ using SGS.Domain.Entities;
 using SGS.Domain.Enums;
 using SGS.Infrastructure.Data;
 
-namespace SGS.Tests.Mocks;
+namespace SGS.Tests.SeedData;
 
 public static class TestDataSeeder
 {
@@ -98,9 +98,10 @@ public static class TestDataSeeder
         var criteria = new GradingCriteria
         {
             Id = GuidCriteria,
-            UserId = teacher.Id,
-            CriteriaDescription = "Correctness of Solution",
-            CreatedAt = DateTime.UtcNow
+            Title = "Solution Correctness",
+            Description = "Correctness of the solution and mathematical approach",
+            Weight = 0.8,
+            AssignmentId = assignment.Id
         };
         context.GradingCriteria.Add(criteria);
         context.SaveChanges();

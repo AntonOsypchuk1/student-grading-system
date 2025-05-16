@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SGS.Infrastructure.Data;
-using SGS.Tests.Mocks;
+using SGS.Tests.SeedData;
 
 namespace SGS.Tests.Integration.Bases;
 
