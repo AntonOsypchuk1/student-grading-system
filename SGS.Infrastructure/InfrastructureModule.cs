@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SGS.Infrastructure.Data;
@@ -44,7 +45,9 @@ public static class InfrastructureModule
         {
             if (env.EnvironmentName == "Testing")
             {
-                options.UseInMemoryDatabase("TestDb");
+                options.UseInMemoryDatabase("TestDatabase")
+                    .ConfigureWarnings(warning => 
+                        warning.Ignore(InMemoryEventId.TransactionIgnoredWarning));
             }
             else
             {

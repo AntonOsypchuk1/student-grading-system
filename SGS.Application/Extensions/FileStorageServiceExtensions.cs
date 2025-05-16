@@ -11,7 +11,7 @@ public static class FileStorageServiceExtensions
     public static async Task<string> GetFileTextAsync(
         this IFileStorageService fileStorage,
         string filePath,
-        DocumentTextExtractionManager extractionManager,
+        IDocumentTextExtractionManager extractionManager,
         CancellationToken cancellationToken = default)
     {
         var fileBytes = await fileStorage.GetFileAsync(filePath, cancellationToken);

@@ -15,7 +15,10 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 // Optionally: builder.Logging.AddEventSourceLogger(); // for ETW logging
 
-builder.Services.AddAuthServices(builder.Configuration);
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddAuthServices(builder.Configuration);
+}
 
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddApplication(builder.Configuration);

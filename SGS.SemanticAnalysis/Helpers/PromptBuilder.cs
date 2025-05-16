@@ -5,7 +5,7 @@ using SGS.SemanticAnalysis.Structures.PromptRequests;
 
 namespace SGS.SemanticAnalysis.Helpers;
 
-public abstract class PromptBuilder : IPromptBuilder
+public class PromptBuilder : IPromptBuilder
 {
     public KernelArguments BuildCriterionInputs(EvaluateCriteriaRequest request)
     {
