@@ -1,17 +1,14 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using FluentAssertions;
 using SGS.Application.DTOs;
 using SGS.Tests.Integration.Bases;
 using SGS.Tests.SeedData;
 
 namespace SGS.Tests.Integration;
 
-public class UserControllerTests(CustomWebApplicationFactory<Program> factory)
-    : IClassFixture<CustomWebApplicationFactory<Program>>
+public class UserControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
 {
-    private readonly HttpClient _client = factory.CreateClient();
     private const string BaseUrl = "/api/users";
 
     [Fact]
@@ -21,62 +18,62 @@ public class UserControllerTests(CustomWebApplicationFactory<Program> factory)
         await AuthenticateAsTeacher();
 
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/me");
+        var response = await Client.GetAsync($"{BaseUrl}/me");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var user = await response.Content.ReadFromJsonAsync<UserDto>();
-        user.Should().NotBeNull();
-        user!.Email.Should().Be("teacher1@example.com");
+        Assert.NotNull(user);
+        Assert.Equal("teacher1@example.com", user!.Email);
     }
 
     [Fact]
     public async Task GetCurrentUser_Unauthenticated_ReturnsUnauthorized()
     {
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/me");
+        var response = await Client.GetAsync($"{BaseUrl}/me");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [Fact]
     public async Task GetTeachers_ReturnsTeachers()
     {
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/teachers");
+        var response = await Client.GetAsync($"{BaseUrl}/teachers");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var teachers = await response.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
-        teachers.Should().NotBeNull();
-        teachers!.Should().Contain(t => t.Id == TestDataSeeder.GuidTeacher);
+        Assert.NotNull(teachers);
+        Assert.Contains(teachers!, t => t.Id == TestDataSeeder.GuidTeacher);
     }
 
     [Fact]
     public async Task GetStudents_ReturnsStudents()
     {
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/students");
+        var response = await Client.GetAsync($"{BaseUrl}/students");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var students = await response.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
-        students.Should().NotBeNull();
-        students!.Should().Contain(s => s.Id == TestDataSeeder.GuidStudent);
+        Assert.NotNull(students);
+        Assert.Contains(students!, s => s.Id == TestDataSeeder.GuidStudent);
     }
 
     [Fact]
     public async Task GetStudentsByGroup_WithValidGroupId_ReturnsStudents()
     {
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/groups/{TestDataSeeder.GuidGroup}");
+        var response = await Client.GetAsync($"{BaseUrl}/groups/{TestDataSeeder.GuidGroup}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var students = await response.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
-        students.Should().NotBeNull();
-        students!.Should().Contain(s => s.Id == TestDataSeeder.GuidStudent);
+        Assert.NotNull(students);
+        Assert.Contains(students!, s => s.Id == TestDataSeeder.GuidStudent);
     }
 
     [Fact]
@@ -86,21 +83,9 @@ public class UserControllerTests(CustomWebApplicationFactory<Program> factory)
         var invalidGroupId = Guid.NewGuid();
 
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/groups/{invalidGroupId}");
+        var response = await Client.GetAsync($"{BaseUrl}/groups/{invalidGroupId}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
-
-    private async Task AuthenticateAsTeacher()
-    {
-        var loginDto = new LoginDto
-        {
-            Email = "teacher1@example.com",
-            Password = "Password123!"
-        };
-        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginDto);
-        var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse!.Token);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

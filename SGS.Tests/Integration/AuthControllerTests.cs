@@ -1,96 +1,137 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
 using SGS.API.DTOs;
 using SGS.Application.DTOs;
 using SGS.Tests.Integration.Bases;
 
 namespace SGS.Tests.Integration;
 
-public class AuthControllerTests(CustomWebApplicationFactory<Program> factory)
-    : IClassFixture<CustomWebApplicationFactory<Program>>
+public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
 {
-    private readonly HttpClient _client = factory.CreateClient();
-    private const string TeacherEmail = "teacher1@test.com";
-    private static readonly string TeacherPassword = string.Empty;
+    private const string BaseUrl = "/api/auth";
 
     [Fact]
     public async Task Login_WithValidCredentials_ReturnsAuthResponse()
     {
+        // Arrange
         var loginDto = new LoginDto
         {
             Email = TeacherEmail,
-            Password = TeacherPassword
+            Password = UserPassword
         };
 
-        var response = await _client.PostAsJsonAsync("/api/auth/login", loginDto);
+        // Act
+        var response = await Client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-        authResponse.Should().NotBeNull();
-        authResponse!.Token.Should().NotBeNullOrEmpty();
-        authResponse.RefreshToken.Should().NotBeNullOrEmpty();
-        authResponse.User.Should().NotBeNull();
-        authResponse.User.Email.Should().Be(loginDto.Email);
+        Assert.NotNull(authResponse);
+        Assert.NotEmpty(authResponse!.Token);
+        Assert.NotEmpty(authResponse.RefreshToken);
+        Assert.NotNull(authResponse.User);
+        Assert.Equal(loginDto.Email, authResponse.User.Email);
     }
 
     [Fact]
     public async Task Login_WithInvalidCredentials_ReturnsUnauthorized()
     {
+        // Arrange
         var loginDto = new LoginDto
         {
             Email = "wrong@test.com",
             Password = "WrongPassword123!"
         };
 
-        var response = await _client.PostAsJsonAsync("/api/auth/login", loginDto);
+        // Act
+        var response = await Client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
 
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Register_WithValidData_ReturnsCreated()
+    {
+        // Arrange
+        var registerCommand = new RegisterUserCommand
+        {
+            Email = "newuser@test.com",
+            Password = "Password123!",
+            FullName = "New Test User",
+            Login = "newuser",
+            Role = "Student"
+        };
+
+        // Act
+        var response = await Client.PostAsJsonAsync($"{BaseUrl}/register", registerCommand);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var location = response.Headers.Location;
+        Assert.NotNull(location);
     }
 
     [Fact]
     public async Task GetCurrentUser_WithValidToken_ReturnsUserDto()
     {
-        // Login first to get token
-        var loginDto = new LoginDto
-        {
-            Email = TeacherEmail,
-            Password = TeacherPassword
-        };
-        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginDto);
-        var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
-        
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse!.Token);
+        // Arrange
+        await AuthenticateAsTeacher();
 
-        var meResponse = await _client.GetAsync("/api/auth/me");
+        // Act
+        var response = await Client.GetAsync($"{BaseUrl}/me");
 
-        meResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var userDto = await meResponse.Content.ReadFromJsonAsync<UserDto>();
-        userDto.Should().NotBeNull();
-        userDto!.Email.Should().Be(TeacherEmail);
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var userDto = await response.Content.ReadFromJsonAsync<UserDto>();
+        Assert.NotNull(userDto);
+        Assert.Equal(TeacherEmail, userDto!.Email);
     }
 
     [Fact]
     public async Task RefreshToken_WithValidRefreshToken_ReturnsNewTokens()
     {
+        // Arrange
         var loginDto = new LoginDto
         {
             Email = TeacherEmail,
-            Password = TeacherPassword
+            Password = UserPassword
         };
-        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginDto);
+        var loginResponse = await Client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
         var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
         
         var oldAccessToken = authResponse!.Token;
         var refreshRequest = new RefreshTokenRequestDto { RefreshToken = authResponse.RefreshToken };
-        var refreshResponse = await _client.PostAsJsonAsync("/api/auth/refresh", refreshRequest);
+        
+        // Act
+        var refreshResponse = await Client.PostAsJsonAsync($"{BaseUrl}/refresh", refreshRequest);
 
-        refreshResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, refreshResponse.StatusCode);
         var newAuthResponse = await refreshResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
-        newAuthResponse.Should().NotBeNull();
-        newAuthResponse!.Token.Should().NotBe(oldAccessToken);
-        newAuthResponse.RefreshToken.Should().NotBeNullOrEmpty();
+        Assert.NotNull(newAuthResponse);
+        Assert.NotEqual(oldAccessToken, newAuthResponse!.Token);
+        Assert.NotEmpty(newAuthResponse.RefreshToken);
+    }
+    
+    [Fact]
+    public async Task Logout_WithValidRefreshToken_ReturnsSuccess()
+    {
+        // Arrange
+        var loginDto = new LoginDto
+        {
+            Email = TeacherEmail,
+            Password = UserPassword
+        };
+        var loginResponse = await Client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
+        var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        
+        var logoutRequest = new RefreshTokenRequestDto { RefreshToken = authResponse!.RefreshToken };
+        
+        // Act
+        var logoutResponse = await Client.PostAsJsonAsync($"{BaseUrl}/logout", logoutRequest);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, logoutResponse.StatusCode);
     }
 }

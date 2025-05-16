@@ -1,21 +1,20 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
 using SGS.Application.DTOs;
 using SGS.Tests.Integration.Bases;
+using SGS.Tests.SeedData;
 
 namespace SGS.Tests.Integration;
 
-public class DocumentControllerTests(CustomWebApplicationFactory<Program> factory)
-    : IClassFixture<CustomWebApplicationFactory<Program>>
+public class DocumentControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private const string BaseUrl = "/api/documents";
 
     [Fact]
     public async Task UploadDocument_ReturnsDocumentDto()
     {
+        // Arrange
         var multipartContent = new MultipartFormDataContent();
 
         var fileBytes = "Test file content"u8.ToArray();
@@ -23,18 +22,62 @@ public class DocumentControllerTests(CustomWebApplicationFactory<Program> factor
         fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/pdf");
 
         multipartContent.Add(fileContent, "File", "test.pdf");
+        multipartContent.Add(new StringContent(TestDataSeeder.GuidStudent.ToString()), "UserId");
+        multipartContent.Add(new StringContent(TestDataSeeder.GuidAssignment.ToString()), "AssignmentId");
 
-        multipartContent.Add(new StringContent(Guid.NewGuid().ToString()), "UserId");
-        multipartContent.Add(new StringContent(Guid.NewGuid().ToString()), "AssignmentId");
+        // Act
+        var response = await Client.PostAsync($"{BaseUrl}/upload", multipartContent);
 
-        var response = await _client.PostAsync("/api/documents/upload", multipartContent);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var documentDto = await response.Content.ReadFromJsonAsync<DocumentDto>();
-        documentDto.Should().NotBeNull();
-        documentDto.Id.Should().NotBeEmpty();
-        documentDto.FilePath.Should().NotBeNullOrEmpty();
-        documentDto.UploadedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(10));
+        Assert.NotNull(documentDto);
+        Assert.NotEqual(Guid.Empty, documentDto!.Id);
+        Assert.NotEmpty(documentDto.FilePath);
+        
+        // Check if uploaded time is within a reasonable window
+        var now = DateTime.UtcNow;
+        var timeDifference = Math.Abs((now - documentDto.UploadedAt).TotalSeconds);
+        Assert.True(timeDifference < 10, "Document upload timestamp should be close to current time");
+    }
+    
+    [Fact]
+    public async Task GetDocumentById_WithValidId_ReturnsDocument()
+    {
+        // Act
+        var response = await Client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidDocument}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var document = await response.Content.ReadFromJsonAsync<DocumentDto>();
+        Assert.NotNull(document);
+        Assert.Equal(TestDataSeeder.GuidDocument, document!.Id);
+        Assert.Equal(TestDataSeeder.Document.FileName, document.FileName);
+    }
+    
+    [Fact]
+    public async Task GetDocumentsByAssignment_ReturnsDocuments()
+    {
+        // Act
+        var response = await Client.GetAsync($"{BaseUrl}/assignment/{TestDataSeeder.GuidAssignment}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var documents = await response.Content.ReadFromJsonAsync<IEnumerable<DocumentDto>>();
+        Assert.NotNull(documents);
+        Assert.Contains(documents!, d => d.Id == TestDataSeeder.GuidDocument);
+    }
+    
+    [Fact]
+    public async Task GetDocumentsByUser_ReturnsDocuments()
+    {
+        // Act
+        var response = await Client.GetAsync($"{BaseUrl}/user/{TestDataSeeder.GuidStudent}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var documents = await response.Content.ReadFromJsonAsync<IEnumerable<DocumentDto>>();
+        Assert.NotNull(documents);
+        Assert.Contains(documents!, d => d.Id == TestDataSeeder.GuidDocument);
     }
 }

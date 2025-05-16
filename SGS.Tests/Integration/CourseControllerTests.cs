@@ -1,32 +1,27 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
 using SGS.Application.DTOs;
 using SGS.Tests.Integration.Bases;
 using SGS.Tests.SeedData;
 
 namespace SGS.Tests.Integration;
 
-public class CourseControllerTests(CustomWebApplicationFactory<Program> factory)
-    : IClassFixture<CustomWebApplicationFactory<Program>>
+public class CourseControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
 {
-    private readonly HttpClient _client = factory.CreateClient();
-     private const string BaseUrl = "/api/courses";
+    private const string BaseUrl = "/api/courses";
 
     [Fact]
     public async Task GetCourseById_WithValidId_ReturnsCourse()
     {
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidCourse1}");
+        var response = await Client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidCourse1}");
         
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var course = await response.Content.ReadFromJsonAsync<CourseDto>();
-        course.Should().NotBeNull();
-        course!.Id.Should().Be(TestDataSeeder.GuidCourse1);
-        course.Title.Should().Be("Mathematics 101");
+        Assert.NotNull(course);
+        Assert.Equal(TestDataSeeder.GuidCourse1, course!.Id);
+        Assert.Equal(TestDataSeeder.Course1.Title, course.Title);
     }
 
     [Fact]
@@ -36,13 +31,13 @@ public class CourseControllerTests(CustomWebApplicationFactory<Program> factory)
         await AuthenticateAsTeacher();
 
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/teacher/{TestDataSeeder.GuidTeacher}");
+        var response = await Client.GetAsync($"{BaseUrl}/teacher/{TestDataSeeder.GuidTeacher}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var courses = await response.Content.ReadFromJsonAsync<IEnumerable<CourseDto>>();
-        courses.Should().NotBeNull();
-        courses!.Should().HaveCountGreaterThan(0);
+        Assert.NotNull(courses);
+        Assert.NotEmpty(courses!);
     }
 
     [Fact]
@@ -52,13 +47,13 @@ public class CourseControllerTests(CustomWebApplicationFactory<Program> factory)
         await AuthenticateAsStudent();
 
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/student/{TestDataSeeder.GuidStudent}");
+        var response = await Client.GetAsync($"{BaseUrl}/student/{TestDataSeeder.GuidStudent}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var courses = await response.Content.ReadFromJsonAsync<IEnumerable<CourseDto>>();
-        courses.Should().NotBeNull();
-        courses!.Should().HaveCountGreaterThan(0);
+        Assert.NotNull(courses);
+        Assert.NotEmpty(courses!);
     }
 
     [Fact]
@@ -73,13 +68,13 @@ public class CourseControllerTests(CustomWebApplicationFactory<Program> factory)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync($"{BaseUrl}/create", command);
+        var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var course = await response.Content.ReadFromJsonAsync<CourseDto>();
-        course.Should().NotBeNull();
-        course!.Title.Should().Be(command.Title);
+        Assert.NotNull(course);
+        Assert.Equal(command.Title, course!.Title);
     }
 
     [Fact]
@@ -92,33 +87,9 @@ public class CourseControllerTests(CustomWebApplicationFactory<Program> factory)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync($"{BaseUrl}/create", command);
+        var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    private async Task AuthenticateAsTeacher()
-    {
-        var loginDto = new LoginDto
-        {
-            Email = "teacher1@example.com",
-            Password = string.Empty
-        };
-        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginDto);
-        var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse!.Token);
-    }
-
-    private async Task AuthenticateAsStudent()
-    {
-        var loginDto = new LoginDto
-        {
-            Email = "student1@example.com",
-            Password = string.Empty
-        };
-        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginDto);
-        var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse!.Token);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

@@ -1,31 +1,27 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using FluentAssertions;
 using SGS.Application.DTOs;
 using SGS.Tests.Integration.Bases;
 using SGS.Tests.SeedData;
 
 namespace SGS.Tests.Integration;
 
-public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factory) 
-    : IClassFixture<CustomWebApplicationFactory<Program>>
+public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
 {
-    private readonly HttpClient _client = factory.CreateClient();
     private const string BaseUrl = "/api/criteria";
 
     [Fact]
     public async Task GetCriteria_WithValidId_ReturnsCriteria()
     {
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidCriteria}");
+        var response = await Client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidCriteria}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var criteria = await response.Content.ReadFromJsonAsync<GradingCriteriaDto>();
-        criteria.Should().NotBeNull();
-        criteria!.Id.Should().Be(TestDataSeeder.GuidCriteria);
-        // criteria.CriteriaDescription.Should().Be("Correctness of Solution");
+        Assert.NotNull(criteria);
+        Assert.Equal(TestDataSeeder.GuidCriteria, criteria!.Id);
+        Assert.Equal(TestDataSeeder.Criteria.Title, criteria.Title);
     }
 
     [Fact]
@@ -35,72 +31,64 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
         var invalidId = Guid.NewGuid();
 
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/{invalidId}");
+        var response = await Client.GetAsync($"{BaseUrl}/{invalidId}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
     public async Task GetAllCriteria_ReturnsAllCriteria()
     {
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/all");
+        var response = await Client.GetAsync($"{BaseUrl}/all");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var criteria = await response.Content.ReadFromJsonAsync<IEnumerable<GradingCriteriaDto>>();
-        criteria.Should().NotBeNull();
-        criteria!.Should().HaveCountGreaterThan(0);
+        Assert.NotNull(criteria);
+        Assert.NotEmpty(criteria!);
+    }
+    
+    [Fact]
+    public async Task CreateCriteria_AsTeacher_ReturnsCreated()
+    {
+        // Arrange
+        await AuthenticateAsTeacher();
+        var command = new CreateGradingCriteriaCommand
+        {
+            Title = "New Test Criteria",
+            Description = "Test criteria description",
+            Weight = 0.5,
+            AssignmentId = TestDataSeeder.GuidAssignment
+        };
+
+        // Act
+        var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var criteria = await response.Content.ReadFromJsonAsync<GradingCriteriaDto>();
+        Assert.NotNull(criteria);
+        Assert.Equal(command.Title, criteria!.Title);
     }
 
-    // [Fact]
-    // public async Task CreateCriteria_AsTeacher_ReturnsCreated()
-    // {
-    //     // Arrange
-    //     await AuthenticateAsTeacher();
-    //     var command = new CreateGradingCriteriaCommand
-    //     {
-    //         UserId = TestDataSeeder.GuidTeacher,
-    //         CriteriaDescription = "New Test Criteria"
-    //     };
-    //
-    //     // Act
-    //     var response = await _client.PostAsJsonAsync($"{BaseUrl}/create", command);
-    //
-    //     // Assert
-    //     response.StatusCode.Should().Be(HttpStatusCode.Created);
-    //     var criteria = await response.Content.ReadFromJsonAsync<GradingCriteriaDto>();
-    //     criteria.Should().NotBeNull();
-    //     criteria!.CriteriaDescription.Should().Be(command.CriteriaDescription);
-    // }
-    //
-    // [Fact]
-    // public async Task CreateCriteria_WithoutAuth_ReturnsUnauthorized()
-    // {
-    //     // Arrange
-    //     var command = new CreateGradingCriteriaCommand
-    //     {
-    //         UserId = TestDataSeeder.GuidTeacher,
-    //         CriteriaDescription = "Unauthorized Criteria"
-    //     };
-    //
-    //     // Act
-    //     var response = await _client.PostAsJsonAsync($"{BaseUrl}/create", command);
-    //
-    //     // Assert
-    //     response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    // }
-    
-    private async Task AuthenticateAsTeacher()
+    [Fact]
+    public async Task CreateCriteria_WithoutAuth_ReturnsUnauthorized()
     {
-        var loginDto = new LoginDto
+        // Arrange
+        var command = new CreateGradingCriteriaCommand
         {
-            Email = "teacher1@example.com",
-            Password = "Password123!"
+            Title = "Unauthorized Criteria",
+            Description = "This should fail",
+            Weight = 0.5,
+            AssignmentId = TestDataSeeder.GuidAssignment
         };
-        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginDto);
-        var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse!.Token);
+
+        // Act
+        var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

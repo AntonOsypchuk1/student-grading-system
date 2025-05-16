@@ -1,7 +1,5 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using FluentAssertions;
 using SGS.Application.DTOs;
 using SGS.Tests.Integration.Bases;
 using SGS.Tests.SeedData;
@@ -9,43 +7,36 @@ using SGS.Tests.SeedData;
 namespace SGS.Tests.Integration;
 
 public class AssignmentControllerTests(CustomWebApplicationFactory<Program> factory)
-    : IClassFixture<CustomWebApplicationFactory<Program>>
+    : BaseControllerTests(factory)
 {
-    private readonly HttpClient _client = factory.CreateClient();
     private const string BaseUrl = "/api/assignments";
-    private const string TeacherEmail = "teacher1@example.com";
-    private static readonly string TeacherPassword = string.Empty;
 
     [Fact]
     public async Task GetAssignmentById_WithValidId_ReturnsAssignment()
     {
-        // Arrange - Use the existing assignment ID from seeder
-        var assignmentId = await GetExistingAssignmentId();
-
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/{assignmentId}");
+        var response = await Client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidAssignment}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var assignment = await response.Content.ReadFromJsonAsync<AssignmentDto>();
-        assignment.Should().NotBeNull();
-        assignment!.Title.Should().Be("Algebra Test");
+        Assert.NotNull(assignment);
+        Assert.Equal("Algebra Test", assignment.Title);
     }
+
 
     [Fact]
     public async Task GetAssignmentsByGroup_WithValidGroupId_ReturnsAssignments()
     {
-        // Arrange - Use the existing group ID from seeder
-        var groupId = TestDataSeeder.GuidGroup;
-
         // Act
-        var response = await _client.GetAsync($"{BaseUrl}/group/{groupId}");
+        var response = await Client.GetAsync($"{BaseUrl}/group/{TestDataSeeder.GuidGroup}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        
         var assignments = await response.Content.ReadFromJsonAsync<IEnumerable<AssignmentDto>>();
-        assignments.Should().NotBeNull();
-        assignments!.Should().NotBeEmpty();
+        Assert.NotNull(assignments);
+        Assert.NotEmpty(assignments);
     }
 
     [Fact]
@@ -64,48 +55,36 @@ public class AssignmentControllerTests(CustomWebApplicationFactory<Program> fact
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync($"{BaseUrl}/create", command);
+        var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var assignment = await response.Content.ReadFromJsonAsync<AssignmentDto>();
-        assignment.Should().NotBeNull();
-        assignment!.Title.Should().Be(command.Title);
+        Assert.NotNull(assignment);
+        Assert.Equal(command.Title, assignment.Title);
     }
+
 
     [Fact]
     public async Task CreateAssignment_WithoutAuth_ReturnsUnauthorized()
     {
         // Arrange
+        Client.DefaultRequestHeaders.Authorization = null; // Ensure no auth token
+        
         var command = new CreateAssignmentCommand
         {
-            Title = "Unauthorized Assignment"
+            GroupId = TestDataSeeder.GuidGroup,
+            CourseId = TestDataSeeder.GuidCourse1,
+            Title = "Unauthorized Assignment",
+            Description = "This should fail",
+            MaxAttempts = 1,
+            DueDate = DateTime.UtcNow.AddDays(1)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync($"{BaseUrl}/create", command);
+        var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    private async Task AuthenticateAsTeacher()
-    {
-        var loginDto = new LoginDto
-        {
-            Email = TeacherEmail,
-            Password = TeacherPassword
-        };
-        var loginResponse = await _client.PostAsJsonAsync("/api/auth/login", loginDto);
-        var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponse!.Token);
-    }
-
-    private async Task<Guid> GetExistingAssignmentId()
-    {
-        var groupId = TestDataSeeder.GuidGroup;
-        var response = await _client.GetAsync($"{BaseUrl}/group/{groupId}");
-        var assignments = await response.Content.ReadFromJsonAsync<IEnumerable<AssignmentDto>>();
-        return assignments!.First().Id;
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }
