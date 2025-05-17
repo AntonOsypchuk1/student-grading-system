@@ -1,10 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
 using SGS.Application.DTOs;
-using SGS.Tests.Integration.Bases;
-using SGS.Tests.SeedData;
+using SGS.IntegrationTests.Controllers.Bases;
+using SGS.IntegrationTests.Controllers.Helpers;
+using SGS.IntegrationTests.TestData;
 
-namespace SGS.Tests.Integration;
+namespace SGS.IntegrationTests.Controllers;
 
 public class CourseControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
 {
@@ -86,10 +87,13 @@ public class CourseControllerTests(CustomWebApplicationFactory<Program> factory)
             Title = "Unauthorized Course"
         };
 
-        // Act
-        var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
+        using (TestContext.SimulateUnauthorizedScope())
+        {
+            // Act
+            var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
 
-        // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
     }
 }

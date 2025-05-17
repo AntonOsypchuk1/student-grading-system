@@ -9,10 +9,10 @@ using SGS.API.Services;
 using SGS.API.Settings;
 using SGS.Application.Interfaces;
 using SGS.Infrastructure.Data;
-using SGS.Tests.Integration.Helpers;
-using SGS.Tests.SeedData;
+using SGS.IntegrationTests.Controllers.Helpers;
+using SGS.IntegrationTests.TestData;
 
-namespace SGS.Tests.Integration.Bases;
+namespace SGS.IntegrationTests.Controllers.Bases;
 
 public class CustomWebApplicationFactory<TStartup>
     : WebApplicationFactory<TStartup> where TStartup : class

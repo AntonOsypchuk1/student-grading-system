@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using SGS.Application.DTOs;
-using SGS.Tests.Integration.Bases;
-using SGS.Tests.SeedData;
+using SGS.IntegrationTests.Controllers.Bases;
+using SGS.IntegrationTests.TestData;
 
-namespace SGS.Tests.Integration;
+namespace SGS.IntegrationTests.Controllers;
 
 public class GradingControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
 {

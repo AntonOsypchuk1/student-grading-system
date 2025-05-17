@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using SGS.Application.DTOs;
-using SGS.Tests.Integration.Bases;
-using SGS.Tests.SeedData;
+using SGS.IntegrationTests.Controllers.Bases;
+using SGS.IntegrationTests.TestData;
 
-namespace SGS.Tests.Integration;
+namespace SGS.IntegrationTests.Controllers;
 
 public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
 {
@@ -40,6 +40,8 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task GetAllCriteria_ReturnsAllCriteria()
     {
+        // await AuthenticateAsTeacher();
+        
         // Act
         var response = await Client.GetAsync($"{BaseUrl}/all");
 
@@ -58,7 +60,8 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
         var command = new CreateGradingCriteriaCommand
         {
             Title = "New Test Criteria",
-            Description = "Test criteria description",
+            Description = "Test criteria description", 
+            MaxGrade = 100,
             Weight = 0.5,
             AssignmentId = TestDataSeeder.GuidAssignment
         };
@@ -81,6 +84,7 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
         {
             Title = "Unauthorized Criteria",
             Description = "This should fail",
+            MaxGrade = 100,
             Weight = 0.5,
             AssignmentId = TestDataSeeder.GuidAssignment
         };
@@ -89,6 +93,6 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
         var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 }

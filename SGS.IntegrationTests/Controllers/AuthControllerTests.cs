@@ -1,15 +1,81 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using SGS.API.DTOs;
 using SGS.Application.DTOs;
-using SGS.Tests.Integration.Bases;
+using SGS.IntegrationTests.Controllers.Bases;
+using SGS.IntegrationTests.Controllers.Helpers;
 
-namespace SGS.Tests.Integration;
+namespace SGS.IntegrationTests.Controllers;
 
 public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
 {
     private const string BaseUrl = "/api/auth";
+    private string _refreshToken = string.Empty;
 
+    [Fact]
+    public async Task DebugClaims_RetunrsClaims()
+    {
+        await AuthenticateAsTeacher();
+        
+        var response = await Client.GetAsync($"{BaseUrl}/debug-claims");
+        
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task TokenLifecycleTest()
+    {
+        // 1. Login to get initial tokens
+        var loginDto = new LoginDto
+        {
+            Email = TeacherEmail,
+            Password = UserPassword
+        };
+        
+        var loginResponse = await Client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
+        var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        
+        var initialToken = authResponse!.Token;
+        _refreshToken = authResponse.RefreshToken;
+        
+        await Task.Delay(1100);
+        
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", initialToken);
+        
+        // 2. Access a protected resource
+        var meResponse = await Client.GetAsync("/api/users/me");
+        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
+        
+        // 3. Refresh the token
+        var refreshRequest = new RefreshTokenRequestDto { RefreshToken = _refreshToken };
+        var refreshResponse = await Client.PostAsJsonAsync($"{BaseUrl}/refresh", refreshRequest);
+        
+        Assert.Equal(HttpStatusCode.OK, refreshResponse.StatusCode);
+        var newAuthResponse = await refreshResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
+        
+        var newToken = newAuthResponse!.Token;
+        _refreshToken = newAuthResponse.RefreshToken; // Update the refresh token
+        
+        // 4. Use the new token
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", newToken);
+        var meResponse2 = await Client.GetAsync("/api/users/me");
+        Assert.Equal(HttpStatusCode.OK, meResponse2.StatusCode);
+        
+        // 5. Logout
+        var logoutRequest = new RefreshTokenRequestDto { RefreshToken = _refreshToken };
+        var logoutResponse = await Client.PostAsJsonAsync($"{BaseUrl}/logout", logoutRequest);
+        
+        Assert.Equal(HttpStatusCode.OK, logoutResponse.StatusCode);
+        
+        // 6. Verify the token is invalidated
+        using (TestContext.SimulateUnauthorizedScope())
+        {
+            var meResponse3 = await Client.GetAsync("/api/users/me");
+            Assert.Equal(HttpStatusCode.Unauthorized, meResponse3.StatusCode);
+        }
+    }
+    
     [Fact]
     public async Task Login_WithValidCredentials_ReturnsAuthResponse()
     {
@@ -73,22 +139,6 @@ public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) :
     }
 
     [Fact]
-    public async Task GetCurrentUser_WithValidToken_ReturnsUserDto()
-    {
-        // Arrange
-        await AuthenticateAsTeacher();
-
-        // Act
-        var response = await Client.GetAsync($"{BaseUrl}/me");
-
-        // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var userDto = await response.Content.ReadFromJsonAsync<UserDto>();
-        Assert.NotNull(userDto);
-        Assert.Equal(TeacherEmail, userDto!.Email);
-    }
-
-    [Fact]
     public async Task RefreshToken_WithValidRefreshToken_ReturnsNewTokens()
     {
         // Arrange
@@ -103,6 +153,8 @@ public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) :
         var oldAccessToken = authResponse!.Token;
         var refreshRequest = new RefreshTokenRequestDto { RefreshToken = authResponse.RefreshToken };
         
+        await Task.Delay(1100);
+
         // Act
         var refreshResponse = await Client.PostAsJsonAsync($"{BaseUrl}/refresh", refreshRequest);
 

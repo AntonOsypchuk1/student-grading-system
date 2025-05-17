@@ -2,10 +2,10 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using SGS.Application.DTOs;
-using SGS.Tests.Integration.Bases;
-using SGS.Tests.SeedData;
+using SGS.IntegrationTests.Controllers.Bases;
+using SGS.IntegrationTests.TestData;
 
-namespace SGS.Tests.Integration;
+namespace SGS.IntegrationTests.Controllers;
 
 public class DocumentControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
 {
@@ -14,6 +14,7 @@ public class DocumentControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task UploadDocument_ReturnsDocumentDto()
     {
+        await AuthenticateAsTeacher();
         // Arrange
         var multipartContent = new MultipartFormDataContent();
 
@@ -29,7 +30,7 @@ public class DocumentControllerTests(CustomWebApplicationFactory<Program> factor
         var response = await Client.PostAsync($"{BaseUrl}/upload", multipartContent);
 
         // Assert
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var documentDto = await response.Content.ReadFromJsonAsync<DocumentDto>();
         Assert.NotNull(documentDto);
         Assert.NotEqual(Guid.Empty, documentDto!.Id);

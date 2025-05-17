@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using SGS.Application.DTOs;
-using SGS.Tests.Integration.Bases;
-using SGS.Tests.SeedData;
+using SGS.IntegrationTests.Controllers.Bases;
+using SGS.IntegrationTests.TestData;
 
-namespace SGS.Tests.Integration;
+namespace SGS.IntegrationTests.Controllers;
 
 public class AssignmentControllerTests(CustomWebApplicationFactory<Program> factory)
     : BaseControllerTests(factory)
@@ -69,8 +69,6 @@ public class AssignmentControllerTests(CustomWebApplicationFactory<Program> fact
     public async Task CreateAssignment_WithoutAuth_ReturnsUnauthorized()
     {
         // Arrange
-        Client.DefaultRequestHeaders.Authorization = null; // Ensure no auth token
-        
         var command = new CreateAssignmentCommand
         {
             GroupId = TestDataSeeder.GuidGroup,

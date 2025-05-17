@@ -2,7 +2,7 @@ using SGS.Domain.Entities;
 using SGS.Domain.Enums;
 using SGS.Infrastructure.Data;
 
-namespace SGS.Tests.SeedData;
+namespace SGS.IntegrationTests.TestData;
 
 public static class TestDataSeeder
 {

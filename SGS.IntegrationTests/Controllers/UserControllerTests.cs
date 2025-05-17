@@ -1,18 +1,18 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using SGS.Application.DTOs;
-using SGS.Tests.Integration.Bases;
-using SGS.Tests.SeedData;
+using SGS.IntegrationTests.Controllers.Bases;
+using SGS.IntegrationTests.Controllers.Helpers;
+using SGS.IntegrationTests.TestData;
 
-namespace SGS.Tests.Integration;
+namespace SGS.IntegrationTests.Controllers;
 
 public class UserControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
 {
     private const string BaseUrl = "/api/users";
-
+    
     [Fact]
-    public async Task GetCurrentUser_Authenticated_ReturnsUser()
+    public async Task GetCurrentUser_WithValidToken_ReturnsUserDto()
     {
         // Arrange
         await AuthenticateAsTeacher();
@@ -22,19 +22,19 @@ public class UserControllerTests(CustomWebApplicationFactory<Program> factory) :
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var user = await response.Content.ReadFromJsonAsync<UserDto>();
-        Assert.NotNull(user);
-        Assert.Equal("teacher1@example.com", user!.Email);
+        var userDto = await response.Content.ReadFromJsonAsync<UserDto>();
+        Assert.NotNull(userDto);
+        Assert.Equal(TeacherEmail, userDto!.Email);
     }
 
     [Fact]
     public async Task GetCurrentUser_Unauthenticated_ReturnsUnauthorized()
     {
-        // Act
-        var response = await Client.GetAsync($"{BaseUrl}/me");
-
-        // Assert
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        using (TestContext.SimulateUnauthorizedScope())
+        {
+            var response = await Client.GetAsync($"{BaseUrl}/me");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
     }
 
     [Fact]
