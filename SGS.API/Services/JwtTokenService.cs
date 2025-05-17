@@ -20,7 +20,7 @@ public class JwtTokenService(IOptions<JwtSettings> options) : ITokenService
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new("fullname", user.FullName),
             new(JwtRegisteredClaimNames.Email, user.Email),
-            new("role", user.Role.ToString())
+            new(ClaimTypes.Role, user.Role.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));

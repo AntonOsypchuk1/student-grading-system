@@ -9,11 +9,11 @@ using SGS.Application.Interfaces;
 
 namespace SGS.API.Controllers;
 
+[Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/documents")]
 public class DocumentController(IDocumentService documentService) : BaseApiController
 {
-    [Authorize]
     [HttpPost("upload")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -48,8 +48,7 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
         var result = await documentService.UploadDocumentAsync(command);
         return HandleCreatedResult(result, nameof(GetDocumentById), new { id = result.Data?.Id });
     }
-
-    [Authorize]
+    
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -64,7 +63,6 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
         return HandleResult(result);
     }
     
-    [Authorize]
     [HttpGet("{id:guid}/download")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -91,7 +89,6 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
         );
     }
     
-    [Authorize]
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -106,7 +103,6 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
         return HandleResult(result);
     }
     
-    [Authorize]
     [HttpGet("user/{userId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

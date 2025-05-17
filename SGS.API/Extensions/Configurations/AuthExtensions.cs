@@ -23,6 +23,8 @@ public static class AuthExtensions
             throw new ArgumentException("JWT Secret cannot be null or empty. Please check your configuration.");
         }
 
+        services.AddSingleton(TimeProvider.System);
+        
         services
             .AddAuthentication(options =>
             {
