@@ -22,8 +22,17 @@ template: |
   
   The summary should be 3-5 paragraphs long and well-structured.
   
+  Do not include any other text outside of this JSON structure.
+  Make sure the JSON is properly formatted with no syntax errors.
+  
   # Output Format
-  Return only the summary text with no additional metadata or wrapper.
+  {
+    "summary": "",
+    "keyStrengths": [""],
+    "improvementAreas": [""]
+  }
+  
+  Output =>
 
 input_variables:
   - name: EvaluationResult
