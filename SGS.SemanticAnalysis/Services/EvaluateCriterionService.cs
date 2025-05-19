@@ -2,7 +2,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using SGS.SemanticAnalysis.Helpers;
 using SGS.SemanticAnalysis.Kernels;
-using SGS.SemanticAnalysis.Plugins.Bases;
 using SGS.SemanticAnalysis.Services.Bases;
 using SGS.SemanticAnalysis.Structures.PromptRequests;
 using SGS.SemanticAnalysis.Structures.PromptResponses;

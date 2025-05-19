@@ -6,7 +6,7 @@ namespace SGS.SemanticAnalysis.Kernels;
 
 public class SemanticKernelFactory(IOptions<SemanticKernelSettings> settings, IServiceProvider services)
 {
-    public Kernel CreateBasic()
+    public virtual Kernel CreateBasic()
     {
         return new SemanticKernelBuilder(settings)
             .AddLogging()

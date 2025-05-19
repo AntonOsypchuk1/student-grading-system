@@ -13,10 +13,10 @@ public class GenerateSummaryResponse
     /// <summary>
     /// Key strengths highlighted in the summary
     /// </summary>
-    public List<string> KeyStrengths { get; set; } = new List<string>();
+    public List<string> Strengths { get; set; } = [];
         
     /// <summary>
     /// Key areas for improvement highlighted in the summary
     /// </summary>
-    public List<string> ImprovementAreas { get; set; } = new List<string>();
+    public List<string> Improvements { get; set; } = [];
 }

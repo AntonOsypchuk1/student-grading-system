@@ -8,5 +8,5 @@ public class EvaluateCriteriaResponse
     /// <summary>
     /// Collection of individual criterion evaluation results
     /// </summary>
-    public List<CriterionResult> CriteriaResults { get; set; } = new List<CriterionResult>();
+    public List<CriterionResult> CriteriaResults { get; set; } = [];
 }
