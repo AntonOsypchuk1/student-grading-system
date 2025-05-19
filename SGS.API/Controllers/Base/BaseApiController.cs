@@ -30,7 +30,7 @@ public class BaseApiController : ControllerBase
             return StatusCode(500, new ProblemDetails { Detail = result.Error });
         
         if (result.Data is null || !result.Data.Any())
-            return NoContent();
+            return NotFound();
 
         return Ok(result.Data);
     }

@@ -26,6 +26,7 @@ public class CriteriaController(IGradingCriteriaService criteriaService) : BaseA
         var result = await criteriaService.CreateCriteriaAsync(command);
         return HandleCreatedResult(result, nameof(GetCriteria), new { id = result.Data?.Id });}
 
+    [Authorize]
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -39,6 +40,7 @@ public class CriteriaController(IGradingCriteriaService criteriaService) : BaseA
         return HandleResult(result);
     }
 
+    [Authorize] // TODO: Maybe "Teacher" policy
     [HttpGet("all")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -48,6 +50,7 @@ public class CriteriaController(IGradingCriteriaService criteriaService) : BaseA
         return HandleCollectionResult(result);
     }
     
+    [Authorize]
     [HttpGet("by-assignment/{assignmentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

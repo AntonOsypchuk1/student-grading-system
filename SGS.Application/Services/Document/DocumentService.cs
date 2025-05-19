@@ -10,7 +10,7 @@ using SGS.Infrastructure.Repositories.UnitOfWork;
 namespace SGS.Application.Services.Document;
 
 public class DocumentService(
-    DocumentTextExtractionManager extractionManager,
+    IDocumentTextExtractionManager extractionManager,
     IFileStorageService fileStorageService,
     IUnitOfWork unitOfWork,
     ILogger<DocumentService> logger,

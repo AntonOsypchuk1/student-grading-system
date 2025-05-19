@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,11 +8,11 @@ using SGS.Application.Interfaces;
 
 namespace SGS.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/users")]
 public class UserController(IUserService userService) : BaseApiController
 {
-    [Authorize]
     [HttpGet("me")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -19,7 +20,8 @@ public class UserController(IUserService userService) : BaseApiController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetCurrentUser()
     {
-        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        var email = User.FindFirst(ClaimTypes.Email)?.Value
+            ?? User.FindFirst(JwtRegisteredClaimNames.Email)?.Value;
         if (string.IsNullOrEmpty(email))
             return Unauthorized(new { error = "Invalid token." });
         
@@ -27,6 +29,7 @@ public class UserController(IUserService userService) : BaseApiController
         return HandleResult(result);
     }
 
+    [Authorize(Policy = "RequireTeacherRole")]
     [HttpGet("teachers")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -37,6 +40,7 @@ public class UserController(IUserService userService) : BaseApiController
         return HandleCollectionResult(result);
     }
 
+    [Authorize(Policy = "RequireTeacherRole")]
     [HttpGet("students")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -44,6 +48,13 @@ public class UserController(IUserService userService) : BaseApiController
     {
         var result = await userService.GetStudentsAsync();
         return HandleCollectionResult(result);
+    }
+    
+    [Authorize(Policy = "RequireTeacherRole")]
+    [HttpGet("groups")]
+    public async Task<IActionResult> GetStudentsGroups()
+    {
+        throw new NotImplementedException();
     }
 
     [HttpGet("groups/{groupId:guid}")]

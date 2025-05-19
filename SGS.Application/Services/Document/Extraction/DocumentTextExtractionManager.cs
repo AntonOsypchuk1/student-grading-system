@@ -3,14 +3,14 @@ using SGS.Application.Interfaces;
 
 namespace SGS.Application.Services.Document.Extraction;
 
-public abstract class DocumentTextExtractionManager(
+public class DocumentTextExtractionManager(
     IEnumerable<IDocumentTextExtractor> extractors,
-    ILogger<DocumentTextExtractionManager> logger)
+    ILogger<DocumentTextExtractionManager> logger) 
+    : IDocumentTextExtractionManager
 {
     public async Task<string> ExtractTextAsync(string filePath, byte[] fileBytes,
         CancellationToken cancellationToken = default)
     {
-        // TODO: Check if this works
         var extractor = extractors.FirstOrDefault(x => x.CanExtract(filePath));
 
         if (extractor is null)

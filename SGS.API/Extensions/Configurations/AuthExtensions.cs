@@ -13,12 +13,18 @@ public static class AuthExtensions
     public static void AddAuthServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<ITokenService, JwtTokenService>();
-        services.AddScoped<JwtSettings>();
 
         var jwtSettingsSection = configuration.GetSection("JwtSettings");
         services.Configure<JwtSettings>(jwtSettingsSection);
         var jwtSettings = jwtSettingsSection.Get<JwtSettings>()!;
+        
+        if (string.IsNullOrEmpty(jwtSettings.Secret))
+        {
+            throw new ArgumentException("JWT Secret cannot be null or empty. Please check your configuration.");
+        }
 
+        services.AddSingleton(TimeProvider.System);
+        
         services
             .AddAuthentication(options =>
             {

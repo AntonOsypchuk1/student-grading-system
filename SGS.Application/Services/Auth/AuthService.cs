@@ -21,12 +21,12 @@ public class AuthService(
     {
         var user = await UnitOfWork.Users.GetByEmailAsync(email, cancellationToken);
         if (user == null || !PasswordHelper.VerifyPassword(password, user.PasswordHash))
-            throw new Exception("Invalid credentials.");
+            return Result<AuthResponseDto>.Failure("Invalid credentials.");
 
         var accessToken = tokenService.GenerateToken(user);
         var refreshToken = await refreshTokenService.CreateRefreshTokenAsync(user.Id, cancellationToken);
         if (!refreshToken.IsSuccess || refreshToken.Data == null)
-            throw new Exception("Failed to create refresh token.");
+            return Result<AuthResponseDto>.Failure("Failed to create refresh token.");
         
         var userDto = Mapper.Map<UserDto>(user);
 

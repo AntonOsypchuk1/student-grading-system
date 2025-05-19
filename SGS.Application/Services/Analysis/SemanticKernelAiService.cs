@@ -13,7 +13,7 @@ public class SemanticKernelAiService(
     IDocumentService documentService,
     ILogger<SemanticKernelAiService> logger) : IAIService
 {
-    public async Task<(string summary, int generatedGrade)> AnalyzeDocumentAsync(
+    public async Task<(string Summary, int GeneratedGrade)> AnalyzeDocumentAsync(
         Domain.Entities.Document document,
         List<GradingCriteria> criteria,
         CancellationToken cancellationToken = default)

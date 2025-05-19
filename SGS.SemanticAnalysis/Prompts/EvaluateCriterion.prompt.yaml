@@ -20,28 +20,26 @@ template: |
   1. Rate how well the submission meets the criterion on a scale from 0-100
   2. Provide brief justification (~2 sentences) with specific references to the submission
   3. Include specific strengths and areas for improvement
+  4. No explanations or other text before or after the JSON object.
   
-  # Output Format
-  Provide your response in valid JSON format as follows:
-  ```json
+  # Output Format: 
   {
     "criteriaResults": [
       {
-        "id": "criterion-id-1", 
-        "title": "Criterion title",
-        "score": 85,
-        "weight": 0.3,
-        "justification": "Justification for the score",
-        "strengths": ["Strength 1", "Strength 2"],
-        "improvements": ["Improvement 1", "Improvement 2"]
+        "id": "",
+        "title": "",
+        "score": number,
+        "weight": double,
+        "justification": "",
+        "strengths": [""],
+        "improvements": [""]
       },
       ...
     ]
   }
-  ```
   
-  No explanations or other text before or after the JSON object.
-
+  Output =>
+  
 input_variables:
   - name: DocumentText
     description: The student's document text to evaluate

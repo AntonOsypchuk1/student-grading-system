@@ -13,7 +13,14 @@ public class TxtDocumentTextExtractor : IDocumentTextExtractor
     public Task<string> ExtractTextAsync(byte[] fileBytes, CancellationToken cancellationToken = default)
     {
         var encoding = DetectEncoding(fileBytes);
-        return Task.FromResult(encoding.GetString(fileBytes));
+        var text = encoding.GetString(fileBytes);
+    
+        if (text.Length > 0 && text[0] == '\uFEFF')
+        {
+            text = text.Substring(1);
+        }
+    
+        return Task.FromResult(text);
     }
 
     /// <summary>

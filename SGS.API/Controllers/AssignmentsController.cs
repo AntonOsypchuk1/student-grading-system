@@ -7,6 +7,7 @@ using SGS.Application.Interfaces;
 
 namespace SGS.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/assignments")]
 public class AssignmentController(IAssignmentService assignmentService) : BaseApiController

@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SGS.API.Controllers.Base;
 using SGS.API.DTOs;
@@ -8,6 +9,7 @@ using SGS.Domain.Entities;
 
 namespace SGS.API.Controllers;
 
+// TODO: Understand how the roles work in the system
 [ApiController]
 [Route("api/auth")]
 public class AuthController(
@@ -18,6 +20,7 @@ public class AuthController(
     IMapper mapper)
     : BaseApiController
 {
+    [AllowAnonymous]
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -30,6 +33,7 @@ public class AuthController(
         return HandleCreatedResult(result, nameof(Login), new { email = command.Email });
     }
 
+    [AllowAnonymous]
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -45,6 +49,14 @@ public class AuthController(
             return Unauthorized(new ProblemDetails { Detail = result.Error });
 
         return Ok(result.Data);
+    }
+    
+    [Authorize]
+    [HttpGet("debug-claims")]
+    public IActionResult DebugClaims()
+    {
+        var claims = User.Claims.Select(c => new { Type = c.Type, Value = c.Value }).ToList();
+        return Ok(claims);
     }
     
     [HttpPost("logout")]

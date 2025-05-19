@@ -22,7 +22,8 @@ public static class ApplicationModule
         services.AddLogging();
         services.AddServices();
         services.AddAutoMapper();
-        services.AddStorageServices(configuration);
+        services.AddDocumentStorageServices(configuration);
+        services.AddDocumentServices();
     }
 
     private static void AddServices(this IServiceCollection services)
@@ -34,15 +35,12 @@ public static class ApplicationModule
         services.AddScoped<IAnalysisService, AnalysisService>();
         services.AddScoped<IAIService, SemanticKernelAiService>();
         services.AddScoped<IUserService, UserService>();
-        
-        services.AddScoped<IDocumentService, DocumentService>();
-        services.AddScoped<IDocumentTextExtractor, PdfDocumentTextExtractor>();
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
     }
 
-    private static void AddStorageServices(this IServiceCollection services, IConfiguration configuration)
+    private static void AddDocumentStorageServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<StorageOptions>(options =>
         {
@@ -60,6 +58,16 @@ public static class ApplicationModule
         {
             services.AddSingleton<IFileStorageService, DiskFileStorageService>();
         }
+    }
+    
+    private static void AddDocumentServices(this IServiceCollection services)
+    {
+        services.AddSingleton<IDocumentTextExtractor, PdfDocumentTextExtractor>();
+        services.AddSingleton<IDocumentTextExtractor, TxtDocumentTextExtractor>();
+
+        services.AddSingleton<IDocumentTextExtractionManager, DocumentTextExtractionManager>();
+        
+        services.AddScoped<IDocumentService, DocumentService>();
     }
 
     private static void AddAutoMapper(this IServiceCollection services)

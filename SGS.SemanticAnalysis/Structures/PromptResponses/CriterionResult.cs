@@ -33,10 +33,10 @@ public class CriterionResult
     /// <summary>
     /// Specific strengths identified in the submission for this criterion
     /// </summary>
-    public List<string> Strengths { get; set; } = new List<string>();
+    public List<string> Strengths { get; set; } = [];
         
     /// <summary>
     /// Areas needing improvement for this criterion
     /// </summary>
-    public List<string> Improvements { get; set; } = new List<string>();
+    public List<string> Improvements { get; set; } = [];
 }

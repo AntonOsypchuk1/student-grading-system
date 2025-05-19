@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SGS.SemanticAnalysis.Helpers;
 using SGS.SemanticAnalysis.Kernels;
+using SGS.SemanticAnalysis.RetryPolicies;
 using SGS.SemanticAnalysis.Services;
 using SGS.SemanticAnalysis.Services.Bases;
 using SGS.SemanticAnalysis.Settings;
@@ -18,6 +20,9 @@ public static class SemanticAnalysisModule
         services.AddScoped<SemanticKernelFactory>();
         services.AddScoped<SemanticKernelBuilder>();
 
+        services.AddScoped<ISemanticKernelRetryPolicy, SemanticKernelRetryPolicy>();
+
+        services.AddScoped<IPromptBuilder, PromptBuilder>();
         services.AddScoped<IPromptServiceExecutor, PromptServiceExecutor>();
         services.AddScoped<IPromptService<EvaluateCriteriaRequest, EvaluateCriteriaResponse>, EvaluateCriterionService>();
         services.AddScoped<IPromptService<GenerateSummaryRequest, GenerateSummaryResponse>, GenerateSummaryService>();

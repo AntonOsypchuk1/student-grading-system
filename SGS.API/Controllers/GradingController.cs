@@ -7,6 +7,7 @@ using SGS.Application.Interfaces;
 
 namespace SGS.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/grading")]
 public class GradingController(
