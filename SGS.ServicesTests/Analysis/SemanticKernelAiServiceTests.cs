@@ -107,8 +107,8 @@ public class SemanticKernelAiServiceTests
         var result = await _aiService.AnalyzeDocumentAsync(document, criteria);
 
         // Assert
-        Assert.Equal(summaryResponse.Summary, result.summary);
-        Assert.Equal(76, result.generatedGrade); // 80*0.6 + 70*0.4 = 76
+        Assert.Equal(summaryResponse.Summary, result.Summary);
+        Assert.Equal(76, result.GeneratedGrade); // 80*0.6 + 70*0.4 = 76
             
         // Verify method calls
         _documentServiceMock.Verify(x => x.GetDocumentContentTextAsync(documentId, It.IsAny<CancellationToken>()), Times.Once);
