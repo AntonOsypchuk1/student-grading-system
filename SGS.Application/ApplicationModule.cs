@@ -24,6 +24,7 @@ public static class ApplicationModule
         services.AddAutoMapper();
         services.AddDocumentStorageServices(configuration);
         services.AddDocumentServices();
+        services.AddLocalization();
     }
 
     private static void AddServices(this IServiceCollection services)
@@ -35,9 +36,25 @@ public static class ApplicationModule
         services.AddScoped<IAnalysisService, AnalysisService>();
         services.AddScoped<IAIService, SemanticKernelAiService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IStudentsGroupService, StudentsGroupService>();
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+    }
+
+    private static void AddLocalization(this IServiceCollection services)
+    {
+        services.AddLocalization(options =>
+            options.ResourcesPath = "Resources");
+
+        // 2) (Optional) Configure supported cultures
+        // services.Configure<RequestLocalizationOptions>(opts =>
+        // {
+        //     var supported = configureOptions;
+        //     opts.SetDefaultCulture("en")
+        //         .AddSupportedCultures(supported)
+        //         .AddSupportedUICultures(supported);
+        // });
     }
 
     private static void AddDocumentStorageServices(this IServiceCollection services, IConfiguration configuration)

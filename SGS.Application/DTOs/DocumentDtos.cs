@@ -16,4 +16,6 @@ public class DocumentDto
     public string FilePath { get; set; } = string.Empty;
     public string FileName { get; set; } = string.Empty;
     public DateTime UploadedAt { get; set; }
+    public double? Grade { get; set; }
+    public bool? IsFinalized { get; set; }
 }
