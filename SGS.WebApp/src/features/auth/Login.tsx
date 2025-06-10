@@ -1,13 +1,15 @@
-import {useForm} from "react-hook-form";
+import {useForm} from 'react-hook-form';
 import {useAuthContext} from "../../auth/AuthProvider.tsx";
+import {FormInput} from '../../components/form/FormInput';
+import {FormSubmitButton} from '../../components/form/FormSubmitButton';
+import {AuthCard, AuthContainer, AuthDescription, AuthFooter, AuthHeader, AuthLink, AuthTitle, Form} from './styles';
+import {useState} from "react";
+import {LoginForm} from "./types.ts";
 
-type LoginForm = {
-  email: string;
-  password: string;
-};
-
-export default function Login() {
+export function LoginPage() {
   const {login} = useAuthContext();
+  const [error, setError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -16,74 +18,67 @@ export default function Login() {
 
   const onSubmit = async (data: LoginForm) => {
     try {
+      setError(error);
       await login(data);
       window.location.replace("/");
     } catch (err) {
-      console.error(err);
-      alert("Invalid credentials");
+      setError("Invalid email or password: " + (err as Error).message);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg">
-        <h1 className="text-3xl font-semibold mb-6 text-center">Sign In</h1>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input
-              {...register("email", {required: "Email is required"})}
-              type="email"
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                errors.email
-                  ? "border-red-500 focus:ring-red-200"
-                  : "border-gray-300 focus:ring-blue-200"
-              }`}
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
+    <AuthContainer>
+      <AuthCard>
+        <AuthHeader>
+          <AuthTitle>Welcome back</AuthTitle>
+          <AuthDescription>Sign in to your account</AuthDescription>
+        </AuthHeader>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">Password</label>
-            <input
-              {...register("password", {required: "Password is required"})}
-              type="password"
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                errors.password
-                  ? "border-red-500 focus:ring-red-200"
-                  : "border-gray-300 focus:ring-blue-200"
-              }`}
-            />
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+        <Form onSubmit={handleSubmit(onSubmit)}>
+          <FormInput
+            label="Email"
+            name="email"
+            type="email"
+            register={register}
+            rules={{
+              required: 'Email is required',
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: 'Invalid email address'
+              }
+            }}
+            errors={errors}
+            placeholder="your@email.com"
+          />
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full flex justify-center py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
-          >
-            {isSubmitting ? "Signing In…" : "Sign In"}
-          </button>
-        </form>
+          <FormInput
+            label="Password"
+            name="password"
+            type="password"
+            register={register}
+            rules={{
+              required: 'Password is required',
+              minLength: {
+                value: 3,
+                message: 'Password must be at least 6 characters'
+              }
+            }}
+            errors={errors}
+            placeholder="••••••••"
+          />
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don’t have an account?{" "}
-          <a
-            href="/register"
-            className="text-blue-600 hover:underline font-medium"
-          >
-            Register
-          </a>
-        </p>
-      </div>
-    </div>
+          <FormSubmitButton
+            isSubmitting={isSubmitting}
+            text="Sign in"
+            loadingText="Signing in..."
+          />
+        </Form>
+
+        <AuthFooter>
+          Don't have an account?{' '}
+          <AuthLink to="/register">Create an account</AuthLink>
+        </AuthFooter>
+      </AuthCard>
+    </AuthContainer>
   );
 }
