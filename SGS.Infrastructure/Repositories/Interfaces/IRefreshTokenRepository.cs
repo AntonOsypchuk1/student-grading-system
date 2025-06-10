@@ -9,4 +9,7 @@ public interface IRefreshTokenRepository : IBaseRepository<RefreshToken>
 
     Task<IEnumerable<RefreshToken>> GetActiveTokensByUserIdAsync(Guid userId,
         CancellationToken cancellationToken = default);
+
+    Task AddRefreshTokenAsync(RefreshToken refreshToken,
+        CancellationToken cancellationToken = default);
 }
