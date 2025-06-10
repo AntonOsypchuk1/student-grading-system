@@ -180,7 +180,7 @@ const AssignmentSubmission = ({assignmentId, userId}: AssignmentSubmissionProps)
 
   return (
     <SubmissionContainer>
-      <h2>Submit Your Work</h2>
+      <h2>Здати роботу</h2>
       <form onSubmit={handleSubmit(onSubmit)}>
         <FileUploadContainer>
           <UploadArea
@@ -200,14 +200,14 @@ const AssignmentSubmission = ({assignmentId, userId}: AssignmentSubmissionProps)
                   <FileSize>{formatFileSize(selectedFile.size)}</FileSize>
                 </FileDetails>
                 <RemoveButton type="button" onClick={removeFile}>
-                  Remove
+                  Видалити
                 </RemoveButton>
               </FileInfo>
             ) : (
               <>
-                <p>Drag and drop your PDF file here, or click to select</p>
+                <p>Перетягніть ваш PDF-файл сюди або клацніть, щоб вибрати</p>
                 <p style={{fontSize: '0.875rem', color: '#666', marginTop: '8px'}}>
-                  Supported format: PDF
+                  Підтримувані формати: PDF
                 </p>
               </>
             )}
@@ -217,10 +217,10 @@ const AssignmentSubmission = ({assignmentId, userId}: AssignmentSubmissionProps)
             type="file"
             accept=".pdf"
             {...register('file', {
-              required: 'Please select a file',
+              required: 'Будь-ласка, додайте файл',
               validate: {
                 isPDF: (files) =>
-                  !files?.[0] || files[0]?.type === 'application/pdf' || 'Only PDF files are allowed'
+                  !files?.[0] || files[0]?.type === 'application/pdf' || 'Допускаються тільки PDF-файли'
               }
             })}
           />
@@ -229,7 +229,7 @@ const AssignmentSubmission = ({assignmentId, userId}: AssignmentSubmissionProps)
           )}
         </FileUploadContainer>
         <SubmitButton type="submit" disabled={isSubmitting || !selectedFile}>
-          {isSubmitting ? 'Uploading...' : 'Submit Assignment'}
+          {isSubmitting ? 'Завантаження...' : 'Здати роботу'}
         </SubmitButton>
       </form>
     </SubmissionContainer>

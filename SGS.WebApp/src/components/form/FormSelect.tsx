@@ -39,16 +39,16 @@ const StyledSelect = styled.select<{ hasError: boolean }>`
     appearance: none;
     background-color: ${props => props.theme.colors.white};
     border: 1px solid ${props => props.hasError ?
-            props.theme.colors.danger :
-            props.theme.colors.gray[300]};
+  props.theme.colors.danger :
+  props.theme.colors.gray[300]};
     transition: all ${props => props.theme.transitions.default};
     box-shadow: ${props => props.theme.shadows.sm};
 
     &:focus {
         outline: none;
         box-shadow: 0 0 0 2px ${props => props.hasError ?
-                `${props.theme.colors.danger}33` :
-                `${props.theme.colors.primary}33`};
+  `${props.theme.colors.danger}33` :
+  `${props.theme.colors.primary}33`};
     }
 `;
 
@@ -83,7 +83,7 @@ export function FormSelect({
           {...register(name, rules)}
           hasError={Boolean(errors[name])}
         >
-          <option value="">Select an option</option>
+          <option value="">Виберіть варіант</option>
           {options.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}

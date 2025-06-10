@@ -53,7 +53,7 @@ export const PdfPreview = ({documentId}: PdfPreviewProps) => {
   if (isError) {
     return (
       <PreviewContainer>
-        <div>Error loading document: {downloadDocumentQuery.error.message}</div>
+        <div>Помилка завантаження документа: {downloadDocumentQuery.error.message}</div>
       </PreviewContainer>
     );
   }
@@ -61,7 +61,7 @@ export const PdfPreview = ({documentId}: PdfPreviewProps) => {
 
   return (
     <PreviewContainer>
-      <h2>Document Preview</h2>
+      <h2>Попередній перегляд документа</h2>
       <IframeContainer>
         {isLoading && <LoadingSpinner/>}
         <iframe
@@ -70,7 +70,7 @@ export const PdfPreview = ({documentId}: PdfPreviewProps) => {
           height="100%"
           onLoad={() => setIsLoading(false)}
           style={{border: 'none'}}
-          title="PDF Preview"
+          title="Попередній перегляд PDF"
         />
       </IframeContainer>
     </PreviewContainer>

@@ -13,16 +13,16 @@ export default function AssignmentLayout() {
 
   useEffect(() => {
     const links = [
-      {title: 'Overview', path: `/assignments/${assignmentId}`},
+      {title: 'Завдання', path: `/assignments/${assignmentId}`},
     ];
     if (userRole === 'teacher')
       links.push(
-        {title: 'Students', path: `/assignments/${assignmentId}/students`},
-        {title: 'Grades', path: `/assignments/${assignmentId}/grades`}
+        {title: 'Студенти', path: `/assignments/${assignmentId}/students`},
+        {title: 'Оцінки', path: `/assignments/${assignmentId}/grades`}
       );
     else if (userRole === 'student')
       links.push(
-        {title: 'Submission', path: `/assignments/${assignmentId}/submission`}
+        {title: 'Подання', path: `/assignments/${assignmentId}/submission`}
       );
 
     setLinks(links);

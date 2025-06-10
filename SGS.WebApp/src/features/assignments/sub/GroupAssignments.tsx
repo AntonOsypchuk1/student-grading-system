@@ -23,8 +23,8 @@ export function GroupAssignments({groupId, groupName, courseId}: GroupAssignment
   const {getAssignmentsByGroupAndCourseQuery} = useAssignments({courseId, groupId});
   const {data: assignments, isLoading} = getAssignmentsByGroupAndCourseQuery;
 
-  if (isLoading) return <div>Loading assignments...</div>;
-  if (!assignments?.length) return <div>No assignments found</div>;
+  if (isLoading) return <div>Завантаження завдань...</div>;
+  if (!assignments?.length) return <div>Завдань не знайдено</div>;
 
   return (
     <GroupContainer>

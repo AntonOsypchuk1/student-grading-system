@@ -89,7 +89,7 @@ export default function TeacherDashboard() {
     return (
       <DashboardContainer>
         <ErrorMessage>
-          An error occurred while loading the dashboard. Please try again later.
+          Виникла помилка під час завантаження інформаційної панелі. Будь ласка, спробуйте пізніше.
         </ErrorMessage>
       </DashboardContainer>
     );
@@ -98,19 +98,19 @@ export default function TeacherDashboard() {
   return (
     <DashboardContainer>
       <DashboardHeader>
-        <Title>Teacher Dashboard</Title>
+        <Title>Інформаційна панель вчителя</Title>
         <Stats>
           <StatItem>
             <StatNumber>{stats.totalCourses}</StatNumber>
-            <StatLabel>Courses</StatLabel>
+            <StatLabel>Курси</StatLabel>
           </StatItem>
           <StatItem>
             <StatNumber>{stats.totalGroups}</StatNumber>
-            <StatLabel>Groups</StatLabel>
+            <StatLabel>Групи</StatLabel>
           </StatItem>
           <StatItem>
             <StatNumber>{stats.activeAssignments}</StatNumber>
-            <StatLabel>Active Assignments</StatLabel>
+            <StatLabel>Активні завдання</StatLabel>
           </StatItem>
         </Stats>
       </DashboardHeader>
@@ -121,14 +121,14 @@ export default function TeacherDashboard() {
             <Widget key={course.id}>
               <WidgetTitle>
                 {course.title}
-                <Link to={`/courses/${course.id}`}>View Details</Link>
+                <small><Link to={`/courses/${course.id}`}>Перейти</Link></small>
               </WidgetTitle>
               <CourseStats>
                 <div>
-                  Groups: {course.studentsGroups?.length ?? 0}
+                  Групи: {course.studentsGroups?.length ?? 0}
                 </div>
                 <div>
-                  Assignments: {assignmentsByCourse[course.id]?.length ?? 0}
+                  Завдання: {assignmentsByCourse[course.id]?.length ?? 0}
                 </div>
               </CourseStats>
               <GroupsList>
@@ -153,7 +153,7 @@ export default function TeacherDashboard() {
         </LeftPanel>
 
         <MainPanel>
-          <WidgetTitle>Recent Assignments</WidgetTitle>
+          <WidgetTitle>Нещодавні завдання</WidgetTitle>
           <AssignmentsList
             assignments={allAssignments
               .filter(assignment =>

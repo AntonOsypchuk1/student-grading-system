@@ -7,19 +7,12 @@ import {AnalysisResults} from "../sub/AnalysisResults.tsx";
 
 const AssignmentAnalysis = () => {
   const {assignmentId} = useParams<{ assignmentId: string }>();
-  // const {getAssignmentByIdQuery} = useAssignments({assignmentId});
-  // const {data: assignment} = getAssignmentByIdQuery;
   const {user} = useAuthContext();
-
-  console.log(assignmentId);
 
   const {getDocumentByUserIdAndAssignmentId} = useDocuments({userId: user.data?.id, assignmentId});
   const {data: document} = getDocumentByUserIdAndAssignmentId;
   const {getAnalysisResultsQuery} = useGrading({docId: document?.id});
   const {data: analysisResult} = getAnalysisResultsQuery;
-
-  console.log(document);
-  console.log(analysisResult);
 
   return (
     <div>

@@ -19,24 +19,22 @@ export function RegisterPage() {
   const {
     register,
     handleSubmit,
-    // watch,
     formState: {errors, isSubmitting},
   } = useForm<RegisterForm>();
 
-  // const password = watch("password", "");
 
   const onSubmit = async (data: RegisterForm) => {
     try {
       setError(error);
       const {confirmPassword, ...payload} = data;
       if (payload.password !== confirmPassword) {
-        setError("Passwords do not match");
+        setError("Паролі не співпадають");
         return;
       }
       await registerUser(payload);
       window.location.replace("/login");
     } catch {
-      setError("Registration failed. Please try again.");
+      setError("Реєстрація не вдалася. Будь ласка, спробуйте ще раз.");
     }
   };
 
@@ -44,29 +42,29 @@ export function RegisterPage() {
     <AuthContainer>
       <AuthCard>
         <AuthHeader>
-          <AuthTitle>Create an account</AuthTitle>
+          <AuthTitle>Створити обліковий запис</AuthTitle>
         </AuthHeader>
 
         <Form onSubmit={handleSubmit(onSubmit)}>
           <FormInput
-            label="Full Name"
+            label="Повне імʼя"
             name="fullName"
             register={register}
-            rules={{required: 'Full name is required'}}
+            rules={{required: 'Необхідно вказати повне ім\'я'}}
             errors={errors}
             placeholder="John Doe"
           />
 
           <FormInput
-            label="Email"
+            label="Електронна пошта"
             name="email"
             type="email"
             register={register}
             rules={{
-              required: 'Email is required',
+              required: 'Обов\'язкова наявність електронної пошти',
               pattern: {
                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Invalid email address'
+                message: 'Неправильна адреса електронної пошти'
               }
             }}
             errors={errors}
@@ -74,15 +72,15 @@ export function RegisterPage() {
           />
 
           <FormInput
-            label="Password"
+            label="Пароль"
             name="password"
             type="password"
             register={register}
             rules={{
-              required: 'Password is required',
+              required: 'Необхідно ввести пароль',
               minLength: {
                 value: 6,
-                message: 'Password must be at least 6 characters'
+                message: 'Пароль повинен містити щонайменше 6 символів'
               }
             }}
             errors={errors}
@@ -90,24 +88,24 @@ export function RegisterPage() {
           />
 
           <FormSelect
-            label="Role"
+            label="Роль"
             name="role"
             options={roleOptions}
             register={register}
-            rules={{required: 'Role is required'}}
+            rules={{required: 'Роль обов\'язкова'}}
             errors={errors}
           />
 
           <FormSubmitButton
             isSubmitting={isSubmitting}
-            text="Create account"
-            loadingText="Creating account..."
+            text="Створити акаунт"
+            loadingText="Створюємо акаунт..."
           />
         </Form>
 
         <AuthFooter>
-          Already have an account?{' '}
-          <AuthLink to="/login">Sign in</AuthLink>
+          Вже маєте обліковий запис?{' '}
+          <AuthLink to="/login">Увійдіть в систему</AuthLink>
         </AuthFooter>
       </AuthCard>
     </AuthContainer>

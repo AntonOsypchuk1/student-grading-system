@@ -11,7 +11,7 @@ const GroupsSidebar = ({groups, selectedGroupId, onGroupSelect}: GroupsSidebarPr
 ) => {
   return (
     <Sidebar>
-      <h3>Groups</h3>
+      <h3>Групи</h3>
       <SidebarList>
         {groups.map(group => (
           <SidebarItem

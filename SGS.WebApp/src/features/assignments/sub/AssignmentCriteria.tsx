@@ -31,11 +31,11 @@ const AssignmentCriteria = ({assignmentId}: AssignmentCriteriaProps) => {
   const {getGradingCriteriaByAssignmentId} = useCriteria(undefined, assignmentId);
 
   if (getGradingCriteriaByAssignmentId.isLoading) {
-    return <div>Loading criteria...</div>;
+    return <div>Завантаження критеріїв...</div>;
   }
 
   if (getGradingCriteriaByAssignmentId.isError) {
-    return <div>Error loading criteria</div>;
+    return <div>Помилка завантаження критеріїв оцінювання</div>;
   }
 
   const criteria = getGradingCriteriaByAssignmentId.data;
@@ -43,12 +43,12 @@ const AssignmentCriteria = ({assignmentId}: AssignmentCriteriaProps) => {
 
   return (
     <CriteriaContainer>
-      <h3>Grading Criteria</h3>
+      <h3>Критерії оцінювання</h3>
       <CriteriaList>
         {criteria?.map((criterion) => (
           <CriteriaItem key={criterion.id}>
             <strong>{criterion.title}</strong> - {criterion.description}
-            <div>Points: {criterion.maxGrade}</div>
+            <div>Бали: {criterion.maxGrade}</div>
           </CriteriaItem>
         ))}
       </CriteriaList>

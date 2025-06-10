@@ -103,22 +103,22 @@ const Navbar: React.FC = () => {
         <NavContent>
           <LogoContainer>
             <Logo to="/">
-              <LogoText>EduPortal</LogoText>
+              <LogoText>StudentGradingSystem</LogoText>
             </Logo>
           </LogoContainer>
 
           <NavActions>
             {user ? (
               <>
-                <WelcomeText>Welcome, {user.data!.fullName}</WelcomeText>
+                <WelcomeText>Привіт, {user.data!.fullName}</WelcomeText>
                 <LogoutButton onClick={handleLogout}>
                   Logout
                 </LogoutButton>
               </>
             ) : (
               <>
-                <LoginLink to="/login">Login</LoginLink>
-                <RegisterLink to="/register">Register</RegisterLink>
+                <LoginLink to="/login">Логіе</LoginLink>
+                <RegisterLink to="/register">Зареєструватись</RegisterLink>
               </>
             )}
           </NavActions>
