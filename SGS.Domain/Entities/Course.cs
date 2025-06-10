@@ -12,4 +12,5 @@ public class Course : BaseEntity
     
     public ICollection<Teacher> Teachers { get; set; } = [];
     public ICollection<StudentsGroup> StudentsGroups { get; set; } = [];
+    public ICollection<Assignment> Assignments { get; set; } = [];
 }

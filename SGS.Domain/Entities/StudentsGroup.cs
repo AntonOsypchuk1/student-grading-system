@@ -5,10 +5,13 @@ namespace SGS.Domain.Entities;
 
 public class StudentsGroup : BaseEntity
 {
-    [Required, MaxLength(100)]
+    [Key, MaxLength(100)]
     public string Name { get; set; } = null!;
+    public string? Description { get; set; }
+    public int? Year { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
-    public ICollection<Student> Students { get; set; } = new List<Student>();
-    public ICollection<Course> Courses { get; set; } = new List<Course>();
-    public ICollection<Teacher> Teachers { get; set; } = new List<Teacher>();
+    public ICollection<Student> Students { get; set; } = [];
+    public ICollection<Course> Courses { get; set; } = [];
 }

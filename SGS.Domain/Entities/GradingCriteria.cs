@@ -7,10 +7,10 @@ namespace SGS.Domain.Entities;
 public class GradingCriteria : BaseEntity
 {
     [Required]
-    public string Title { get; set; }
+    public required string Title { get; set; }
     
     [Required]
-    public string Description { get; set; }
+    public required string Description { get; set; }
     
     [Required]
     public double MaxGrade { get; set; }

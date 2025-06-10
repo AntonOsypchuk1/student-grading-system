@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using SGS.Domain.Common;
 
 namespace SGS.Domain.Entities;
@@ -9,23 +10,27 @@ public class AnalysisResults : BaseEntity
     public Guid DocumentId { get; set; }
 
     [Required]
-    public Guid CriteriaId { get; set; }
-
-    [Required]
     public Guid GradeId { get; set; }
 
-    [Required, StringLength(1000)]
+    [Required, StringLength(2000)]
     public string GeneratedSummary { get; set; } = null!;
+    
+    [Required]
+    public List<string> Strengths { get; set; } = [];
+    
+    [Required]
+    public List<string> AreasForImprovement { get; set; } = [];
 
+    [Required] 
     public bool IsApproved { get; set; }
+    
     public DateTime CreatedAt { get; set; }
 
-    [Required]
+    [ForeignKey(nameof(DocumentId))]
     public Document Document { get; set; } = null!;
 
-    [Required]
-    public GradingCriteria Criteria { get; set; } = null!;
-
-    [Required]
+    [ForeignKey(nameof(GradeId))]
     public Grade Grade { get; set; } = null!;
+    
+    public ICollection<GradingCriteria> Criterias { get; set; } = [];
 }

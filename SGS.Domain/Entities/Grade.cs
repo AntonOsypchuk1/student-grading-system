@@ -8,6 +8,9 @@ public class Grade : BaseEntity
 {
     [Required]
     public Guid DocumentId { get; set; }
+    
+    [Required]
+    public Guid AssignmentId { get; set; }
 
     [Required]
     public int GeneratedGrade { get; set; }
@@ -19,4 +22,7 @@ public class Grade : BaseEntity
 
     [ForeignKey(nameof(DocumentId))]
     public Document Document { get; set; } = null!;
+    
+    [ForeignKey(nameof(AssignmentId))]
+    public Assignment Assignment { get; set; } = null!;
 }
