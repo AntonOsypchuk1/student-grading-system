@@ -1,6 +1,5 @@
 import api from "../api.ts";
-import {AnalysisResultDto} from "../../types/AnalisysTypes.ts";
-import {EditGradeCommand} from "../../types/GradingTypes.ts";
+import {AnalysisResultDto, CourseGradingDto, EditGradeCommand, GradingResultDto} from "../../types/AnalysisTypes.ts";
 
 export const analyzeDocument = async (docId: string): Promise<AnalysisResultDto> => {
   const response = await api.post<AnalysisResultDto>(`/grading/analyze/${docId}`);
@@ -8,7 +7,7 @@ export const analyzeDocument = async (docId: string): Promise<AnalysisResultDto>
 };
 
 export const getAnalysisResults = async (docId: string): Promise<AnalysisResultDto> => {
-  const response = await api.get<AnalysisResultDto>(`/grading/results/${docId}`);
+  const response = await api.get<AnalysisResultDto>(`/grading/by-document/${docId}`);
   return response.data;
 };
 
@@ -17,8 +16,13 @@ export const editGrade = async (data: EditGradeCommand): Promise<AnalysisResultD
   return response.data;
 };
 
-export const getGradingResultsByAssignment = async (assignmentId: string): Promise<AnalysisResultDto[]> => {
-  const response = await api.get<AnalysisResultDto[]>(`/grading/assignments/${assignmentId}`);
+export const getGradingResultsByAssignment = async (assignmentId: string): Promise<GradingResultDto[]> => {
+  const response = await api.get<GradingResultDto[]>(`/grading/assignments/${assignmentId}`);
+  return response.data;
+};
+
+export const getGradingResultByCourseAndGroup = async (courseId: string, groupId: string): Promise<CourseGradingDto> => {
+  const response = await api.get<CourseGradingDto>(`/grading/course/${courseId}&groupId=${groupId}`);
   return response.data;
 };
 
