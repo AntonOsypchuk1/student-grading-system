@@ -28,21 +28,30 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerWithAuth();
 
+var allowedOrigins = new[] { "http://localhost:5173" };
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(b =>
+    {
+        b.WithOrigins(allowedOrigins)
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
+
 var app = builder.Build();
 
+app.UseCors();
 app.UseSwagger();
 if (app.Environment.IsDevelopment())
 {
-    // Apply migrations
-    using (var scope = app.Services.CreateScope())
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        dbContext.Database.Migrate();
-    }
     app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "SGS API v1"); });
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+// app.UseMiddleware<TokenBlacklistMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
