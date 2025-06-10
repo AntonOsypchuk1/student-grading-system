@@ -1,19 +1,25 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SGS.Application.Interfaces;
 using SGS.Domain.Entities;
 using SGS.SemanticAnalysis.Services.Bases;
+using SGS.SemanticAnalysis.Settings;
 using SGS.SemanticAnalysis.Structures.PromptRequests;
 using SGS.SemanticAnalysis.Structures.PromptResponses;
 
 namespace SGS.Application.Services.Analysis;
 
 public class SemanticKernelAiService(
+    IOptions<SemanticKernelSettings> settings,
     IPromptServiceExecutor promptServiceExecutor,
     IDocumentService documentService,
     ILogger<SemanticKernelAiService> logger) : IAIService
 {
-    public async Task<(string Summary, int GeneratedGrade)> AnalyzeDocumentAsync(
+    // private readonly string _promptLanguage = settings.Value.Language ?? "en";
+    private readonly string _promptLanguage = "en";
+    
+    public async Task<(GenerateSummaryResponse Summary, int GeneratedGrade)> AnalyzeDocumentAsync(
         Domain.Entities.Document document,
         List<GradingCriteria> criteria,
         CancellationToken cancellationToken = default)
@@ -23,7 +29,7 @@ public class SemanticKernelAiService(
             logger.LogInformation("Beginning analysis of document: {DocumentId}", document.Id);
             var evaluationResults = await EvaluateCriteriaAsync(criteria, document, cancellationToken);
 
-            var (evaluationDetails, totalWeightedScore) = AnalysePromptResult(criteria, evaluationResults);
+            var (evaluationDetails, totalWeightedScore) = AnalysePromptResult(criteria, evaluationResults, _promptLanguage);
             
             var summaryResponse = await GenerateSummaryAsync(document, evaluationDetails, totalWeightedScore, cancellationToken);
             
@@ -31,7 +37,7 @@ public class SemanticKernelAiService(
                 document.Id, totalWeightedScore);
             
             // Return the final summary and score (rounded to nearest integer)
-            return (summaryResponse.Summary, (int)Math.Round(totalWeightedScore));
+            return (summaryResponse, (int)Math.Round(totalWeightedScore));
         }
         catch (Exception ex)
         {
@@ -84,42 +90,47 @@ public class SemanticKernelAiService(
 
     private static (string, double) AnalysePromptResult(
         List<GradingCriteria> criteria,
-        EvaluateCriteriaResponse evaluationResults)
+        EvaluateCriteriaResponse results,
+        string promptLanguage)
     {
-        double totalWeightedScore = 0;
+        var isUk = promptLanguage.StartsWith("ua", StringComparison.OrdinalIgnoreCase);
+        var titleTpl      = isUk
+            ? "## {0} (Бал: {1:F1}/100, Вага: {2:F2})"
+            : "## {0} (Score: {1:F1}/100, Weight: {2:F2})";
+        var feedbackLbl   = isUk ? "**Відгук**: {0}" : "**Feedback**: {0}";
+        var strengthsHdr  = isUk ? "**Сильні сторони**:" : "**Strengths**:";
+        var improveHdr    = isUk ? "**Напрями для покращення**:" : "**Areas for Improvement**:";
+
+        var sb = new StringBuilder();
+        double totalWeighted = 0;
         var totalWeight = criteria.Sum(c => c.Weight);
-            
-        var evaluationDetails = new StringBuilder();
-        foreach (var result in evaluationResults.CriteriaResults)
+
+        foreach (var r in results.CriteriaResults)
         {
-            var weightedScore = result.Score * (result.Weight / totalWeight);
-            totalWeightedScore += weightedScore;
-                
-            evaluationDetails.AppendLine($"## {result.Title} (Score: {result.Score:F1}/100, Weight: {result.Weight:F2})");
-            evaluationDetails.AppendLine($"**Feedback**: {result.Justification}");
-                
-            if (result.Strengths.Count != 0)
+            var w = r.Score * (r.Weight / totalWeight);
+            totalWeighted += w;
+
+            sb.AppendLine(string.Format(titleTpl, r.Title, r.Score, r.Weight));
+            sb.AppendLine(string.Format(feedbackLbl, r.Justification));
+
+            if (r.Strengths.Count != 0)
             {
-                evaluationDetails.AppendLine("**Strengths**:");
-                foreach (var strength in result.Strengths)
-                {
-                    evaluationDetails.AppendLine($"- {strength}");
-                }
+                sb.AppendLine(strengthsHdr);
+                foreach (var s in r.Strengths)
+                    sb.AppendLine($"- {s}");
             }
-                
-            if (result.Improvements.Count != 0)
+
+            if (r.Improvements.Count != 0)
             {
-                evaluationDetails.AppendLine("**Areas for Improvement**:");
-                foreach (var improvement in result.Improvements)
-                {
-                    evaluationDetails.AppendLine($"- {improvement}");
-                }
+                sb.AppendLine(improveHdr);
+                foreach (var i in r.Improvements)
+                    sb.AppendLine($"- {i}");
             }
-                
-            evaluationDetails.AppendLine();
+
+            sb.AppendLine();
         }
 
-        return (evaluationDetails.ToString(), totalWeightedScore);
+        return (sb.ToString(), totalWeighted);
     }
 
     private async Task<GenerateSummaryResponse> GenerateSummaryAsync(

@@ -47,6 +47,7 @@ public static class AuthExtensions
 
         services
             .AddAuthorizationBuilder()
+            .AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"))
             .AddPolicy("RequireTeacherRole", policy => policy.RequireRole("Teacher"))
             .AddPolicy("RequireStudentRole", policy => policy.RequireRole("Student"));
     }

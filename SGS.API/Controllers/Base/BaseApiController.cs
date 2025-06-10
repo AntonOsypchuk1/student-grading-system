@@ -29,7 +29,7 @@ public class BaseApiController : ControllerBase
         if (!result.IsSuccess)
             return StatusCode(500, new ProblemDetails { Detail = result.Error });
         
-        if (result.Data is null || !result.Data.Any())
+        if (result.Data is null)
             return NotFound();
 
         return Ok(result.Data);

@@ -9,27 +9,27 @@ public class BaseRepository<TEntity>(AppDbContext context) : IBaseRepository<TEn
 {
     protected AppDbContext Context { get; } = context;
 
-    public async Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public virtual async Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         await Context.Set<TEntity>().AddAsync(entity, cancellationToken);
     }
 
-    public void Update(TEntity entity)
+    public virtual void Update(TEntity entity)
     {
         Context.Set<TEntity>().Update(entity);
     }
 
-    public void Delete(TEntity entity)
+    public virtual void Delete(TEntity entity)
     {
         Context.Set<TEntity>().Remove(entity);
     }
 
-    public async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public virtual async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await Context.Set<TEntity>().FindAsync([id], cancellationToken);
     }
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await Context.Set<TEntity>().ToListAsync(cancellationToken);
     }

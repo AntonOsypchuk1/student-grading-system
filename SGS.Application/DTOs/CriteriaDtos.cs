@@ -10,6 +10,11 @@ public class GradingCriteriaDto
     public Guid AssignmentId { get; set; }
 }
 
+public class CreateGradingCriteriaBatchCommand
+{
+    public List<CreateGradingCriteriaCommand> Criteria { get; set; } = [];
+}
+
 public class CreateGradingCriteriaCommand
 {
     public string Title { get; set; } = string.Empty;

@@ -59,7 +59,7 @@ public class AuthService(
                 Role = role
             };
 
-            await UnitOfWork.Users.CreateAsync(user, cancellationToken);
+            await UnitOfWork.Users.AddUserAsync(user, cancellationToken);
             return Result<UserDto>.Success(Mapper.Map<UserDto>(user));
         }, cancellationToken);
     }

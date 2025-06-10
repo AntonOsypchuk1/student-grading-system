@@ -11,7 +11,9 @@ namespace SGS.SemanticAnalysis.Services;
 public class GenerateSummaryService(SemanticKernelFactory semanticKernelFactory, IPromptBuilder promptBuilder)
     : BasePromptService, IPromptService<GenerateSummaryRequest, GenerateSummaryResponse>
 {
-    protected override string GetYamlFileName() => "GenerateSummary.prompt.yaml";
+    protected override string GetYamlFileName() => semanticKernelFactory.PromptLanguage == "en"
+        ? "GenerateSummary.prompt.en.yaml"
+        : "GenerateSummary.prompt.ua.yaml";
     
     public async Task<GenerateSummaryResponse?> ExecuteAsync(GenerateSummaryRequest request, CancellationToken cancellationToken = default)
     {

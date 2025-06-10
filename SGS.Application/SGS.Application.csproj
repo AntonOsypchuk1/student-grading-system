@@ -18,6 +18,22 @@
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3"/>
         <PackageReference Include="itext7" Version="9.1.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.3.25171.5" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="Resources\EvaluationFormatter.en.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>EvaluationFormatter.en.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Resources\EvaluationFormatter.en.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>EvaluationFormatter.en.resx</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>

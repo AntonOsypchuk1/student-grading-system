@@ -12,6 +12,5 @@ public class Teacher : BaseEntity
     [ForeignKey(nameof(UserId))]
     public User User { get; set; } = null!;
 
-    public ICollection<Course> Courses { get; set; } = new List<Course>();
-    public ICollection<StudentsGroup> StudentsGroups { get; set; } = new List<StudentsGroup>();
+    public ICollection<Course> Courses { get; set; } = [];
 }

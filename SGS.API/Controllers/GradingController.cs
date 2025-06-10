@@ -31,12 +31,26 @@ public class GradingController(
         return HandleCreatedResult(result, nameof(GetAnalysisResult), new { id = result.Data?.Id });
     }
 
-    [HttpGet("results/{docId:guid}")]
+    [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetAnalysisResult([FromRoute] Guid docId)
+    public async Task<IActionResult> GetAnalysisResult([FromRoute] Guid id)
+    {
+        if (!this.IsValidGuid(id, out var errorResult))
+            return errorResult;
+        
+        var result = await analysisService.GetAnalysisResultByIdAsync(id);
+        return HandleResult(result);
+    }
+
+    [HttpGet("by-document/{docId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetAnalysisResultByDocumentId([FromRoute] Guid docId)
     {
         if (!this.IsValidGuid(docId, out var errorResult))
             return errorResult;
@@ -71,6 +85,18 @@ public class GradingController(
         
         var result = await gradingService.GetGradingResultsByAssignmentAsync(assignmentId);
         return HandleCollectionResult(result);
+    }
+    
+    [HttpGet("course/{courseId:guid}&groupId={groupId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> GetGradingResultsByCourseAndGroup(Guid courseId, Guid groupId)
+    {
+        if (!this.IsValidGuid(courseId, out var errorResult) || !this.IsValidGuid(groupId, out errorResult))
+            return errorResult;
+
+        var result = await gradingService.GetGradingResultsByCourseAndGroupAsync(courseId, groupId);
+        return HandleResult(result);
     }
 
     [Authorize(Policy = "RequireTeacherRole")]

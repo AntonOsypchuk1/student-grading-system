@@ -22,4 +22,18 @@ public class RefreshTokenRepository(AppDbContext context)
             .Where(rt => rt.UserId == userId && rt.Revoked == null && rt.Expires > DateTime.UtcNow)
             .ToListAsync(cancellationToken);
     }
+    
+    public async Task AddRefreshTokenAsync(RefreshToken refreshToken, CancellationToken cancellationToken = default)
+    {
+        if (refreshToken.UserId == Guid.Empty)
+            throw new ArgumentException("Refresh token must be associated with a user");
+            
+        if (string.IsNullOrEmpty(refreshToken.Token))
+            throw new ArgumentException("Refresh token must have a token value");
+            
+        if (refreshToken.Expires == default)
+            throw new ArgumentException("Refresh token must have an expiration date");
+            
+        await CreateAsync(refreshToken, cancellationToken);
+    }
 }

@@ -9,4 +9,7 @@ public interface IAnalysisService
 
     Task<Result<AnalysisResultDto?>> GetAnalysisResultByDocumentIdAsync(Guid documentId,
         CancellationToken cancellationToken = default);
+    
+    Task<Result<AnalysisResultDto?>> GetAnalysisResultByIdAsync(Guid analysisId,
+        CancellationToken cancellationToken = default);
 }

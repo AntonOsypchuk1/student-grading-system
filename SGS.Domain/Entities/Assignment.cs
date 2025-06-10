@@ -31,4 +31,6 @@ public class Assignment : BaseEntity
     public Course Course { get; set; } = null!;
 
     public ICollection<Document> Documents { get; set; } = [];
+    
+    public ICollection<GradingCriteria> GradingCriteria { get; set; } = [];
 }
