@@ -23,9 +23,22 @@ public class CourseController(ICourseService courseService) : BaseApiController
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-        
+
         var result = await courseService.CreateCourseAsync(command);
         return HandleCreatedResult(result, nameof(GetCourseById), new { id = result.Data?.Id });
+    }
+
+    // [Authorize(Policy = "RequireAdminRole")]
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetAllCourses()
+    {
+        // TODO: get all courses for the user
+        var result = await courseService.GetAllCoursesAsync();
+        return HandleCollectionResult(result);
     }
 
     [HttpGet("{id:guid}")]
@@ -41,8 +54,36 @@ public class CourseController(ICourseService courseService) : BaseApiController
         var result = await courseService.GetCourseByIdAsync(id);
         return HandleResult(result);
     }
+    
+    // [HttpGet("{courseId:guid}/teachers")]
+    // [ProducesResponseType(StatusCodes.Status200OK)]
+    // [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    // [ProducesResponseType(StatusCodes.Status404NotFound)]
+    // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    // public async Task<IActionResult> GetTeachersByCourse([FromRoute] Guid courseId)
+    // {
+    //     if (!this.IsValidGuid(courseId, out var errorResult))
+    //         return errorResult;
+    //
+    //     var result = await courseService.GetTeachersByCourseAsync(courseId);
+    //     return HandleCollectionResult(result);
+    // }
+    
+    // [HttpGet("{courseId:guid}/groups")]
+    // [ProducesResponseType(StatusCodes.Status200OK)]
+    // [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    // [ProducesResponseType(StatusCodes.Status404NotFound)]
+    // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    // public async Task<IActionResult> GetGroupsByCourse([FromRoute] Guid courseId)
+    // {
+    //     if (!this.IsValidGuid(courseId, out var errorResult))
+    //         return errorResult;
+    //
+    //     var result = await courseService.GetGroupsByCourseAsync(courseId);
+    //     return HandleCollectionResult(result);
+    // }
 
-    [Authorize(Policy = "RequireTeacherRole")]
+    // [Authorize(Policy = "RequireTeacherRole")]
     [HttpGet("teacher/{teacherId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -59,7 +100,7 @@ public class CourseController(ICourseService courseService) : BaseApiController
         return HandleCollectionResult(result);
     }
 
-    [Authorize(Policy = "RequireStudentRole")]
+    // [Authorize(Policy = "RequireStudentRole")]
     [HttpGet("student/{studentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -75,4 +116,80 @@ public class CourseController(ICourseService courseService) : BaseApiController
         var result = await courseService.GetCoursesByStudentAsync(studentId);
         return HandleCollectionResult(result);
     }
+
+    // [Authorize(Policy = "RequireAdminRole")]
+    [HttpPost("{courseId:guid}/teachers/{teacherId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> AssignTeacherToCourse([FromRoute] Guid courseId, [FromRoute] Guid teacherId)
+    {
+        if (!this.IsValidGuid(courseId, out var courseErrorResult))
+            return courseErrorResult;
+
+        if (!this.IsValidGuid(teacherId, out var teacherErrorResult))
+            return teacherErrorResult;
+
+        var result = await courseService.AssignTeacherToCourseAsync(teacherId, courseId);
+        return HandleResult(result);
+    }
+
+    // [Authorize(Policy = "RequireAdminRole")]
+    // [HttpDelete("{courseId:guid}/teachers/{teacherId:guid}")]
+    // [ProducesResponseType(StatusCodes.Status200OK)]
+    // [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    // [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    // [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    // public async Task<IActionResult> RemoveTeacherFromCourse([FromRoute] Guid courseId, [FromRoute] Guid teacherId)
+    // {
+    //     if (!this.IsValidGuid(courseId, out var courseErrorResult))
+    //         return courseErrorResult;
+    //
+    //     if (!this.IsValidGuid(teacherId, out var teacherErrorResult))
+    //         return teacherErrorResult;
+    //
+    //     var result = await courseService.RemoveTeacherFromCourseAsync(teacherId, courseId);
+    //     return HandleResult(result);
+    // }
+
+    // [Authorize(Policy = "RequireAdminRole")]
+    [HttpPost("{courseId:guid}/groups/{groupId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> AssignGroupToCourse([FromRoute] Guid courseId, [FromRoute] Guid groupId)
+    {
+        if (!this.IsValidGuid(courseId, out var courseErrorResult))
+            return courseErrorResult;
+
+        if (!this.IsValidGuid(groupId, out var groupErrorResult))
+            return groupErrorResult;
+
+        var result = await courseService.AssignGroupToCourseAsync(groupId, courseId);
+        return HandleResult(result);
+    }
+
+    // [Authorize(Policy = "RequireAdminRole")]
+    // [HttpDelete("{courseId:guid}/groups/{groupId:guid}")]
+    // [ProducesResponseType(StatusCodes.Status200OK)]
+    // [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    // [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    // [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    // public async Task<IActionResult> RemoveGroupFromCourse([FromRoute] Guid courseId, [FromRoute] Guid groupId)
+    // {
+    //     if (!this.IsValidGuid(courseId, out var courseErrorResult))
+    //         return courseErrorResult;
+    //
+    //     if (!this.IsValidGuid(groupId, out var groupErrorResult))
+    //         return groupErrorResult;
+    //
+    //     var result = await courseService.RemoveGroupFromCourseAsync(groupId, courseId);
+    //     return HandleResult(result);
+    // }
 }

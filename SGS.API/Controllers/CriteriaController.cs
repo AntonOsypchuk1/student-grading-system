@@ -7,6 +7,7 @@ using SGS.Application.Interfaces;
 
 namespace SGS.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/criteria")]
 public class CriteriaController(IGradingCriteriaService criteriaService) : BaseApiController
@@ -24,9 +25,28 @@ public class CriteriaController(IGradingCriteriaService criteriaService) : BaseA
             return BadRequest(ModelState);
 
         var result = await criteriaService.CreateCriteriaAsync(command);
-        return HandleCreatedResult(result, nameof(GetCriteria), new { id = result.Data?.Id });}
+        return HandleCreatedResult(result, nameof(GetCriteria), new { id = result.Data?.Id });
+    }
+    
+    [Authorize(Policy = "RequireTeacherRole")]
+    [HttpPost("create-multiple")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> CreateBatchCriteria([FromBody] CreateGradingCriteriaBatchCommand command)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-    [Authorize]
+        var result = await criteriaService.CreateCriteriaBatchAsync(command);
+        return HandleCreatedResult(
+            result,
+            nameof(GetCriteriaByAssignment),
+            new { assignmentId = result.Data?.First().AssignmentId });
+    }
+    
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -39,8 +59,8 @@ public class CriteriaController(IGradingCriteriaService criteriaService) : BaseA
         var result = await criteriaService.GetCriteriaByIdAsync(id);
         return HandleResult(result);
     }
-
-    [Authorize] // TODO: Maybe "Teacher" policy
+    
+    // [Authorize] // TODO: Maybe "Teacher" policy
     [HttpGet("all")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -50,8 +70,7 @@ public class CriteriaController(IGradingCriteriaService criteriaService) : BaseA
         return HandleCollectionResult(result);
     }
     
-    [Authorize]
-    [HttpGet("by-assignment/{assignmentId:guid}")]
+    [HttpGet("assignment/{assignmentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

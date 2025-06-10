@@ -63,6 +63,51 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
         return HandleResult(result);
     }
     
+    [HttpGet("user/{userId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetDocumentsByUserId(Guid userId)
+    {
+        if (!this.IsValidGuid(userId, out var errorResult))
+            return errorResult;
+
+        var result = await documentService.GetDocumentsByUserIdAsync(userId);
+        return HandleCollectionResult(result);
+    }
+    
+    [HttpGet("assignment/{assignmentId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetDocumentsByAssignmentId(Guid assignmentId)
+    {
+        if (!this.IsValidGuid(assignmentId, out var errorResult))
+            return errorResult;
+
+        var result = await documentService.GetDocumentsByAssignmentIdAsync(assignmentId);
+        return HandleCollectionResult(result);
+    }
+    
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetDocumentByUserIdAndAssignmentId([FromQuery]Guid userId, [FromQuery]Guid assignmentId)
+    {
+        if (!this.IsValidGuid(userId, out var errorResult) || !this.IsValidGuid(assignmentId, out errorResult))
+            return errorResult;
+
+        var result = await documentService.GetDocumentByUserIdAndAssignmentIdAsync(userId, assignmentId);
+        return HandleResult(result);
+    }
+    
     [HttpGet("{id:guid}/download")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -101,21 +146,6 @@ public class DocumentController(IDocumentService documentService) : BaseApiContr
             
         var result = await documentService.DeleteDocumentAsync(id);
         return HandleResult(result);
-    }
-    
-    [HttpGet("user/{userId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetDocumentsByUserId(Guid userId)
-    {
-        if (!this.IsValidGuid(userId, out var errorResult))
-            return errorResult;
-
-        var result = await documentService.GetDocumentsByUserIdAsync(userId);
-        return HandleCollectionResult(result);
     }
 
     private static string GetContentType(string fileName)

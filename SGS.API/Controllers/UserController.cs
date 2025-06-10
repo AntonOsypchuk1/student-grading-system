@@ -40,35 +40,13 @@ public class UserController(IUserService userService) : BaseApiController
         return HandleCollectionResult(result);
     }
 
-    [Authorize(Policy = "RequireTeacherRole")]
+    // [Authorize(Policy = "RequireTeacherRole")]
     [HttpGet("students")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> GetStudents()
     {
         var result = await userService.GetStudentsAsync();
-        return HandleCollectionResult(result);
-    }
-    
-    [Authorize(Policy = "RequireTeacherRole")]
-    [HttpGet("groups")]
-    public async Task<IActionResult> GetStudentsGroups()
-    {
-        throw new NotImplementedException();
-    }
-
-    [HttpGet("groups/{groupId:guid}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetStudentsByGroup(Guid groupId)
-    {
-        if (!this.IsValidGuid(groupId, out var errorResult))
-            return errorResult;
-        
-        var result = await userService.GetStudentsByGroupAsync(groupId);
         return HandleCollectionResult(result);
     }
 }

@@ -42,6 +42,32 @@ public class AssignmentController(IAssignmentService assignmentService) : BaseAp
         return HandleResult(result);
     }
 
+    [HttpGet("course")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetAssignmentsByGroupAndCourse([FromQuery] Guid groupId, [FromQuery] Guid courseId)
+    {
+        if (!this.IsValidGuid(courseId, out var errorResult))
+            return errorResult;
+        
+        if (groupId != Guid.Empty)
+        {
+            if (!this.IsValidGuid(groupId, out errorResult))
+                return errorResult;
+
+            var result = await assignmentService.GetAssignmentsByGroupAndCourseAsync(groupId, courseId);
+            return HandleCollectionResult(result);
+        }
+        else
+        {
+            var result = await assignmentService.GetAssignmentsByCourseAsync(courseId);
+            return HandleCollectionResult(result);
+        }
+    }
+    
     [HttpGet("group/{groupId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
