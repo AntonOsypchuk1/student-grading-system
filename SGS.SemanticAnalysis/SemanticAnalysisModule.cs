@@ -15,7 +15,10 @@ public static class SemanticAnalysisModule
 {
     public static void AddSemanticKernel(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<SemanticKernelSettings>(_ => configuration.GetSection(nameof(SemanticKernelSettings)));
+        services.Configure<SemanticKernelSettings>(options =>
+        {
+            configuration.GetSection("SemanticKernelSettings").Bind(options);
+        });
 
         services.AddScoped<SemanticKernelFactory>();
         services.AddScoped<SemanticKernelBuilder>();

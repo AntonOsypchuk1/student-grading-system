@@ -25,15 +25,21 @@ public class SemanticKernelBuilder(IOptions<SemanticKernelSettings> settings)
     public SemanticKernelBuilder AddOpenAiChatCompletion()
     {
         if (string.IsNullOrEmpty(_settings.DeploymentName) ||
-            string.IsNullOrEmpty(_settings.Endpoint))
+            string.IsNullOrEmpty(_settings.Endpoint) || 
+            string.IsNullOrEmpty(_settings.ApiKey)) // for azure openai api
         {
             return this;
         }
 
-        _builder.AddOpenAIChatCompletion(
-            modelId: _settings.DeploymentName,
-            apiKey: _settings.ApiKey,
-            endpoint: new Uri(_settings.Endpoint));
+        // _builder.AddOpenAIChatCompletion(
+        //     modelId: _settings.DeploymentName,
+        //     apiKey: _settings.ApiKey,
+        //     endpoint: new Uri(_settings.Endpoint));
+        
+        _builder.AddAzureOpenAIChatCompletion(
+            deploymentName: _settings.DeploymentName,
+            endpoint: _settings.Endpoint,
+            apiKey: _settings.ApiKey);
         
         return this;
     }
