@@ -11,7 +11,9 @@ namespace SGS.SemanticAnalysis.Services;
 public class EvaluateCriterionService(SemanticKernelFactory semanticKernelFactory, IPromptBuilder promptBuilder) 
     : BasePromptService, IPromptService<EvaluateCriteriaRequest, EvaluateCriteriaResponse>
 {
-    protected override string GetYamlFileName() => "EvaluateCriterion.prompt.yaml";
+    protected override string GetYamlFileName() => semanticKernelFactory.PromptLanguage == "en" 
+        ? "EvaluateCriterion.prompt.en.yaml"
+        : "EvaluateCriterion.prompt.ua.yaml";
     
     public async Task<EvaluateCriteriaResponse?> ExecuteAsync(EvaluateCriteriaRequest request, CancellationToken cancellationToken = default)
     {
