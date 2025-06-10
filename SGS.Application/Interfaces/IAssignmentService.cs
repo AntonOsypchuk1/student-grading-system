@@ -10,6 +10,12 @@ public interface IAssignmentService
 
     Task<Result<AssignmentDto?>> GetAssignmentByIdAsync(Guid assignmentId, CancellationToken cancellationToken = default);
 
-    Task<Result<IEnumerable<AssignmentDto>?>> GetAssignmentsByGroupAsync(Guid groupId,
+    Task<Result<IEnumerable<AssignmentDto>>> GetAssignmentsByGroupAndCourseAsync(Guid groupId, Guid courseId,
+        CancellationToken cancellationToken = default);
+    
+    Task<Result<IEnumerable<AssignmentDto>>> GetAssignmentsByCourseAsync(Guid courseId,
+        CancellationToken cancellationToken = default);
+    
+    Task<Result<IEnumerable<AssignmentDto>>> GetAssignmentsByGroupAsync(Guid groupId,
         CancellationToken cancellationToken = default);
 }

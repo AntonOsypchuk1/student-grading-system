@@ -1,4 +1,5 @@
 using SGS.Domain.Entities;
+using SGS.SemanticAnalysis.Structures.PromptResponses;
 
 namespace SGS.Application.Interfaces;
 
@@ -11,7 +12,7 @@ public interface IAIService
     /// <param name="criteria">The grading criteria to use for the analysis.</param>   
     /// <param name="cancellationToken"></param>
     /// <returns>A tuple containing the generated summary and the generated grade.</returns>
-    Task<(string Summary, int GeneratedGrade)> AnalyzeDocumentAsync(
+    Task<(GenerateSummaryResponse Summary, int GeneratedGrade)> AnalyzeDocumentAsync(
         Document document,
         List<GradingCriteria> criteria,
         CancellationToken cancellationToken = default);

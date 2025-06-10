@@ -33,7 +33,7 @@ public class GradingCriteriaService(
 
                 var criteria = Mapper.Map<GradingCriteria>(command);
 
-                await UnitOfWork.GradingCriteria.CreateAsync(criteria, cancellationToken);
+                await UnitOfWork.GradingCriteria.AddCriteriaAsync(criteria, cancellationToken);
                 Logger.LogInformation("Successfully created grading criteria with ID: {CriteriaId}", criteria.Id);
 
                 return Result<GradingCriteriaDto>.Success(Mapper.Map<GradingCriteriaDto>(criteria));
@@ -42,6 +42,39 @@ public class GradingCriteriaService(
             {
                 Logger.LogError(ex, "Error creating grading criteria for assignment: {AssignmentId}", command.AssignmentId);
                 return Result<GradingCriteriaDto>.Failure($"Failed to create grading criteria: {ex.Message}");
+            }
+        }, cancellationToken);
+    }
+
+    public async Task<Result<IEnumerable<GradingCriteriaDto>>> CreateCriteriaBatchAsync
+        (CreateGradingCriteriaBatchCommand command, CancellationToken cancellationToken = default)
+    {
+        return await ExecuteInTransactionAsync(async () =>
+        {
+            var assignmentId = command.Criteria.FirstOrDefault()?.AssignmentId
+                ?? throw new ArgumentNullException(nameof(command.Criteria), "Assignment ID cannot be null.");
+            Logger.LogInformation("Creating grading criteria for assignment: {AssignmentId}", assignmentId);
+
+            try
+            {
+                // var assignment = await UnitOfWork.Assignments.GetByIdAsync(assignmentId, cancellationToken);
+                // if (assignment is not null)
+                // {
+                //     Logger.LogWarning("Assignment not found with ID: {AssignmentId}", assignmentId);
+                //     throw new Exception($"Assignment with ID {assignmentId} not found.");
+                // }
+
+                var criteria = Mapper.Map<List<GradingCriteria>>(command);
+
+                await UnitOfWork.GradingCriteria.AddCriteriaBatchAsync(criteria, cancellationToken);
+                Logger.LogInformation("Successfully created grading criterias for assignment with ID: {AssignmentID}", assignmentId);
+
+                return Result<IEnumerable<GradingCriteriaDto>>.Success(Mapper.Map<IEnumerable<GradingCriteriaDto>>(criteria));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error creating grading criteria for assignment: {AssignmentId}", assignmentId);
+                return Result<IEnumerable<GradingCriteriaDto>>.Failure($"Failed to create grading criteria: {ex.Message}");
             }
         }, cancellationToken);
     }

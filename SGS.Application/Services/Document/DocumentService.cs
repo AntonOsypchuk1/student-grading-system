@@ -4,7 +4,6 @@ using SGS.Application.DTOs;
 using SGS.Application.Extensions;
 using SGS.Application.Interfaces;
 using SGS.Application.Models;
-using SGS.Application.Services.Document.Extraction;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services.Document;
@@ -40,7 +39,7 @@ public class DocumentService(
                 document.FilePath = filePath;
                 document.UploadedAt = DateTime.UtcNow;
 
-                await UnitOfWork.Documents.CreateAsync(document, cancellationToken);
+                await UnitOfWork.Documents.AddDocumentAsync(document, cancellationToken);
                 Logger.LogInformation("Document record created with ID: {DocumentId}", document.Id);
 
                 return Result<DocumentDto>.Success(Mapper.Map<DocumentDto>(document));
@@ -142,14 +141,106 @@ public class DocumentService(
         {
             var documents = await UnitOfWork.Documents.GetDocumentsByUserIdAsync(userId, cancellationToken);
             Logger.LogInformation("Successfully retrieved {Count} documents for user: {UserId}",
-                documents?.Count() ?? 0, userId);
+                documents.Count(), userId);
+            
+            var resultDocuments = Mapper.Map<IEnumerable<DocumentDto>>(documents);
 
-            return Result<IEnumerable<DocumentDto>?>.Success(Mapper.Map<IEnumerable<DocumentDto>>(documents));
+            foreach (var document in resultDocuments)
+            {
+                var grades = await UnitOfWork.Grades.GetByDocumentIdAsync(document.Id, cancellationToken);
+                var grade = grades.FirstOrDefault();
+
+                if (grade == null) continue;
+                document.Grade = grade.EditedGrade ?? grade.GeneratedGrade;
+                document.IsFinalized = grade.IsFinalized;
+            }
+
+            return Result<IEnumerable<DocumentDto>?>.Success(resultDocuments);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error retrieving documents for user with ID: {UserId}", userId);
             return Result<IEnumerable<DocumentDto>?>.Failure($"Failed to retrieve documents: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<IEnumerable<DocumentDto>>> GetDocumentsByUserIdAndAssignmentIdAsync(Guid userId, Guid assignmentId,
+        CancellationToken cancellationToken = default)
+    {
+        Logger.LogInformation("Retrieving documents for user with ID {UserId}, and assignment with ID {AssignmentId}", userId, assignmentId);
+
+        try
+        {
+            var documents = await UnitOfWork.Documents
+                .GetDocumentsByUserIdAndAssignmentIdAsync(userId, assignmentId, cancellationToken);
+            Logger.LogInformation("Successfully retrieved {Count} documents for user: {UserId}",
+                documents.Count(), userId);
+
+            return Result<IEnumerable<DocumentDto>>.Success(Mapper.Map<IEnumerable<DocumentDto>>(documents));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error retrieving documents for user and assignment with IDs: {UserId}, {AssignmentId}", userId, assignmentId);
+            return Result<IEnumerable<DocumentDto>>.Failure($"Failed to retrieve documents: {ex.Message}");
+        }
+    }
+
+    public Task<Result<IEnumerable<DocumentDto>>> GetDocumentsByAssignmentIdAsync(Guid assignmentId, CancellationToken cancellationToken = default)
+    {
+        Logger.LogInformation("Retrieving documents for assignment with ID: {AssignmentId}", assignmentId);
+
+        return ExecuteInTransactionAsync(async () =>
+        {
+            try
+            {
+                var documents = await UnitOfWork.Documents.GetDocumentsByAssignmentIdAsync(assignmentId, cancellationToken);
+                Logger.LogInformation("Successfully retrieved {Count} documents for assignment: {AssignmentId}",
+                    documents.Count(), assignmentId);
+
+                var resultDocuments = Mapper.Map<IEnumerable<DocumentDto>>(documents);
+
+                foreach (var document in resultDocuments)
+                {
+                    var grades = await UnitOfWork.Grades.GetByDocumentIdAsync(document.Id, cancellationToken);
+                    var grade = grades.FirstOrDefault();
+
+                    if (grade == null) continue;
+                    document.Grade = grade.EditedGrade ?? grade.GeneratedGrade;
+                    document.IsFinalized = grade.IsFinalized;
+                }
+
+                return Result<IEnumerable<DocumentDto>?>.Success(resultDocuments);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error retrieving documents for assignment with ID: {AssignmentId}", assignmentId);
+                return Result<IEnumerable<DocumentDto>>.Failure($"Failed to retrieve documents: {ex.Message}");
+            }
+        }, cancellationToken);
+    }
+
+    public async Task<Result<DocumentDto?>> GetDocumentByUserIdAndAssignmentIdAsync(Guid userId, Guid assignmentId,
+        CancellationToken cancellationToken = default)
+    {
+        Logger.LogInformation("Retrieving document for user with ID {UserId}, and assignment with ID {AssignmentId}", userId, assignmentId);
+
+        try
+        {
+            var document = await UnitOfWork.Documents.GetDocumentByUserIdAndAssignmentIdAsync(userId, assignmentId, cancellationToken);
+
+            if (document == null)
+            {
+                Logger.LogWarning("Document not found for user and assignment with IDs: {UserId}, {AssignmentId}", userId, assignmentId);
+                return Result<DocumentDto?>.Failure("Document not found.");
+            }
+
+            Logger.LogInformation("Successfully retrieved document for user and assignment with IDs: {UserId}, {AssignmentId}", userId, assignmentId);
+            return Result<DocumentDto?>.Success(Mapper.Map<DocumentDto>(document));
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error retrieving document for user and assignment with IDs: {UserId}, {AssignmentId}", userId, assignmentId);
+            return Result<DocumentDto?>.Failure($"Failed to retrieve document: {ex.Message}");
         }
     }
 

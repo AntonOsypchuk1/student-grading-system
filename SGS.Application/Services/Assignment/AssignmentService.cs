@@ -24,16 +24,15 @@ public class AssignmentService(
             {
                 var assignment = new Domain.Entities.Assignment
                 {
-                    Id = Guid.NewGuid(),
                     Title = command.Title,
                     Description = command.Description,
                     MaxAttempts = command.MaxAttempts,
-                    DueDate = command.DueDate,
+                    DueDate = DateTime.SpecifyKind(command.DueDate, DateTimeKind.Utc),
                     GroupId = command.GroupId,
                     CourseId = command.CourseId
                 };
 
-                await UnitOfWork.Assignments.CreateAsync(assignment, cancellationToken);
+                await UnitOfWork.Assignments.AddAssignmentAsync(assignment, cancellationToken);
                 Logger.LogInformation("Successfully created assignment with ID: {AssignmentId}", assignment.Id);
         
                 return Result<AssignmentDto>.Success(Mapper.Map<AssignmentDto>(assignment));
@@ -70,23 +69,71 @@ public class AssignmentService(
         }
     }
 
-    public async Task<Result<IEnumerable<AssignmentDto>?>> GetAssignmentsByGroupAsync(Guid groupId,
+    public async Task<Result<IEnumerable<AssignmentDto>>> GetAssignmentsByGroupAndCourseAsync(Guid groupId, Guid courseId,
         CancellationToken cancellationToken = default)
+    {
+        return await ExecuteInTransactionAsync(async () =>
+        {
+            Logger.LogInformation("Retrieving assignments for group with ID: {GroupId}", groupId);
+
+            try
+            {
+                var assignments = await UnitOfWork.Assignments
+                    .GetByGroupIdAndCourseIdAsync(groupId, courseId, cancellationToken);
+                Logger.LogInformation("Successfully retrieved {Count} assignments for group: {GroupId}",
+                    assignments.Count(), groupId);
+
+                return Result<IEnumerable<AssignmentDto>>.Success(Mapper.Map<IEnumerable<AssignmentDto>>(assignments));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error retrieving assignments for group with ID: {GroupId}", groupId);
+                return Result<IEnumerable<AssignmentDto>>.Failure($"Failed to retrieve assignments: {ex.Message}");
+            }
+        }, cancellationToken);
+    }
+
+    public Task<Result<IEnumerable<AssignmentDto>>> GetAssignmentsByCourseAsync(Guid courseId, CancellationToken cancellationToken = default)
+    {
+    Logger.LogInformation("Retrieving assignments for course with ID: {CourseId}", courseId);
+
+        return ExecuteInTransactionAsync(async () =>
+        {
+            try
+            {
+                var assignments = await UnitOfWork.Assignments.GetByCourseIdAsync(courseId, cancellationToken);
+                Logger.LogInformation("Successfully retrieved {Count} assignments for course: {CourseId}", 
+                    assignments.Count(), courseId);
+
+                return Result<IEnumerable<AssignmentDto>>.Success(Mapper.Map<IEnumerable<AssignmentDto>>(assignments));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error retrieving assignments for course with ID: {CourseId}", courseId);
+                return Result<IEnumerable<AssignmentDto>>.Failure($"Failed to retrieve assignments: {ex.Message}");
+            }
+        }, cancellationToken);
+    }
+
+    public Task<Result<IEnumerable<AssignmentDto>>> GetAssignmentsByGroupAsync(Guid groupId, CancellationToken cancellationToken = default)
     {
         Logger.LogInformation("Retrieving assignments for group with ID: {GroupId}", groupId);
 
-        try
+        return ExecuteInTransactionAsync(async () =>
         {
-            var assignments = await UnitOfWork.Assignments.GetByGroupIdAsync(groupId, cancellationToken);
-            Logger.LogInformation("Successfully retrieved {Count} assignments for group: {GroupId}", 
-                assignments.Count(), groupId);
+            try
+            {
+                var assignments = await UnitOfWork.Assignments.GetByGroupIdAsync(groupId, cancellationToken);
+                Logger.LogInformation("Successfully retrieved {Count} assignments for group: {GroupId}", 
+                    assignments.Count(), groupId);
 
-            return Result<IEnumerable<AssignmentDto>?>.Success(Mapper.Map<IEnumerable<AssignmentDto>>(assignments));
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error retrieving assignments for group with ID: {GroupId}", groupId);
-            return Result<IEnumerable<AssignmentDto>?>.Failure($"Failed to retrieve assignments: {ex.Message}");
-        }
+                return Result<IEnumerable<AssignmentDto>>.Success(Mapper.Map<IEnumerable<AssignmentDto>>(assignments));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error retrieving assignments for group with ID: {GroupId}", groupId);
+                return Result<IEnumerable<AssignmentDto>>.Failure($"Failed to retrieve assignments: {ex.Message}");
+            }
+        }, cancellationToken);
     }
 }

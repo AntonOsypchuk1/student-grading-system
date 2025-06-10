@@ -10,7 +10,7 @@ public class DiskFileStorageService : IFileStorageService
     
     public DiskFileStorageService(IOptions<StorageOptions> options)
     {
-        _basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Storage");
+        _basePath = Path.GetFullPath($"../{options.Value.BasePath}");
         if (!Directory.Exists(_basePath)) Directory.CreateDirectory(_basePath);
     }
 
@@ -31,7 +31,7 @@ public class DiskFileStorageService : IFileStorageService
         if (!File.Exists(fullPath)) 
             throw new FileNotFoundException("File not found", filePath);
         
-        return await File.ReadAllBytesAsync(filePath, cancellationToken);
+        return await File.ReadAllBytesAsync(fullPath, cancellationToken);
     }
 
     public Task DeleteFileAsync(string filePath, CancellationToken cancellationToken = default)

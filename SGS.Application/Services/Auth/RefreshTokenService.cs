@@ -30,7 +30,7 @@ public class RefreshTokenService(
                 Expires = DateTime.UtcNow.AddDays(1)
             };
 
-            await UnitOfWork.RefreshTokens.CreateAsync(refreshToken, cancellationToken);
+            await UnitOfWork.RefreshTokens.AddRefreshTokenAsync(refreshToken, cancellationToken);
             return Result<RefreshToken>.Success(refreshToken);
         }, cancellationToken);
     }
