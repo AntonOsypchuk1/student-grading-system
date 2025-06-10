@@ -35,7 +35,7 @@ export default function StudentDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   if (coursesLoading || assignmentsLoading || documentsLoading)
-    return <div>Loading dashboard...</div>;
+    return <div>Завантаження...</div>;
 
   const submittedAssignmentsMap = new Map(
     userDocuments?.map(doc => [doc.assignmentId, doc]) || []
@@ -58,19 +58,19 @@ export default function StudentDashboard() {
   return (
     <DashboardContainer>
       <DashboardHeader>
-        <Title>Dashboard</Title>
+        <Title>Інформаційна панель</Title>
         <Stats>
           <StatItem>
             <StatNumber>{courses?.length || 0}</StatNumber>
-            <StatLabel>Courses</StatLabel>
+            <StatLabel>Курси</StatLabel>
           </StatItem>
           <StatItem>
             <StatNumber>{pendingAssignments.length}</StatNumber>
-            <StatLabel>Pending</StatLabel>
+            <StatLabel>В очікуванні</StatLabel>
           </StatItem>
           <StatItem>
             <StatNumber>{submittedAssignments.length}</StatNumber>
-            <StatLabel>Completed</StatLabel>
+            <StatLabel>Завершено</StatLabel>
           </StatItem>
         </Stats>
       </DashboardHeader>
@@ -78,7 +78,7 @@ export default function StudentDashboard() {
       <DashboardContent>
         <LeftPanel>
           <Widget>
-            <WidgetTitle>Calendar</WidgetTitle>
+            <WidgetTitle>Календар</WidgetTitle>
             <Calendar
               assignments={assignments || []}
               selectedDate={selectedDate}
@@ -89,7 +89,7 @@ export default function StudentDashboard() {
 
         <MainPanel>
           <Widget>
-            <WidgetTitle>All Assignments</WidgetTitle>
+            <WidgetTitle>Всі завдання</WidgetTitle>
             <AssignmentsTable
               assignments={assignments || []}
               documents={userDocuments}
@@ -97,7 +97,7 @@ export default function StudentDashboard() {
             />
           </Widget>
           <Widget>
-            <WidgetTitle>Upcoming Deadlines</WidgetTitle>
+            <WidgetTitle>Найближчі дедлайни</WidgetTitle>
             <AssignmentsList
               assignments={upcomingDeadlines}
             />

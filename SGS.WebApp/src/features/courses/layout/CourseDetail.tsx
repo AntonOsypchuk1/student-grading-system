@@ -51,10 +51,10 @@ export default function CourseDetail() {
   const {data: assignments, isLoading: assignmentsLoading} = getAssignmentsByGroupAndCourseQuery;
 
   if (courseLoading || groupsLoading) {
-    return <LoadingWrapper>Loading course details...</LoadingWrapper>;
+    return <LoadingWrapper>Завантаження деталей курсу...</LoadingWrapper>;
   }
 
-  if (!course) return <ErrorMessage>Course not found</ErrorMessage>;
+  if (!course) return <ErrorMessage>Курс не знайдено</ErrorMessage>;
 
   return (
     <CourseContainer>
@@ -66,18 +66,18 @@ export default function CourseDetail() {
         <CourseStats>
           <StatBox>
             <StatNumber>{groups?.length || 0}</StatNumber>
-            <StatLabel>Groups</StatLabel>
+            <StatLabel>Груп</StatLabel>
           </StatBox>
           <StatBox>
             <StatNumber>{assignments?.length || 0}</StatNumber>
-            <StatLabel>Assignments</StatLabel>
+            <StatLabel>Завдання</StatLabel>
           </StatBox>
         </CourseStats>
       </CourseHeader>
 
       <ContentGrid>
         <LeftSection>
-          <SectionTitle>Groups</SectionTitle>
+          <SectionTitle>Групи</SectionTitle>
           <GroupsContainer>
             {groups?.map(group => (
               <GroupCard
@@ -87,7 +87,7 @@ export default function CourseDetail() {
               >
                 <GroupHeader>
                   <GroupName>{group.name}</GroupName>
-                  <GroupCount>{group.students?.length || 0} students</GroupCount>
+                  <GroupCount>{group.students?.length || 0} студентів</GroupCount>
                 </GroupHeader>
                 {selectedGroupId === group.id && (
                   <GroupDetails>
@@ -107,23 +107,23 @@ export default function CourseDetail() {
 
         <MainContent>
           <SectionHeader>
-            <SectionTitle>Assignments</SectionTitle>
+            <SectionTitle>Завдання</SectionTitle>
             <FilterInfo>
               {selectedGroupId
-                ? `Showing for ${groups?.find(g => g.id === selectedGroupId)?.name}`
-                : 'Showing all assignments'}
+                ? `Показано для ${groups?.find(g => g.id === selectedGroupId)?.name}`
+                : 'Показано всі завдання'}
             </FilterInfo>
           </SectionHeader>
 
           {assignmentsLoading ? (
-            <LoadingWrapper>Loading assignments...</LoadingWrapper>
+            <LoadingWrapper>Завантаження завдань...</LoadingWrapper>
           ) : (
             <AssignmentsList>
               {assignments?.map(assignment => (
                 <AssignmentCard key={assignment.id}>
                   <AssignmentHeader>
                     <AssignmentTitle>{assignment.title}</AssignmentTitle>
-                    <DueDate>Due: {new Date(assignment.dueDate).toLocaleDateString()}</DueDate>
+                    <DueDate>Строк: {new Date(assignment.dueDate).toLocaleDateString()}</DueDate>
                   </AssignmentHeader>
                   <AssignmentDescription>
                     {assignment.description}

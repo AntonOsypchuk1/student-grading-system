@@ -65,7 +65,7 @@ export function AssignmentsList({assignments}: AssignmentsListProps) {
   if (!assignments?.length) {
     return (
       <FallbackItem>
-        No assignments found
+        Завдань не було знайдено
       </FallbackItem>
     );
   }
@@ -81,9 +81,9 @@ export function AssignmentsList({assignments}: AssignmentsListProps) {
             <Title>{assignment.title}</Title>
             <Description>{assignment.description}</Description>
             <Meta>
-              <span>Due: {new Date(assignment.dueDate).toLocaleDateString()}</span>
+              <span>Строк: {new Date(assignment.dueDate).toLocaleDateString()}</span>
               <span>•</span>
-              <span>Max Attempts: {assignment.maxAttempts}</span>
+              <span>Макс. спроб: {assignment.maxAttempts}</span>
             </Meta>
           </AssignmentCard>
         </AssignmentLink>

@@ -54,7 +54,7 @@ export default function CourseAssignments() {
     if (group) {
       setSelectedGroupId(group.id);
     } else {
-      return <ErrorMessage>You are not assigned to any group</ErrorMessage>;
+      return <ErrorMessage>Вас не віднесено до жодної групи</ErrorMessage>;
     }
   }
 
@@ -62,8 +62,8 @@ export default function CourseAssignments() {
     navigate(`/courses/${courseId}/assignments/new`);
   };
 
-  if (isLoading) return <LoadingWrapper>Loading groups...</LoadingWrapper>;
-  if (!groups?.length) return <ErrorMessage>No groups found</ErrorMessage>;
+  if (isLoading) return <LoadingWrapper>Завантаження...</LoadingWrapper>;
+  if (!groups?.length) return <ErrorMessage>Групи не знайдено</ErrorMessage>;
 
   return (
     <LayoutContainer hasSidebar={userRole === 'teacher'}>
@@ -76,7 +76,7 @@ export default function CourseAssignments() {
       )}
 
       <MainContent>
-        <h3>Assignments</h3>
+        <h3>Завдання</h3>
         {selectedGroupId ? (
           <GroupAssignments
             groupId={selectedGroupId}
@@ -100,7 +100,7 @@ export default function CourseAssignments() {
               <line x1="10" y1="9" x2="8" y2="9"/>
             </svg>
             <p style={{marginTop: '1rem'}}>
-              Select a group to view its assignments
+              Виберіть групу, щоб переглянути її завдання
             </p>
           </FallbackItem>
         )}
@@ -108,7 +108,7 @@ export default function CourseAssignments() {
 
       {user?.data?.role.toLowerCase() === 'teacher' && (
         <FloatingButton onClick={handleAddAssignment}>
-          Add Assignment
+          Створити завдання
         </FloatingButton>
       )}
     </LayoutContainer>

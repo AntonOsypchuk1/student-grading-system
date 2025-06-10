@@ -58,14 +58,14 @@ const AssignmentStudents = () => {
 
   const {data: document, isLoading: isDocumentLoading} = getDocumentByUserIdAndAssignmentId;
 
-  if (isGroupLoading) return <FallbackItem>Loading group information...</FallbackItem>;
-  if (!group) return <FallbackItem>Group not found</FallbackItem>;
-  if (!group.students?.length) return <FallbackItem>No students in this group</FallbackItem>;
+  if (isGroupLoading) return <FallbackItem>Завантаження інформації про групи...</FallbackItem>;
+  if (!group) return <FallbackItem>Груп не було знайдено</FallbackItem>;
+  if (!group.students?.length) return <FallbackItem>Немає студентів у цій групі</FallbackItem>;
 
   return (
     <Container>
       <Sidebar>
-        <h3>{group.name} • Students</h3>
+        <h3>{group.name} • Студенти</h3>
         <SidebarList>
           {group.students.map(student => (
             <SidebarItem
@@ -88,16 +88,16 @@ const AssignmentStudents = () => {
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
-            <p>Select a student to view their submission and analysis results</p>
+            <p>Виберіть студента щоб передивитись його подання та результат аналізу</p>
           </FallbackItem>
         ) : isDocumentLoading ? (
-          <FallbackItem>Loading student's submission...</FallbackItem>
+          <FallbackItem>Завантаження роботи студента...</FallbackItem>
         ) : !document ? (
-          <FallbackItem>No submission found for this student</FallbackItem>
+          <FallbackItem>Не знайдено подань для цього студента</FallbackItem>
         ) : isPreviewMode ? (
           <>
             <BackButton onClick={() => setIsPreviewMode(false)}>
-              ← Back to Submission
+              ← Назад до списку студентів
             </BackButton>
             <PdfPreview documentId={document.id}/>
           </>

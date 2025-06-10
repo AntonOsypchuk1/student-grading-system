@@ -37,27 +37,25 @@ export const AnalysisResults = ({analysis}: AnalysisResultsProps) => {
   if (!analysis) {
     return (
       <AnalysisContainer>
-        <p>This submission hasn't been analyzed yet.</p>
+        <p>Цей документ ще не було проаналізовано.</p>
       </AnalysisContainer>
     );
   }
 
   return (
     <AnalysisContainer>
-      <h2>Analysis Results</h2>
+      <h2>Результат аналізу</h2>
       <GradeSection>
         <Grade>{analysis.grade?.generatedGrade}</Grade>
         <div>
-          {/*TODO: add max points*/}
-          <div>out of SOME points</div>
           <div style={{fontSize: '0.875rem', color: '#666'}}>
-            Analyzed on {new Date(analysis.createdAt).toLocaleDateString()}
+            Проаналізовано: {new Date(analysis.createdAt).toLocaleDateString()}
           </div>
         </div>
       </GradeSection>
 
       <FeedbackSection>
-        <h3>Summary</h3>
+        <h3>Результат</h3>
         <p>{analysis.generatedSummary}</p>
         <p>{analysis.strengths}</p>
         <p>{analysis.areasForImprovement}</p>

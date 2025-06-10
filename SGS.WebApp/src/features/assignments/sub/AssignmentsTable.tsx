@@ -12,11 +12,11 @@ const GradeStatus = styled.span<{ $isSubmitted: boolean }>`
     font-size: 0.875rem;
     font-weight: 500;
     background: ${props => props.$isSubmitted
-            ? props.theme.colors.success + '20'
-            : props.theme.colors.danger + '20'};
+  ? props.theme.colors.success + '20'
+  : props.theme.colors.danger + '20'};
     color: ${props => props.$isSubmitted
-            ? props.theme.colors.success
-            : props.theme.colors.danger};
+  ? props.theme.colors.success
+  : props.theme.colors.danger};
 `;
 
 interface AssignmentsTableProps {
@@ -38,11 +38,11 @@ export function AssignmentsTable({
     <Table>
       <thead>
       <tr>
-        <Th>Assignment</Th>
-        <Th>Due Date</Th>
-        <Th>Status</Th>
-        {showGrade && <Th>Grade</Th>}
-        <Th>Actions</Th>
+        <Th>Завдання</Th>
+        <Th>Строк подачі</Th>
+        <Th>Статус</Th>
+        {showGrade && <Th>Оцінка</Th>}
+        <Th>Дії</Th>
       </tr>
       </thead>
       <tbody>
@@ -62,10 +62,10 @@ export function AssignmentsTable({
             <Td>
               <GradeStatus $isSubmitted={isSubmitted}>
                 {isSubmitted
-                  ? 'Submitted'
+                  ? 'Завершено'
                   : isPastDue
-                    ? 'Past Due'
-                    : 'Pending'}
+                    ? 'Строк сплив'
+                    : 'Оцінювання'}
               </GradeStatus>
             </Td>
             {showGrade && (
@@ -75,7 +75,7 @@ export function AssignmentsTable({
             )}
             <Td>
               <Link to={`/assignments/${assignment.id}`}>
-                {isSubmitted ? 'View Submission' : 'Submit'}
+                {isSubmitted ? 'Переглянути завдання' : 'Сдати роботу'}
               </Link>
             </Td>
           </Tr>

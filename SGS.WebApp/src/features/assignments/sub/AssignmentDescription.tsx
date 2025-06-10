@@ -22,8 +22,8 @@ const AssignmentDescription = ({assignment}: AssignmentDescriptionProps) => {
       <Title>{assignment.title}</Title>
       <div>{assignment.description}</div>
       <div style={{marginTop: '16px'}}>
-        <p><strong>Due date:</strong> {new Date(assignment.dueDate).toLocaleDateString()}</p>
-        {assignment.maxAttempts && <p><strong>Maximum attempts:</strong> {assignment.maxAttempts}</p>}
+        <p><strong>Крайня дата:</strong> {new Date(assignment.dueDate).toLocaleDateString()}</p>
+        {assignment.maxAttempts && <p><strong>Макс. спроб:</strong> {assignment.maxAttempts}</p>}
       </div>
     </DescriptionContainer>
   );

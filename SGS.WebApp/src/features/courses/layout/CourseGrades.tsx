@@ -40,11 +40,11 @@ const GradeCell = styled.div<{ $isFinalized: boolean }>`
     border-radius: 4px;
     font-weight: 500;
     background: ${props => props.$isFinalized
-            ? props.theme.colors.success + '20'
-            : props.theme.colors.danger + '20'};
+  ? props.theme.colors.success + '20'
+  : props.theme.colors.danger + '20'};
     color: ${props => props.$isFinalized
-            ? props.theme.colors.success
-            : props.theme.colors.danger};
+  ? props.theme.colors.success
+  : props.theme.colors.danger};
 `;
 
 const CourseGrades = () => {
@@ -60,20 +60,18 @@ const CourseGrades = () => {
   const {data: groups, isLoading: isGroupsLoading} = getGroupsByCourseIdQuery;
   const {data: gradingResults, isLoading: isGradingLoading} = getGradingResultByCourseAndGroupQuery;
 
-  console.log("groups: ", groups);
-  console.log("gradingResults: ", gradingResults?.assignmentResults);
   if (isGroupsLoading) {
     return <FallbackItem>Loading groups...</FallbackItem>;
   }
 
   if (!groups?.length) {
-    return <FallbackItem>No groups found for this course</FallbackItem>;
+    return <FallbackItem>Для цього курсу не знайдено груп</FallbackItem>;
   }
 
   return (
     <Container>
       <Sidebar>
-        <h3>Groups</h3>
+        <h3>Групи</h3>
         <SidebarList>
           {groups.map(group => (
             <SidebarItem
@@ -89,26 +87,26 @@ const CourseGrades = () => {
 
       <MainContent>
         {!selectedGroupId ? (
-          <FallbackItem>Select a group to view grades</FallbackItem>
+          <FallbackItem>Виберіть групу для перегляду оцінок</FallbackItem>
         ) : isGradingLoading ? (
-          <FallbackItem>Loading grades...</FallbackItem>
+          <FallbackItem>Завантаження...</FallbackItem>
         ) : !gradingResults?.assignmentResults.length ? (
-          <FallbackItem>No assignments found for this group</FallbackItem>
+          <FallbackItem>Для цієї групи не знайдено жодного завдання</FallbackItem>
         ) : (
           <>
             <Header>
-              <h2>{groups.find(g => g.id === selectedGroupId)?.name} - Grades</h2>
-              <p>Total assignments: {gradingResults.assignmentResults.length}</p>
+              <h2>{groups.find(g => g.id === selectedGroupId)?.name} - Оцінки</h2>
+              <p>Всього завдань: {gradingResults.assignmentResults.length}</p>
             </Header>
 
             <Table>
               <thead>
               <tr>
-                <Th>Student</Th>
+                <Th>Студент</Th>
                 {gradingResults.assignmentResults.map((assignment, index) => (
                   <Th key={assignment.id}>{index + 1}</Th>
                 ))}
-                <Th>Average</Th>
+                <Th>Середнє</Th>
               </tr>
               </thead>
               <tbody>
@@ -118,7 +116,7 @@ const CourseGrades = () => {
                   return assignment.results.find(result => result.studentId === studentId);
                 });
 
-                const studentName = studentResults.find(r => r)?.studentName || 'Unknown Student';
+                const studentName = studentResults.find(r => r)?.studentName || 'Unknown';
 
                 // Calculate average from valid grades
                 const validGrades = studentResults
@@ -138,7 +136,7 @@ const CourseGrades = () => {
                             {result.editedGrade ?? result.generatedGrade ?? 'N/A'}
                           </GradeCell>
                         ) : (
-                          'Not submitted'
+                          'Не надано'
                         )}
                       </Td>
                     ))}

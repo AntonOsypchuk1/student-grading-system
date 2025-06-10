@@ -50,11 +50,11 @@ export const Sidebar = () => {
   return (
     <SidebarContainer>
       <Nav>
-        <NavLink href="/dashboard">Dashboard</NavLink>
+        <NavLink href="/dashboard">Інформаційна панель</NavLink>
 
         {user?.role === 'Teacher' ? (
           <div>
-            <SubSectionTitle>My Courses</SubSectionTitle>
+            <SubSectionTitle>Мої курси</SubSectionTitle>
             {teacherCourses?.map(course => (
               <SubLink key={course.id} href={`/courses/${course.id}`}>
                 {course.title}
@@ -63,7 +63,7 @@ export const Sidebar = () => {
           </div>
         ) : (
           <div>
-            <SubSectionTitle>My Courses</SubSectionTitle>
+            <SubSectionTitle>Мої курси</SubSectionTitle>
             {studentCourses?.map(course => (
               <SubLink key={course.id} href={`/courses/${course.id}`}>
                 {course.title}

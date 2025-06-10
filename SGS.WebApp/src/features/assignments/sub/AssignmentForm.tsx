@@ -39,7 +39,6 @@ const AssignmentForm = () => {
     try {
       data.courseId = courseId!;
       const {gradingCriteria, ...payload} = data;
-      console.log('Form data:', data);
 
       if (gradingCriteria) {
         const assignment = await createAssignmentMutation.mutateAsync(payload);
@@ -61,10 +60,10 @@ const AssignmentForm = () => {
     <Form onSubmit={handleSubmit(onSubmit)}>
       <Field>
         <FormInput
-          label="Title"
+          label="Назва завдання"
           register={register}
           name="title"
-          rules={{required: 'Title is required'}}
+          rules={{required: 'Введіть назву завдання'}}
           errors={errors}
           type="text"
         />
@@ -73,9 +72,9 @@ const AssignmentForm = () => {
 
       <Field>
         <FormInput
-          label="Description"
+          label="Опис завдання"
           register={register}
-          {...register('description', {required: 'Description is required'})}
+          {...register('description', {required: 'Введіть опис завдання'})}
           rows={4}
           errors={errors}
         />
@@ -84,10 +83,10 @@ const AssignmentForm = () => {
       <FieldGroup>
         <Field>
           <FormInput
-            label="Due Date"
+            label="Строк подання"
             name="dueDate"
             register={register}
-            rules={{required: 'Due date is required'}}
+            rules={{required: 'Введіть строк подання'}}
             type="date"
             errors={errors}
           />
@@ -95,15 +94,15 @@ const AssignmentForm = () => {
         <Field>
           <FormInput
             style={{maxWidth: '100%', width: '100%', textAlign: 'left'}}
-            label="Max Attempts"
+            label="Макс. спроб"
             register={register}
             {...register(`maxAttempts`, {
-              required: 'Max attempts required',
+              required: 'Введіть макс. спроби',
               min: {value: 1, message: 'Min value is 1'},
               max: {value: 10, message: 'Max value is 10'}
             })}
             type="number"
-            placeholder="Max attempts"
+            placeholder="Макс. спроби"
             errors={errors}
             min={1}
             max={10}
@@ -111,10 +110,10 @@ const AssignmentForm = () => {
         </Field>
         <Field>
           <FormSelect
-            label="Group"
+            label="Група"
             options={groupNames}
             register={register}
-            {...register('groupId', {required: 'Group is required'})}
+            {...register('groupId', {required: 'Виберіть групу'})}
             errors={errors}
           />
         </Field>
@@ -128,29 +127,29 @@ const AssignmentForm = () => {
               type="text"
               register={register}
               {...register(`gradingCriteria.${index}.title`, {
-                required: 'Criteria name is required'
+                required: 'Введіть назву критерію'
               })}
-              placeholder="Criteria name"
+              placeholder="Назва критерію"
               errors={errors}
             />
             <FormInput
               type="text"
               register={register}
               {...register(`gradingCriteria.${index}.description`, {
-                required: 'Criteria name is required'
+                required: 'Введіть опис критерію'
               })}
-              placeholder="Criteria description"
+              placeholder="Опис критерію"
               errors={errors}
             />
             <FormInput
               register={register}
               {...register(`gradingCriteria.${index}.maxGrade`, {
-                required: 'Max grade required',
+                required: 'Макс. бали обов\'язкові',
                 min: {value: 1, message: 'Min value is 1'},
                 max: {value: 100, message: 'Max value is 100'}
               })}
               type="number"
-              placeholder="Max points"
+              placeholder="Макс. бал"
               errors={errors}
               min={1}
               max={100}
@@ -158,12 +157,12 @@ const AssignmentForm = () => {
             <FormInput
               register={register}
               {...register(`gradingCriteria.${index}.weight`, {
-                required: 'Weight required',
+                required: 'Вага критерію обов\'язкова',
                 min: {value: 0.1, message: 'Min value is 0.1'},
                 max: {value: 1, message: 'Max value is 1'}
               })}
               type="number"
-              placeholder="Weight"
+              placeholder="Вага"
               errors={errors}
               min={0}
               max={1}
@@ -180,12 +179,12 @@ const AssignmentForm = () => {
           onClick={() => append({title: '', description: '', maxGrade: 0, weight: 0})}
           disabled={fields.length >= 5}
         >
-          Add Criteria
+          Додати критерій
         </Button>
       </Field>
 
       <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? 'Creating...' : 'Create Assignment'}
+        {isSubmitting ? 'Створюємо...' : 'Створити завдання'}
       </Button>
     </Form>
   );

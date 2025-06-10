@@ -48,11 +48,11 @@ const AssignmentGrades = () => {
   const {data: assignment, isLoading: isAssignmentLoading} = getAssignmentByIdQuery;
 
   if (isGradesLoading || isAssignmentLoading) {
-    return <FallbackItem>Loading grades...</FallbackItem>;
+    return <FallbackItem>Завантаження оцінок...</FallbackItem>;
   }
 
   if (!gradingResults || !assignment) {
-    return <FallbackItem>No grades found</FallbackItem>;
+    return <FallbackItem>Оцінок не знайдено</FallbackItem>;
   }
 
   console.log(gradingResults);
@@ -60,18 +60,18 @@ const AssignmentGrades = () => {
   return (
     <GradesContainer>
       <Header>
-        <h2>{assignment.title} - Grades</h2>
-        <p>Total submissions: {gradingResults.length}</p>
+        <h2>{assignment.title} - Оцінки</h2>
+        <p>Всього завантажено: {gradingResults.length}</p>
       </Header>
 
       <Table>
         <thead>
         <tr>
-          <Th>Student</Th>
-          <Th>Submission Date</Th>
-          <Th>Grade</Th>
-          <Th>Status</Th>
-          <Th>Actions</Th>
+          <Th>Студент</Th>
+          <Th>Дата завантаження</Th>
+          <Th>Оцінка</Th>
+          <Th>Статус</Th>
+          <Th>Дії</Th>
         </tr>
         </thead>
         <tbody>
@@ -86,18 +86,18 @@ const AssignmentGrades = () => {
             </Td>
             <Td>
               {!result.editedGrade && !result.generatedGrade ?
-                'Loading...' :
+                'Завантаження...' :
                 `${result.editedGrade ?? result.generatedGrade ?? 0} / 100`
               }
             </Td>
             <Td>
               <GradeStatus $isFinalized={result.isFinalized ?? false}>
-                {result.isFinalized ? 'Finalized' : 'Pending'}
+                {result.isFinalized ? 'Виставити' : 'В очікуванні'}
               </GradeStatus>
             </Td>
             <Td>
               <a href={`/assignments/${assignmentId}/students?student=${result.studentId}`}>
-                View Submission
+                Переглянути документ
               </a>
             </Td>
           </Tr>

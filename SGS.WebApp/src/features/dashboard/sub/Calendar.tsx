@@ -21,12 +21,12 @@ const DayCell = styled.div<{ isToday?: boolean; hasAssignment?: boolean }>`
     cursor: pointer;
     position: relative;
     background: ${props =>
-            props.isToday
-                    ? props.theme.colors.primary + '20'
-                    : props.hasAssignment
-                            ? props.theme.colors.gray[100]
-                            : 'transparent'
-    };
+  props.isToday
+    ? props.theme.colors.primary + '20'
+    : props.hasAssignment
+      ? props.theme.colors.gray[100]
+      : 'transparent'
+};
 
     &:hover {
         background: ${props => props.theme.colors.gray[100]};
@@ -63,7 +63,7 @@ export function Calendar({assignments, selectedDate, onDateSelect}: CalendarProp
     <CalendarContainer>
       <h4>{format(selectedDate, 'MMMM yyyy')}</h4>
       <CalendarGrid>
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+        {['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'].map(day => (
           <div key={day}>{day}</div>
         ))}
         {days.map((day: Date) => (

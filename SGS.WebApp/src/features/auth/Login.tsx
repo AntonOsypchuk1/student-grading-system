@@ -22,7 +22,7 @@ export function LoginPage() {
       await login(data);
       window.location.replace("/");
     } catch (err) {
-      setError("Invalid email or password: " + (err as Error).message);
+      setError("Неправильна адреса електронної пошти або пароль: " + (err as Error).message);
     }
   };
 
@@ -30,21 +30,21 @@ export function LoginPage() {
     <AuthContainer>
       <AuthCard>
         <AuthHeader>
-          <AuthTitle>Welcome back</AuthTitle>
-          <AuthDescription>Sign in to your account</AuthDescription>
+          <AuthTitle>З поверненням!</AuthTitle>
+          <AuthDescription>Увійдіть до свого облікового запису</AuthDescription>
         </AuthHeader>
 
         <Form onSubmit={handleSubmit(onSubmit)}>
           <FormInput
-            label="Email"
+            label="Електронна пошта"
             name="email"
             type="email"
             register={register}
             rules={{
-              required: 'Email is required',
+              required: 'Електронна пошта обов\'язкова',
               pattern: {
                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Invalid email address'
+                message: 'Неправильна адреса електронної пошти'
               }
             }}
             errors={errors}
@@ -52,15 +52,15 @@ export function LoginPage() {
           />
 
           <FormInput
-            label="Password"
+            label="Пароль"
             name="password"
             type="password"
             register={register}
             rules={{
-              required: 'Password is required',
+              required: 'Пароль обов\'язковий',
               minLength: {
                 value: 3,
-                message: 'Password must be at least 6 characters'
+                message: 'Пароль повинен містити щонайменше 6 символів'
               }
             }}
             errors={errors}
@@ -69,14 +69,14 @@ export function LoginPage() {
 
           <FormSubmitButton
             isSubmitting={isSubmitting}
-            text="Sign in"
-            loadingText="Signing in..."
+            text="Увійдіть в систему"
+            loadingText="Виконуємо вхід..."
           />
         </Form>
 
         <AuthFooter>
-          Don't have an account?{' '}
-          <AuthLink to="/register">Create an account</AuthLink>
+          Не маю облікового запису{' '}
+          <AuthLink to="/register">Створити акаунт</AuthLink>
         </AuthFooter>
       </AuthCard>
     </AuthContainer>

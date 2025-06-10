@@ -20,12 +20,12 @@ export const SubmissionsTable = ({submissions}) => (
   <Table>
     <thead>
     <tr>
-      <Th>Student</Th>
-      <Th>Course</Th>
-      <Th>Assignment</Th>
-      <Th>Submitted</Th>
-      <Th>Status</Th>
-      <Th>Actions</Th>
+      <Th>Студенти</Th>
+      <Th>Курс</Th>
+      <Th>Завдання</Th>
+      <Th>Дата</Th>
+      <Th>Статус</Th>
+      <Th>Дії</Th>
     </tr>
     </thead>
     <tbody>
@@ -37,12 +37,12 @@ export const SubmissionsTable = ({submissions}) => (
         <Td>{new Date(submission.submittedAt).toLocaleDateString()}</Td>
         <Td>
           <StatusBadge status={submission.isGraded ? 'graded' : 'pending'}>
-            {submission.isGraded ? 'Graded' : 'Pending'}
+            {submission.isGraded ? 'Оцінено' : 'На розгляді'}
           </StatusBadge>
         </Td>
         <Td>
           <Link to={`/assignments/${submission.assignmentId}/grade/${submission.id}`}>
-            {submission.isGraded ? 'View' : 'Grade'}
+            {submission.isGraded ? 'Перегляд' : 'Оцінка'}
           </Link>
         </Td>
       </tr>

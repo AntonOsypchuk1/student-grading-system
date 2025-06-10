@@ -8,10 +8,9 @@ export default function CourseLayout() {
 
   useEffect(() => {
     setLinks([
-      {title: 'Overview', path: `/courses/${courseId}`},
-      {title: 'Assignments', path: `/courses/${courseId}/assignments`},
-      // {title: 'Students', path: `/courses/${courseId}/students`},
-      {title: 'Grades', path: `/courses/${courseId}/grades`}
+      {title: 'Курс', path: `/courses/${courseId}`},
+      {title: 'Завдання', path: `/courses/${courseId}/assignments`},
+      {title: 'Оцінки', path: `/courses/${courseId}/grades`}
     ]);
   }, [courseId, setLinks]);
 

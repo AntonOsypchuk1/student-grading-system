@@ -68,24 +68,24 @@ const Footer: React.FC = () => {
           <div>
             <SectionTitle>About Us</SectionTitle>
             <SectionText>
-              StudentGradingSystem is your comprehensive education management platform,
-              designed to enhance the learning experience for both students and teachers.
+              StudentGradingSystem - це ваша комплексна платформа для управління навчанням,
+              розроблений для покращення навчального процесу як для студентів, так і для викладачів.
             </SectionText>
           </div>
 
           <div>
-            <SectionTitle>Contact</SectionTitle>
+            <SectionTitle>Контакти</SectionTitle>
             <ContactList>
-              <ContactItem>Email: support@eduportal.com</ContactItem>
-              <ContactItem>Phone: (555) 123-4567</ContactItem>
-              <ContactItem>Address: 123 Education St, Learning City</ContactItem>
+              <ContactItem>Email: support@sgs.com</ContactItem>
+              <ContactItem>Телефон: (555) 123-4567</ContactItem>
+              <ContactItem>Адреса: 123 Education St, Learning City</ContactItem>
             </ContactList>
           </div>
         </Grid>
 
         <Copyright>
           <CopyrightText>
-            © {new Date().getFullYear()} EduPortal. All rights reserved.
+            © {new Date().getFullYear()} StudentGradingSystem. Всі права захищені.
           </CopyrightText>
         </Copyright>
       </FooterContent>
