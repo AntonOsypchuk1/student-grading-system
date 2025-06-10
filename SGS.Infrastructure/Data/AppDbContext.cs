@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using SGS.Domain.Entities;
 
 namespace SGS.Infrastructure.Data;
@@ -33,18 +34,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasKey(s => s.Id);
             entity.HasOne<StudentsGroup>(s => s.Group)
                 .WithMany(g => g.Students)
-                .HasForeignKey(s => s.GroupId);
+                .HasForeignKey(s => s.GroupId)
+                .IsRequired(false);
         });
 
         modelBuilder.Entity<Teacher>(entity =>
         {
             entity.HasKey(t => t.Id);
-            entity.HasOne<User>(d => d.User)
-                .WithMany()
-                .HasForeignKey(d => d.UserId);
-            entity.HasMany(t => t.StudentsGroups)
-                .WithMany(g => g.Teachers)
-                .UsingEntity(j => j.ToTable("TeacherGroup"));
             entity.HasMany(t => t.Courses)
                 .WithMany(c => c.Teachers)
                 .UsingEntity(j => j.ToTable("CourseTeacher"));
@@ -64,11 +60,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasMany(c => c.StudentsGroups)
                 .WithMany(g => g.Courses)
                 .UsingEntity(j => j.ToTable("GroupCourse"));
+            entity.HasMany(c => c.Teachers)
+                .WithMany(t => t.Courses)
+                .UsingEntity(j => j.ToTable("CourseTeacher"));
         });
 
         modelBuilder.Entity<Assignment>(entity =>
         {
             entity.HasKey(a => a.Id);
+            entity.HasOne<Course>(a => a.Course)
+                .WithMany(c => c.Assignments)
+                .HasForeignKey(a => a.CourseId);
         });
 
         modelBuilder.Entity<Document>(entity =>
@@ -80,7 +82,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne<Assignment>(d => d.Assignment)
                 .WithMany(a => a.Documents)
                 .HasForeignKey(d => d.AssignmentId);
-
         });
 
         modelBuilder.Entity<Grade>(entity =>
@@ -91,6 +92,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<GradingCriteria>(entity =>
         {
             entity.HasKey(gc => gc.Id);
+            entity.HasOne<Assignment>(gc => gc.Assignment)
+                .WithMany(a => a.GradingCriteria)
+                .HasForeignKey(gc => gc.AssignmentId);
         });
 
         modelBuilder.Entity<AnalysisResults>(entity =>
