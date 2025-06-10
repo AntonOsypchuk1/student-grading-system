@@ -1,10 +1,11 @@
 import {createContext, ReactNode, useContext, useEffect} from "react";
-import {LoginDto, RegisterUserCommand, UserDto} from "../types/AuthenticationTypes.ts";
+import {LoginDto, RegisterUserCommand, StudentDto, TeacherDto, UserDto} from "../types/AuthTypes.ts";
 import {useAuth} from "../hooks/useAuth.ts";
 import {UseQueryResult} from "@tanstack/react-query";
 
 type AuthContextType = {
-  user: UseQueryResult<UserDto, Error>;
+  user: UseQueryResult<UserDto | StudentDto | TeacherDto, Error>;
+  isLoading: boolean;
   login: (data: LoginDto) => Promise<void>;
   register: (data: RegisterUserCommand) => Promise<void>;
   logout: () => void;
@@ -17,8 +18,11 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
     loginMutation,
     registerMutation,
     refreshTokenMutation,
+    logoutMutation,
     currentUserQuery,
   } = useAuth();
+
+  const isLoading = currentUserQuery.isLoading;
 
   useEffect(() => {
     const token = localStorage.getItem("refreshToken");
@@ -35,9 +39,11 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
     await registerMutation.mutateAsync(data);
   };
 
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+  const logout = async () => {
+    const token = localStorage.getItem("refreshToken");
+    if (token) {
+      await logoutMutation.mutateAsync({refreshToken: token});
+    }
 
     window.location.reload();
   };
@@ -46,6 +52,7 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         user: currentUserQuery,
+        isLoading,
         login,
         register,
         logout,
