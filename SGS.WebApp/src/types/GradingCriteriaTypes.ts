@@ -1,11 +1,18 @@
 export interface CreateGradingCriteriaCommand {
-  userId: string;
-  criteriaDescription: string;
+  title: string;
+  description: string;
+  maxGrade: number;
+  weight: number;
+}
+
+export interface CreateBatchGradingCriteriaCommand {
+  criteria: CreateGradingCriteriaCommand[];
 }
 
 export interface GradingCriteriaDto {
   id: string;
-  userId: string;
-  criteriaDescription: string;
-  createdAt: string;
+  title: string;
+  description: string;
+  maxGrade: number;
+  weight: number;
 }
