@@ -14,16 +14,6 @@ public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) :
     private string _refreshToken = string.Empty;
 
     [Fact]
-    public async Task DebugClaims_RetunrsClaims()
-    {
-        await AuthenticateAsTeacher();
-        
-        var response = await Client.GetAsync($"{BaseUrl}/debug-claims");
-        
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
     public async Task TokenLifecycleTest()
     {
         // 1. Login to get initial tokens

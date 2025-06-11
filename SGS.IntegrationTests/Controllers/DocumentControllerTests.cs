@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using SGS.Application.DTOs;
 using SGS.IntegrationTests.Controllers.Bases;
+using SGS.IntegrationTests.Controllers.Helpers;
 using SGS.IntegrationTests.TestData;
 
 namespace SGS.IntegrationTests.Controllers;
@@ -45,6 +46,8 @@ public class DocumentControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task GetDocumentById_WithValidId_ReturnsDocument()
     {
+        TestContext.SimulationAuthorizedContext();
+        
         // Act
         var response = await Client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidDocument}");
 
@@ -59,6 +62,8 @@ public class DocumentControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task GetDocumentsByAssignment_ReturnsDocuments()
     {
+        TestContext.SimulationAuthorizedContext();
+        
         // Act
         var response = await Client.GetAsync($"{BaseUrl}/assignment/{TestDataSeeder.GuidAssignment}");
 
@@ -72,6 +77,8 @@ public class DocumentControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task GetDocumentsByUser_ReturnsDocuments()
     {
+        TestContext.SimulationAuthorizedContext();
+        
         // Act
         var response = await Client.GetAsync($"{BaseUrl}/user/{TestDataSeeder.GuidStudent}");
 

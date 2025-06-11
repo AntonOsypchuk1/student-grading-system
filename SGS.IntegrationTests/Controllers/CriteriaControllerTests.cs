@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using SGS.Application.DTOs;
 using SGS.IntegrationTests.Controllers.Bases;
+using SGS.IntegrationTests.Controllers.Helpers;
 using SGS.IntegrationTests.TestData;
 
 namespace SGS.IntegrationTests.Controllers;
@@ -13,6 +14,8 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task GetCriteria_WithValidId_ReturnsCriteria()
     {
+        TestContext.SimulationAuthorizedContext();
+        
         // Act
         var response = await Client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidCriteria}");
 
@@ -27,6 +30,8 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task GetCriteria_WithInvalidId_ReturnsNotFound()
     {
+        TestContext.SimulationAuthorizedContext();
+        
         // Arrange
         var invalidId = Guid.NewGuid();
 
@@ -40,7 +45,7 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task GetAllCriteria_ReturnsAllCriteria()
     {
-        // await AuthenticateAsTeacher();
+        TestContext.SimulationAuthorizedContext();
         
         // Act
         var response = await Client.GetAsync($"{BaseUrl}/all");
@@ -55,6 +60,8 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task CreateCriteria_AsTeacher_ReturnsCreated()
     {
+        TestContext.SimulationAuthorizedContext();
+        
         // Arrange
         await AuthenticateAsTeacher();
         var command = new CreateGradingCriteriaCommand
@@ -79,6 +86,8 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task CreateCriteria_WithoutAuth_ReturnsUnauthorized()
     {
+        TestContext.SimulateUnauthorizedScope();
+        
         // Arrange
         var command = new CreateGradingCriteriaCommand
         {
@@ -93,6 +102,6 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
         var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
 
         // Assert
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

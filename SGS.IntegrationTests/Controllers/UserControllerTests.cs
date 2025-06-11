@@ -67,13 +67,14 @@ public class UserControllerTests(CustomWebApplicationFactory<Program> factory) :
     public async Task GetStudentsByGroup_WithValidGroupId_ReturnsStudents()
     {
         // Act
-        var response = await Client.GetAsync($"{BaseUrl}/groups/{TestDataSeeder.GuidGroup}");
+        var response = await Client.GetAsync($"api/groups/{TestDataSeeder.GuidGroup}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var students = await response.Content.ReadFromJsonAsync<IEnumerable<UserDto>>();
-        Assert.NotNull(students);
-        Assert.Contains(students!, s => s.Id == TestDataSeeder.GuidStudent);
+        var group = await response.Content.ReadFromJsonAsync<GroupDto>();
+        
+        Assert.NotNull(group);
+        Assert.Contains(group.Students, s => s.Id == TestDataSeeder.GuidStudent);
     }
 
     [Fact]
