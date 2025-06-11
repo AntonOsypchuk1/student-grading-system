@@ -25,7 +25,7 @@ public class GradingCriteriaService(
             try
             {
                 var assignment = await UnitOfWork.Assignments.GetByIdAsync(command.AssignmentId, cancellationToken);
-                if (assignment is not null)
+                if (assignment is null)
                 {
                     Logger.LogWarning("Assignment not found with ID: {AssignmentId}", command.AssignmentId);
                     throw new Exception($"Assignment with ID {command.AssignmentId} not found.");
@@ -57,13 +57,6 @@ public class GradingCriteriaService(
 
             try
             {
-                // var assignment = await UnitOfWork.Assignments.GetByIdAsync(assignmentId, cancellationToken);
-                // if (assignment is not null)
-                // {
-                //     Logger.LogWarning("Assignment not found with ID: {AssignmentId}", assignmentId);
-                //     throw new Exception($"Assignment with ID {assignmentId} not found.");
-                // }
-
                 var criteria = Mapper.Map<List<GradingCriteria>>(command);
 
                 await UnitOfWork.GradingCriteria.AddCriteriaBatchAsync(criteria, cancellationToken);
@@ -143,5 +136,4 @@ public class GradingCriteriaService(
             return Result<IEnumerable<GradingCriteriaDto>>.Failure($"Failed to retrieve criteria: {ex.Message}");
         }
     }
-
 }

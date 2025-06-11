@@ -17,8 +17,8 @@ public class GroupController(
     IUserService userService
     ) : BaseApiController
 {
-    [HttpPost("{groupId:guid}/student/{studentId:guid}")]
     // [Authorize(Roles = "Admin")]
+    [HttpPost("{groupId:guid}/student/{studentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -42,7 +42,7 @@ public class GroupController(
         return Ok(result.Data);
     }
 
-    // [Authorize(Policy = "RequireTeacherRole")]
+    // [Authorize(Policy = "RequireAdminRole")]
     // [HttpDelete("{groupId:guid}/students/{studentId:guid}")]
     // [ProducesResponseType(StatusCodes.Status200OK)]
     // [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -71,16 +71,6 @@ public class GroupController(
         var result = await groupService.GetAllGroupsAsync(cancellationToken);
         return HandleCollectionResult(result);
     }
-    
-    // [HttpGet("student/{userId:guid}")]
-    // [ProducesResponseType(StatusCodes.Status200OK)]
-    // [ProducesResponseType(StatusCodes.Status404NotFound)]
-    // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    // public async Task<IActionResult> GetGroupByUserId(Guid userId, CancellationToken cancellationToken = default)
-    // {
-    //     var result = await groupService.GetGroupByUserIdAsync(userId, cancellationToken);
-    //     return HandleResult(result);
-    // }
 
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -135,8 +125,8 @@ public class GroupController(
         return HandleCollectionResult(result);
     }
 
-    [HttpPost]
     // [Authorize(Roles = "Admin")]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -147,8 +137,8 @@ public class GroupController(
         return HandleCreatedResult(result, nameof(GetGroupById), new { id = result.IsSuccess ? result.Data?.Id : Guid.Empty });
     }
 
-    [HttpPut("{id:guid}")]
     // [Authorize(Roles = "Admin")]
+    [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -163,8 +153,8 @@ public class GroupController(
         return HandleResult(result);
     }
 
-    [HttpDelete("{id:guid}")]
     // [Authorize(Roles = "Admin")]
+    [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

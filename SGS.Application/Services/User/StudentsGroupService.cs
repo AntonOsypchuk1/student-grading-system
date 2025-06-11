@@ -229,8 +229,8 @@ public class StudentsGroupService(
         }
     }
 
-    public async Task<Result<GroupDto>> CreateGroupAsync(CreateStudentsGroupDto
-        groupDto, CancellationToken cancellationToken = default)
+    public async Task<Result<GroupDto>> CreateGroupAsync(CreateStudentsGroupDto groupDto,
+        CancellationToken cancellationToken = default)
     {
         return await ExecuteInTransactionAsync(async () =>
         {
@@ -238,19 +238,7 @@ public class StudentsGroupService(
 
             try
             {
-                // Check if teacher exists if TeacherId is provided
-                // if (groupDto.TeacherId.HasValue)
-                // {
-                //     var teacher = await UnitOfWork.Users.GetByIdAsync(groupDto.TeacherId.Value, cancellationToken);
-                //     if (teacher == null)
-                //     {
-                //         Logger.LogWarning("Teacher not found with ID: {TeacherId}", groupDto.TeacherId.Value);
-                //         return Result<GroupDto>.Failure($"Teacher with ID {groupDto.TeacherId.Value} not found.");
-                //     }
-                // }
-
                 var group = Mapper.Map<StudentsGroup>(groupDto);
-                // group.CreatedAt = DateTime.UtcNow;
 
                 await UnitOfWork.StudentsGroups.CreateAsync(group, cancellationToken);
 

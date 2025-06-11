@@ -40,7 +40,6 @@ public class UserController(IUserService userService) : BaseApiController
         return HandleCollectionResult(result);
     }
 
-    // [Authorize(Policy = "RequireTeacherRole")]
     [HttpGet("students")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

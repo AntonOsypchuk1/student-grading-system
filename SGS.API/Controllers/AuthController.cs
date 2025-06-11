@@ -50,33 +50,7 @@ public class AuthController(
         return Ok(result.Data);
     }
     
-    // TODO: Implement session management
-    // [Authorize]
-    // [HttpGet("sessions")]
-    // public async Task<IActionResult> GetActiveSessions()
-    // {
-    //     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    //     if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
-    //         return Unauthorized();
-    //
-    //     var sessions = await refreshTokenService.GetActiveSessionsForUserAsync(userGuid);
-    //     return Ok(sessions);
-    // }
-    //
-    // [Authorize]
-    // [HttpDelete("sessions/{sessionId}")]
-    // public async Task<IActionResult> TerminateSession(string sessionId)
-    // {
-    //     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    //     if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
-    //         return Unauthorized();
-    //
-    //     var result = await refreshTokenService.TerminateSessionAsync(sessionId, userGuid);
-    //     return HandleResult(result);
-    // }
-
-    
-    [Authorize]
+    [AllowAnonymous]
     [HttpPost("logout")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -101,7 +75,7 @@ public class AuthController(
         return Ok(new { message = "Logged out successfully" });
     }
 
-    // [Authorize]
+    [Authorize]
     [HttpPost("refresh")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
