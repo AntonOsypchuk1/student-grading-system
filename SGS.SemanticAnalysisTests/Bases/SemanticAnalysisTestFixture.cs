@@ -122,13 +122,20 @@ public class SemanticAnalysisTestFixture : IDisposable
     {
         return new Dictionary<string, string>
         {
-            ["SemanticKernelSettings:ApiKey"] = Environment.GetEnvironmentVariable("SEMANTIC_KERNEL_API_KEY") ?? "test-api-key",
-            ["SemanticKernelSettings:Endpoint"] = Environment.GetEnvironmentVariable("SEMANTIC_KERNEL_ENDPOINT") ?? "https://test.openai.azure.com/",
-            ["SemanticKernelSettings:DeploymentName"] = Environment.GetEnvironmentVariable("SEMANTIC_KERNEL_DEPLOYMENT_NAME") ?? "gpt-35-turbo",
+            ["SemanticKernelSettings:ApiKey"] = Environment.GetEnvironmentVariable("SEMANTIC_KERNEL_API_KEY") ?? "",
+            ["SemanticKernelSettings:Endpoint"] = Environment.GetEnvironmentVariable("SEMANTIC_KERNEL_ENDPOINT") ?? "http://localhost:11434/v1/",
+            ["SemanticKernelSettings:DeploymentName"] = Environment.GetEnvironmentVariable("SEMANTIC_KERNEL_DEPLOYMENT_NAME") ?? "",
+            ["SemanticKernelSettings:Language"] = Environment.GetEnvironmentVariable("LANGUAGE") ?? "ua",
             ["Logging:LogLevel:Default"] = "Debug",
             ["Logging:LogLevel:System"] = "Information",
             ["Logging:LogLevel:Microsoft"] = "Information"
         };
+        // "SemanticKernelSettings": {
+        //     "Endpoint": "https://anash-mbfbu24s-eastus2.cognitiveservices.azure.com/",
+        //     "ApiKey": "ChpQosXsxaSNOp3Kejtd2JcKKuu7tNKovsEJd2dDnpjxIiUoRErzJQQJ99BFACHYHv6XJ3w3AAAAACOGXT9F",
+        //     "DeploymentName": "gpt-4.1",
+        //     "Language": "en"
+        // }
     }
 
     /// <summary>
@@ -161,6 +168,7 @@ public class SemanticAnalysisTestFixture : IDisposable
             options.ApiKey = configuration["SemanticKernelSettings:ApiKey"];
             options.Endpoint = configuration["SemanticKernelSettings:Endpoint"];
             options.DeploymentName = configuration["SemanticKernelSettings:DeploymentName"];
+            options.Language = configuration["SemanticKernelSettings:Language"];
         });
     }
 
@@ -192,6 +200,7 @@ public class SemanticAnalysisTestFixture : IDisposable
                                   $"ApiKey={!string.IsNullOrEmpty(registeredSettings.ApiKey)}, " +
                                   $"Endpoint={registeredSettings.Endpoint}, " +
                                   $"DeploymentName={registeredSettings.DeploymentName}, " +
+                                  $"Language={registeredSettings.Language}, " +
                                   $"Using mock kernel: {_useMockKernel}");
         }
         else
@@ -200,6 +209,7 @@ public class SemanticAnalysisTestFixture : IDisposable
                               $"ApiKey={!string.IsNullOrEmpty(registeredSettings.ApiKey)}, " +
                               $"Endpoint={registeredSettings.Endpoint}, " +
                               $"DeploymentName={registeredSettings.DeploymentName}, " +
+                              $"Language={registeredSettings.Language}, " +
                               $"Using mock kernel: {_useMockKernel}");
         }
     }
