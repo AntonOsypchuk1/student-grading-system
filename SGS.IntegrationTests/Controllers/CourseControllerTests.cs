@@ -37,8 +37,9 @@ public class CourseControllerTests(CustomWebApplicationFactory<Program> factory)
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var courses = await response.Content.ReadFromJsonAsync<IEnumerable<CourseDto>>();
+        
         Assert.NotNull(courses);
-        Assert.NotEmpty(courses!);
+        Assert.NotEmpty(courses);
     }
 
     [Fact]
@@ -62,7 +63,7 @@ public class CourseControllerTests(CustomWebApplicationFactory<Program> factory)
     {
         // Arrange
         await AuthenticateAsTeacher();
-        var command = new CreateCourseCommand
+        var command = new CreateCourseCommand()
         {
             Title = "New Test Course",
             Description = "Test Description"

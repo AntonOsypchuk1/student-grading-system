@@ -1,10 +1,12 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using SGS.Application.Interfaces;
 using SGS.Application.Models;
 using SGS.Application.Services.Analysis;
 using SGS.Domain.Entities;
 using SGS.SemanticAnalysis.Services.Bases;
+using SGS.SemanticAnalysis.Settings;
 using SGS.SemanticAnalysis.Structures.PromptRequests;
 using SGS.SemanticAnalysis.Structures.PromptResponses;
 
@@ -15,11 +17,18 @@ public class SemanticKernelAiServiceTests
     private readonly Mock<IPromptServiceExecutor> _promptServiceExecutorMock = new();
     private readonly Mock<IDocumentService> _documentServiceMock = new();
     private readonly Mock<ILogger<SemanticKernelAiService>> _loggerMock = new();
+    
     private readonly SemanticKernelAiService _aiService;
+
+    private readonly IOptions<SemanticKernelSettings> _options = Options.Create(new SemanticKernelSettings
+    {
+        Endpoint = "https://api.example.com",
+    });
 
     public SemanticKernelAiServiceTests()
     {
         _aiService = new SemanticKernelAiService(
+            _options,
             _promptServiceExecutorMock.Object,
             _documentServiceMock.Object,
             _loggerMock.Object
@@ -107,7 +116,7 @@ public class SemanticKernelAiServiceTests
         var result = await _aiService.AnalyzeDocumentAsync(document, criteria);
 
         // Assert
-        Assert.Equal(summaryResponse.Summary, result.Summary);
+        Assert.Equal(summaryResponse.Summary, result.Summary.Summary);
         Assert.Equal(76, result.GeneratedGrade); // 80*0.6 + 70*0.4 = 76
             
         // Verify method calls

@@ -1,16 +1,27 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SGS.API.DTOs;
 using SGS.Application.DTOs;
+using SGS.Application.Interfaces;
 using SGS.IntegrationTests.Controllers.Helpers;
 
 namespace SGS.IntegrationTests.Controllers.Bases;
 
 public class BaseControllerTests(CustomWebApplicationFactory<Program> factory)
-    : IClassFixture<CustomWebApplicationFactory<Program>>
+    : IClassFixture<CustomWebApplicationFactory<Program>>, IDisposable
 {
     protected readonly HttpClient Client = factory.CreateClient();
-    protected readonly CustomWebApplicationFactory<Program> Factory = factory;
+    
+    // protected readonly TestAuthHandler AuthHandler = new TestAuthHandler(
+    //     factory.Services.GetRequiredService<IOptionsMonitor<AuthenticationSchemeOptions>>(),
+    //     factory.Services.GetRequiredService<LoggerFactory>(),
+    //     factory.Services.GetRequiredService<UrlEncoder>()
+    // );
     
     protected const string TeacherEmail = "teacher1@example.com";
     protected const string StudentEmail = "student1@example.com";
@@ -85,5 +96,10 @@ public class BaseControllerTests(CustomWebApplicationFactory<Program> factory)
         
             Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _currentToken);
         }
+    }
+
+    public void Dispose()
+    {
+        Client.DefaultRequestHeaders.Authorization = null;
     }
 }

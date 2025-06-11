@@ -58,22 +58,6 @@ public class GradingController(
         var result = await analysisService.GetAnalysisResultByDocumentIdAsync(docId);
         return HandleResult(result);
     }
-
-    [Authorize(Policy = "RequireTeacherRole")]
-    [HttpPut("edit")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> EditGrade([FromBody] EditGradeCommand command)
-    {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
-        var result = await gradingService.EditGradeAsync(command);
-        return HandleResult(result);
-    }
     
     [HttpGet("assignments/{assignmentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -96,6 +80,22 @@ public class GradingController(
             return errorResult;
 
         var result = await gradingService.GetGradingResultsByCourseAndGroupAsync(courseId, groupId);
+        return HandleResult(result);
+    }
+    
+    [Authorize(Policy = "RequireTeacherRole")]
+    [HttpPut("edit")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> EditGrade([FromBody] EditGradeCommand command)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await gradingService.EditGradeAsync(command);
         return HandleResult(result);
     }
 

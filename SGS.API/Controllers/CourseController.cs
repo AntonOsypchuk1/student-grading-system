@@ -36,7 +36,6 @@ public class CourseController(ICourseService courseService) : BaseApiController
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAllCourses()
     {
-        // TODO: get all courses for the user
         var result = await courseService.GetAllCoursesAsync();
         return HandleCollectionResult(result);
     }
@@ -55,35 +54,7 @@ public class CourseController(ICourseService courseService) : BaseApiController
         return HandleResult(result);
     }
     
-    // [HttpGet("{courseId:guid}/teachers")]
-    // [ProducesResponseType(StatusCodes.Status200OK)]
-    // [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    // [ProducesResponseType(StatusCodes.Status404NotFound)]
-    // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    // public async Task<IActionResult> GetTeachersByCourse([FromRoute] Guid courseId)
-    // {
-    //     if (!this.IsValidGuid(courseId, out var errorResult))
-    //         return errorResult;
-    //
-    //     var result = await courseService.GetTeachersByCourseAsync(courseId);
-    //     return HandleCollectionResult(result);
-    // }
-    
-    // [HttpGet("{courseId:guid}/groups")]
-    // [ProducesResponseType(StatusCodes.Status200OK)]
-    // [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    // [ProducesResponseType(StatusCodes.Status404NotFound)]
-    // [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    // public async Task<IActionResult> GetGroupsByCourse([FromRoute] Guid courseId)
-    // {
-    //     if (!this.IsValidGuid(courseId, out var errorResult))
-    //         return errorResult;
-    //
-    //     var result = await courseService.GetGroupsByCourseAsync(courseId);
-    //     return HandleCollectionResult(result);
-    // }
-
-    // [Authorize(Policy = "RequireTeacherRole")]
+    [Authorize(Policy = "RequireTeacherRole")]
     [HttpGet("teacher/{teacherId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -100,7 +71,6 @@ public class CourseController(ICourseService courseService) : BaseApiController
         return HandleCollectionResult(result);
     }
 
-    // [Authorize(Policy = "RequireStudentRole")]
     [HttpGet("student/{studentId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

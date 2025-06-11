@@ -10,8 +10,7 @@ namespace SGS.IntegrationTests.Controllers.Helpers;
 public class TestAuthHandler(
     IOptionsMonitor<AuthenticationSchemeOptions> options,
     ILoggerFactory logger,
-    UrlEncoder encoder,
-    TimeProvider timeProvider)
+    UrlEncoder encoder)
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
     public static string CurrentUserId { get; set; } = "test-user-id";

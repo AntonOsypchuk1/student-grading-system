@@ -9,6 +9,11 @@ public static class TestContext
         return new UnauthorizedScope();
     }
     
+    public static void SimulationAuthorizedContext()
+    {
+        SimulateUnauthorized = false;
+    }
+    
     private class UnauthorizedScope : IDisposable
     {
         public UnauthorizedScope()

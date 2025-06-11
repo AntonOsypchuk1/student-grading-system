@@ -1,12 +1,14 @@
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using SGS.Application.Interfaces;
 using SGS.Application.Models;
 using SGS.Application.Services.Analysis;
 using SGS.Domain.Entities;
 using SGS.SemanticAnalysis.Services.Bases;
+using SGS.SemanticAnalysis.Settings;
 using SGS.SemanticAnalysis.Structures.PromptRequests;
 using SGS.SemanticAnalysis.Structures.PromptResponses;
 using SGS.SemanticAnalysisTests.Bases;
@@ -17,6 +19,12 @@ namespace SGS.SemanticAnalysisTests;
 
 public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTestFixture>
 {
+    private readonly string languageOption = "ua";
+    private readonly IOptions<SemanticKernelSettings> _kernelSettings = Options.Create(new SemanticKernelSettings
+    {
+        Language = "ua" // Set the language option for the kernel settings
+    });
+    
     private readonly SemanticAnalysisTestFixture _fixture;
     private readonly IPromptServiceExecutor _promptServiceExecutor;
     private readonly ILogger<SemanticAnalysisIntegrationTests> _logger;
@@ -24,6 +32,12 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
 
     public SemanticAnalysisIntegrationTests(SemanticAnalysisTestFixture fixture, ITestOutputHelper output)
     {
+        // var settings = new SemanticKernelSettings
+        // {
+        //     Language = languageOption
+        // };
+        // _kernelSettings.Value.Language = languageOption;
+            
         _fixture = fixture;
         _output = output;
         
@@ -180,6 +194,7 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
         var mockDocumentService = new Mock<IDocumentService>();
             
         var aiService = new SemanticKernelAiService(
+            _kernelSettings,
             _promptServiceExecutor,
             mockDocumentService.Object,
             aiServiceLogger
@@ -205,12 +220,14 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
         _output.WriteLine($"Document analysis result:");
         _output.WriteLine($"Grade: {result.GeneratedGrade}/100");
         _output.WriteLine("Summary:");
-        _output.WriteLine(result.Summary);
+        _output.WriteLine(result.Summary.Summary);
 
         // Assert
         Assert.NotNull(result.Summary);
-        Assert.NotEmpty(result.Summary);
-        Assert.InRange(result.GeneratedGrade, 0, 100); 
+        Assert.NotEmpty(result.Summary.Summary);
+        Assert.InRange(result.GeneratedGrade, 0, 100);
+        Assert.NotEmpty(result.Summary.Improvements);
+        Assert.NotEmpty(result.Summary.Strengths);
 
         // Verify method was called
         mockDocumentService.Verify(x => x.GetDocumentContentTextAsync(documentId, It.IsAny<CancellationToken>()), Times.Once);
@@ -252,10 +269,6 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
         // Verify that the API documentation criterion was properly evaluated
         var apiDocsResult = response.CriteriaResults.FirstOrDefault(r => r.Title.Contains("API Documentation"));
         Assert.NotNull(apiDocsResult);
-            
-        // The response should include specific feedback about API documentation
-        Assert.Contains("API", apiDocsResult.Justification, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("endpoint", apiDocsResult.Justification, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

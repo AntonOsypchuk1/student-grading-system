@@ -23,10 +23,6 @@ public class MappingProfile : Profile
     private void ConfigureUserMappings()
     {
         CreateMap<User, UserDto>();
-        // .ForMember(dest => dest.Group, opt => opt.MapFrom(src => 
-        //     src.Role == UserRole.Student ? src.Student!.Group : null))
-        // .ForMember(dest => dest.Courses, opt => opt.MapFrom(src => 
-        //     src.Role == UserRole.Teacher ? src.Teacher!.Courses : null));
         
         CreateMap<UserDto, User>();
         CreateMap<UpdateUserDto, User>()

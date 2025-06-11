@@ -60,7 +60,7 @@ public class CriteriaController(IGradingCriteriaService criteriaService) : BaseA
         return HandleResult(result);
     }
     
-    // [Authorize] // TODO: Maybe "Teacher" policy
+    [Authorize(Policy = "RequireTeacherRole")] // TODO: Maybe "Teacher" policy
     [HttpGet("all")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

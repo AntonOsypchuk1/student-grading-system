@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using SGS.Application.DTOs;
 using SGS.IntegrationTests.Controllers.Bases;
+using SGS.IntegrationTests.Controllers.Helpers;
 using SGS.IntegrationTests.TestData;
 
 namespace SGS.IntegrationTests.Controllers;
@@ -14,6 +15,8 @@ public class AssignmentControllerTests(CustomWebApplicationFactory<Program> fact
     [Fact]
     public async Task GetAssignmentById_WithValidId_ReturnsAssignment()
     {
+        TestContext.SimulationAuthorizedContext();
+        
         // Act
         var response = await Client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidAssignment}");
 
@@ -62,12 +65,16 @@ public class AssignmentControllerTests(CustomWebApplicationFactory<Program> fact
         var assignment = await response.Content.ReadFromJsonAsync<AssignmentDto>();
         Assert.NotNull(assignment);
         Assert.Equal(command.Title, assignment.Title);
+
+        Dispose();
     }
 
 
     [Fact]
     public async Task CreateAssignment_WithoutAuth_ReturnsUnauthorized()
     {
+        TestContext.SimulateUnauthorizedScope();
+            
         // Arrange
         var command = new CreateAssignmentCommand
         {

@@ -17,7 +17,7 @@ public static class TestDataSeeder
     public static readonly Guid GuidCriteria = Guid.Parse("00000000-0000-0000-0000-000000000008");
     
     // Static properties for entity references
-    public static User Teacher { get; private set; }
+    public static User TeacherUser { get; private set; }
     public static User Student { get; private set; }
     public static StudentsGroup Group { get; private set; }
     public static Course Course1 { get; private set; }
@@ -57,7 +57,7 @@ public static class TestDataSeeder
     private static void SeedDatabase(AppDbContext context)
     {
         // Create teacher and student
-        Teacher = new User
+        TeacherUser = new User
         {
             Id = GuidTeacher,
             Login = "teacher1",
@@ -66,6 +66,7 @@ public static class TestDataSeeder
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
             Role = UserRole.Teacher
         };
+        var teacher = new Teacher { Id = GuidTeacher, UserId = TeacherUser.Id, Courses = [] };
         
         Student = new User
         {
@@ -76,23 +77,35 @@ public static class TestDataSeeder
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!"),
             Role = UserRole.Student
         };
+        var student = new Student { Id = GuidStudent, UserId = Student.Id, GroupId = GuidGroup };
 
-        context.Users.AddRange(Teacher, Student);
+        context.Users.AddRange(TeacherUser, Student);
+        context.Teachers.Add(teacher);
+        context.Students.Add(student);
         context.SaveChanges();
 
         // Insert group
-        Group = new StudentsGroup { Id = GuidGroup, Name = "Group A" };
+        Group = new StudentsGroup
+        {
+            Id = GuidGroup, 
+            Name = "Group A",
+            Description = "Group A Description",
+            Year = 2023,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            Students = [student]
+        };
         context.StudentGroups.Add(Group);
         context.SaveChanges();
 
         // Insert teacher and student profiles if separate tables exist
-        context.Teachers.Add(new Teacher { UserId = Teacher.Id });
+        context.Teachers.Add(new Teacher { UserId = TeacherUser.Id });
         context.Students.Add(new Student { UserId = Student.Id, GroupId = Group.Id });
         context.SaveChanges();
 
         // Create courses
         Course1 = new Course { Id = GuidCourse1, Title = "Mathematics 101", Description = "Basic Mathematics" };
-        Course2 = new Course { Id = GuidCourse2, Title = "Physics 101", Description = "Introduction to Physics" };
+        Course2 = new Course { Id = GuidCourse2, Title = "Physics 101", Description = "Introduction to Physics", Teachers = [teacher]};
         context.Courses.AddRange(Course1, Course2);
         context.SaveChanges();
 
@@ -146,7 +159,7 @@ public static class TestDataSeeder
     private static void LoadEntityReferences(AppDbContext context)
     {
         // Load all entity references from the database
-        Teacher = context.Users.FirstOrDefault(u => u.Id == GuidTeacher);
+        TeacherUser = context.Users.FirstOrDefault(u => u.Id == GuidTeacher);
         Student = context.Users.FirstOrDefault(u => u.Id == GuidStudent);
         Group = context.StudentGroups.FirstOrDefault(g => g.Id == GuidGroup);
         Course1 = context.Courses.FirstOrDefault(c => c.Id == GuidCourse1);
