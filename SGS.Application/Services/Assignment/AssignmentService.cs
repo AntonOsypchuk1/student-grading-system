@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 using SGS.Application.Models;
+using SGS.Domain.Entities;
 using SGS.Infrastructure.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services.Assignment;
@@ -41,6 +42,41 @@ public class AssignmentService(
             {
                 Logger.LogError(ex, "Error creating assignment with title: {Title}", command.Title);
                 return Result<AssignmentDto>.Failure($"Failed to create assignment: {ex.Message}");
+            }
+        }, cancellationToken);
+    }
+
+    public async Task<Result<AssignmentDto>> UpdateAssignmentAsync(UpdateAssignmentCommand command, CancellationToken cancellationToken = default)
+    {
+        return await ExecuteInTransactionAsync(async () =>
+        {
+            Logger.LogInformation("Updating assignment with ID: {AssignmentId}", command.Id);
+
+            try
+            {
+                var assignment = await UnitOfWork.Assignments.GetByIdAsync(command.Id, cancellationToken);
+                if (assignment == null)
+                {
+                    Logger.LogWarning("Assignment not found with ID: {AssignmentId}", command.Id);
+                    return Result<AssignmentDto>.Failure($"Assignment with ID {command.Id} not found.");
+                }
+
+                assignment.Title = command.Title;
+                assignment.Description = command.Description;
+                assignment.MaxAttempts = command.MaxAttempts;
+                assignment.DueDate = DateTime.SpecifyKind(command.DueDate, DateTimeKind.Utc);
+                assignment.GroupId = command.GroupId;
+                assignment.GradingCriteria = command.GradingCriteria.Select(Mapper.Map<GradingCriteria>).ToList();
+
+                UnitOfWork.Assignments.Update(assignment);
+                Logger.LogInformation("Successfully updated assignment with ID: {AssignmentId}", command.Id);
+
+                return Result<AssignmentDto>.Success(Mapper.Map<AssignmentDto>(assignment));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error updating assignment with ID: {AssignmentId}", command.Id);
+                return Result<AssignmentDto>.Failure($"Failed to update assignment: {ex.Message}");
             }
         }, cancellationToken);
     }

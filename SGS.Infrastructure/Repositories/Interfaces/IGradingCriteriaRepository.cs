@@ -13,4 +13,7 @@ public interface IGradingCriteriaRepository : IBaseRepository<GradingCriteria>
 
     Task AddCriteriaBatchAsync(IEnumerable<GradingCriteria> criteriaList,
         CancellationToken cancellationToken = default);
+    
+    Task UpdateCriteriaBatchAsync(IEnumerable<GradingCriteria> criteriaList,
+        CancellationToken cancellationToken = default);
 }

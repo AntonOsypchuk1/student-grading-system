@@ -1,28 +1,14 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using SGS.API.DTOs;
 using SGS.Application.DTOs;
-using SGS.Application.Interfaces;
 using SGS.IntegrationTests.Controllers.Helpers;
 
 namespace SGS.IntegrationTests.Controllers.Bases;
 
-public class BaseControllerTests(CustomWebApplicationFactory<Program> factory)
-    : IClassFixture<CustomWebApplicationFactory<Program>>, IDisposable
+public class BaseControllerTests : IClassFixture<CustomWebApplicationFactory<Program>>
+    // , IDisposable
 {
-    protected readonly HttpClient Client = factory.CreateClient();
-    
-    // protected readonly TestAuthHandler AuthHandler = new TestAuthHandler(
-    //     factory.Services.GetRequiredService<IOptionsMonitor<AuthenticationSchemeOptions>>(),
-    //     factory.Services.GetRequiredService<LoggerFactory>(),
-    //     factory.Services.GetRequiredService<UrlEncoder>()
-    // );
-    
     protected const string TeacherEmail = "teacher1@example.com";
     protected const string StudentEmail = "student1@example.com";
     protected const string UserPassword = "Password123!";
@@ -30,7 +16,7 @@ public class BaseControllerTests(CustomWebApplicationFactory<Program> factory)
     private string _currentToken = string.Empty;
     private string _currentRefreshToken = string.Empty;
 
-    protected async Task AuthenticateAsTeacher()
+    protected async Task AuthenticateAsTeacher(HttpClient client)
     {
         TestAuthHandler.CurrentRole = "Teacher";
         TestAuthHandler.CurrentEmail = TeacherEmail;
@@ -43,7 +29,7 @@ public class BaseControllerTests(CustomWebApplicationFactory<Program> factory)
             Password = UserPassword
         };
         
-        var loginResponse = await Client.PostAsJsonAsync("/api/auth/login", loginDto);
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", loginDto);
         if (!loginResponse.IsSuccessStatusCode)
         {
             throw new Exception($"Authentication failed: {loginResponse.StatusCode}");
@@ -52,10 +38,10 @@ public class BaseControllerTests(CustomWebApplicationFactory<Program> factory)
         var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
         _currentToken = authResponse!.Token;
         
-        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _currentToken);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _currentToken);
     }
     
-    protected async Task AuthenticateAsStudent()
+    protected async Task AuthenticateAsStudent(HttpClient client)
     {
         TestAuthHandler.CurrentRole = "Student";
         TestAuthHandler.CurrentEmail = StudentEmail;
@@ -68,7 +54,7 @@ public class BaseControllerTests(CustomWebApplicationFactory<Program> factory)
             Password = UserPassword
         };
         
-        var loginResponse = await Client.PostAsJsonAsync("/api/auth/login", loginDto);
+        var loginResponse = await client.PostAsJsonAsync("/api/auth/login", loginDto);
         if (!loginResponse.IsSuccessStatusCode)
         {
             throw new Exception($"Authentication failed: {loginResponse.StatusCode}");
@@ -77,16 +63,16 @@ public class BaseControllerTests(CustomWebApplicationFactory<Program> factory)
         var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
         _currentToken = authResponse!.Token;
         
-        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _currentToken);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _currentToken);
     }
     
-    private async Task RefreshTokensIfNeeded()
+    private async Task RefreshTokensIfNeeded(HttpClient client)
     {
         if (string.IsNullOrEmpty(_currentRefreshToken))
             return;
         
         var refreshRequest = new RefreshTokenRequestDto { RefreshToken = _currentRefreshToken };
-        var refreshResponse = await Client.PostAsJsonAsync($"/api/auth/refresh", refreshRequest);
+        var refreshResponse = await client.PostAsJsonAsync($"/api/auth/refresh", refreshRequest);
     
         if (refreshResponse.IsSuccessStatusCode)
         {
@@ -94,12 +80,16 @@ public class BaseControllerTests(CustomWebApplicationFactory<Program> factory)
             _currentToken = authResponse!.Token;
             _currentRefreshToken = authResponse.RefreshToken;
         
-            Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _currentToken);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _currentToken);
         }
     }
 
-    public void Dispose()
-    {
-        Client.DefaultRequestHeaders.Authorization = null;
-    }
+    // public void Dispose()
+    // {
+    //     TestContext.SimulationAuthorizedContext();
+    //     TestAuthHandler.CurrentRole = null;
+    //     TestAuthHandler.CurrentEmail = null;
+    //     TestAuthHandler.CurrentFullName = null;
+    //     TestAuthHandler.CurrentUserId = null;
+    // }
 }

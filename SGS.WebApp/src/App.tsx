@@ -23,6 +23,7 @@ import AssignmentLayout from "./features/assignments/layout/AssignmentLayout.tsx
 import AssignmentStudents from "./features/assignments/layout/AssignmentStudents.tsx";
 import AssignmentGrades from "./features/assignments/layout/AssignmentGrades.tsx";
 import AssignmentAnalysis from "./features/assignments/layout/AssignmentAnalysis.tsx";
+import UpdateAssignmentForm from "./features/assignments/sub/UpdateAssignmentForm.tsx";
 
 const queryClient = new QueryClient();
 
@@ -50,8 +51,8 @@ function App() {
                   </Route>
 
                   <Route path="assignments" element={<AssignmentLayout/>}>
-                    {/*<Route path="upload" element={<AssignmentUpload/>}/>*/}
                     <Route path=":assignmentId" element={<AssignmentDetails/>}/>
+                    <Route path=":assignmentId/update" element={<UpdateAssignmentForm/>}/>
                     <Route path=":assignmentId/submission" element={<AssignmentAnalysis/>}/>
                     <Route path=":assignmentId/students" element={<AssignmentStudents/>}/>
                     <Route path=":assignmentId/grades" element={<AssignmentGrades/>}/>

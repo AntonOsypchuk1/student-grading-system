@@ -13,18 +13,25 @@ public class CreateAssignmentCommand
     public ICollection<CreateGradingCriteriaCommand>? GradingCriteria { get; set; }
 }
 
-public class UpdateAssignmentDto
+public class UpdateAssignmentCommand
 {
-    [StringLength(100, MinimumLength = 3)]
-    public string? Title { get; set; }
+    public Guid Id { get; set; }
     
-    [StringLength(1000, MinimumLength = 10)]
-    public string? Description { get; set; }
+    public Guid GroupId { get; set; }
     
-    [Range(1, 10)]
-    public int? MaxAttempts { get; set; }
+    [Required, StringLength(100, MinimumLength = 3)]
+    public required string Title { get; set; }
     
-    public DateTime? DueDate { get; set; }
+    [Required, StringLength(1000, MinimumLength = 10)]
+    public required string Description { get; set; }
+    
+    [Required, Range(1, 10)]
+    public int MaxAttempts { get; set; }
+    
+    [Required]
+    public DateTime DueDate { get; set; }
+    
+    public List<UpdateGradingCriteriaCommand> GradingCriteria { get; set; }
 }
 
 

@@ -34,7 +34,7 @@ public class CriterionResult
     /// Specific strengths identified in the submission for this criterion
     /// </summary>
     public List<string> Strengths { get; set; } = [];
-        
+    
     /// <summary>
     /// Areas needing improvement for this criterion
     /// </summary>

@@ -5,6 +5,14 @@ export interface CreateGradingCriteriaCommand {
   weight: number;
 }
 
+export interface UpdateGradingCriteriaCommand {
+  id: string;
+  title: string;
+  description: string;
+  maxGrade: number;
+  weight: number;
+}
+
 export interface CreateBatchGradingCriteriaCommand {
   criteria: CreateGradingCriteriaCommand[];
 }

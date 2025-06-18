@@ -7,6 +7,9 @@ public interface IAssignmentService
 {
     Task<Result<AssignmentDto>> CreateAssignmentAsync(CreateAssignmentCommand command,
         CancellationToken cancellationToken = default);
+    
+    Task<Result<AssignmentDto>> UpdateAssignmentAsync(UpdateAssignmentCommand command,
+        CancellationToken cancellationToken = default);
 
     Task<Result<AssignmentDto?>> GetAssignmentByIdAsync(Guid assignmentId, CancellationToken cancellationToken = default);
 

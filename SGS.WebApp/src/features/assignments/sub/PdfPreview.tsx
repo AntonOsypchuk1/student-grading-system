@@ -4,7 +4,6 @@ import {LoadingSpinner} from "../../../components/shared/StyledComponents.ts";
 import {useDocuments} from "../../../hooks/useDocuments.ts";
 
 const PreviewContainer = styled.div`
-    margin-top: 24px;
     padding: 24px;
     background: white;
     border-radius: 8px;

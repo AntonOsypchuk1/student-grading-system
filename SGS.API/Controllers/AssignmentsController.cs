@@ -27,6 +27,26 @@ public class AssignmentController(IAssignmentService assignmentService) : BaseAp
         var result = await assignmentService.CreateAssignmentAsync(command);
         return HandleCreatedResult(result, nameof(GetAssignmentById), new { id = result.Data?.Id });
     }
+    
+    [Authorize(Policy = "RequireTeacherRole")]
+    [HttpPut("update/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UpdateAssignment([FromRoute] Guid id, [FromBody] UpdateAssignmentCommand command)
+    {
+        if (!this.IsValidGuid(id, out var errorResult))
+            return errorResult;
+
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        command.Id = id;
+        var result = await assignmentService.UpdateAssignmentAsync(command);
+        return HandleCreatedResult(result, nameof(GetAssignmentById), new { id = result.Data?.Id });
+    }
 
     [HttpGet("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]

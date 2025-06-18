@@ -15,8 +15,8 @@ template: |
   # Instructions
   Based on the detailed criterion evaluations above, create a comprehensive, constructive summary for the student that:
   1. Summarizes overall performance
-  2. Highlights key strengths (2-3 points)
-  3. Identifies priority areas for improvement (2-3 points)
+  2. Highlights key strengths (2-3 points). It is an array of strings, where each string is a specific strength. That are based on the evaluation results.
+  3. Identifies priority areas for improvement (2-3 points). It is an array of strings, where each string is a specific area for improvement. That are based on the evaluation results.
   4. Provides actionable advice for future submissions
   5. Uses a supportive, encouraging tone
   
@@ -28,31 +28,19 @@ template: |
   
   Output Format:
   {
-    "summary": {
-      "type": "string",
-    },
-    "keyStrengths": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-    },
-    "improvementAreas": 
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-    },
+    "summary": "",
+    "strengths": [""],
+    "improvements": [""]
   }
   Output Example:
   {
     "summary": "Ваше загальне виконання було вражаючим, з особливими сильними сторонами в...",
-    "keyStrengths": [
+    "strengths": [
       "Сильна аргументація",
       "Чітка структура",
       "Глибоке розуміння теми"
     ],
-    "improvementAreas": [
+    "improvements": [
       "Покращити використання джерел",
       "Зосередитися на точності даних",
       "Працювати над граматикою та стилем"

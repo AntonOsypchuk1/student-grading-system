@@ -14,7 +14,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-api.defaults.retry = 2;
+api.defaults.retry = 1;
 api.defaults.retryDelay = 1000;
 api.defaults.retryCount = 0;
 

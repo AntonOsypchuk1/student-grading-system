@@ -8,8 +8,10 @@ using SGS.IntegrationTests.Controllers.Helpers;
 
 namespace SGS.IntegrationTests.Controllers;
 
-public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
+public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests
 {
+    private readonly HttpClient _client = factory.CreateClient();
+    
     private const string BaseUrl = "/api/auth";
     private string _refreshToken = string.Empty;
 
@@ -23,7 +25,7 @@ public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) :
             Password = UserPassword
         };
         
-        var loginResponse = await Client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
+        var loginResponse = await _client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
         var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
         
         var initialToken = authResponse!.Token;
@@ -31,15 +33,15 @@ public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) :
         
         await Task.Delay(1100);
         
-        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", initialToken);
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", initialToken);
         
         // 2. Access a protected resource
-        var meResponse = await Client.GetAsync("/api/users/me");
+        var meResponse = await _client.GetAsync("/api/users/me");
         Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
         
         // 3. Refresh the token
         var refreshRequest = new RefreshTokenRequestDto { RefreshToken = _refreshToken };
-        var refreshResponse = await Client.PostAsJsonAsync($"{BaseUrl}/refresh", refreshRequest);
+        var refreshResponse = await _client.PostAsJsonAsync($"{BaseUrl}/refresh", refreshRequest);
         
         Assert.Equal(HttpStatusCode.OK, refreshResponse.StatusCode);
         var newAuthResponse = await refreshResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
@@ -48,20 +50,20 @@ public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) :
         _refreshToken = newAuthResponse.RefreshToken; // Update the refresh token
         
         // 4. Use the new token
-        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", newToken);
-        var meResponse2 = await Client.GetAsync("/api/users/me");
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", newToken);
+        var meResponse2 = await _client.GetAsync("/api/users/me");
         Assert.Equal(HttpStatusCode.OK, meResponse2.StatusCode);
         
         // 5. Logout
         var logoutRequest = new RefreshTokenRequestDto { RefreshToken = _refreshToken };
-        var logoutResponse = await Client.PostAsJsonAsync($"{BaseUrl}/logout", logoutRequest);
+        var logoutResponse = await _client.PostAsJsonAsync($"{BaseUrl}/logout", logoutRequest);
         
         Assert.Equal(HttpStatusCode.OK, logoutResponse.StatusCode);
         
         // 6. Verify the token is invalidated
         using (TestContext.SimulateUnauthorizedScope())
         {
-            var meResponse3 = await Client.GetAsync("/api/users/me");
+            var meResponse3 = await _client.GetAsync("/api/users/me");
             Assert.Equal(HttpStatusCode.Unauthorized, meResponse3.StatusCode);
         }
     }
@@ -77,7 +79,7 @@ public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) :
         };
 
         // Act
-        var response = await Client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
+        var response = await _client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -100,7 +102,7 @@ public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) :
         };
 
         // Act
-        var response = await Client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
+        var response = await _client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -120,7 +122,7 @@ public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) :
         };
 
         // Act
-        var response = await Client.PostAsJsonAsync($"{BaseUrl}/register", registerCommand);
+        var response = await _client.PostAsJsonAsync($"{BaseUrl}/register", registerCommand);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -137,7 +139,7 @@ public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) :
             Email = TeacherEmail,
             Password = UserPassword
         };
-        var loginResponse = await Client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
+        var loginResponse = await _client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
         var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
         
         var oldAccessToken = authResponse!.Token;
@@ -146,7 +148,7 @@ public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) :
         await Task.Delay(1100);
 
         // Act
-        var refreshResponse = await Client.PostAsJsonAsync($"{BaseUrl}/refresh", refreshRequest);
+        var refreshResponse = await _client.PostAsJsonAsync($"{BaseUrl}/refresh", refreshRequest);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, refreshResponse.StatusCode);
@@ -165,13 +167,13 @@ public class AuthControllerTests(CustomWebApplicationFactory<Program> factory) :
             Email = TeacherEmail,
             Password = UserPassword
         };
-        var loginResponse = await Client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
+        var loginResponse = await _client.PostAsJsonAsync($"{BaseUrl}/login", loginDto);
         var authResponse = await loginResponse.Content.ReadFromJsonAsync<AuthResponseDto>();
         
         var logoutRequest = new RefreshTokenRequestDto { RefreshToken = authResponse!.RefreshToken };
         
         // Act
-        var logoutResponse = await Client.PostAsJsonAsync($"{BaseUrl}/logout", logoutRequest);
+        var logoutResponse = await _client.PostAsJsonAsync($"{BaseUrl}/logout", logoutRequest);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, logoutResponse.StatusCode);

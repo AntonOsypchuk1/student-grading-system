@@ -100,8 +100,8 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
             Assert.NotNull(result.Title);
             Assert.InRange(result.Score, 0, 100);
             Assert.NotNull(result.Justification);
-            Assert.NotNull(result.Strengths);
-            Assert.NotNull(result.Improvements);
+            Assert.NotEmpty(result.Strengths);
+            Assert.NotEmpty(result.Improvements);
         }
     }
 

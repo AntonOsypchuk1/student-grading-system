@@ -4,6 +4,7 @@ import {useGrading} from "../../../hooks/useGrading.ts";
 import {useDocuments} from "../../../hooks/useDocuments.ts";
 import {useAuthContext} from "../../../auth/AuthProvider.tsx";
 import {AnalysisResults} from "../sub/AnalysisResults.tsx";
+import {MainContent} from "../../../components/shared/StyledComponents.ts";
 
 const AssignmentAnalysis = () => {
   const {assignmentId} = useParams<{ assignmentId: string }>();
@@ -17,10 +18,10 @@ const AssignmentAnalysis = () => {
   return (
     <div>
       {document && (
-        <>
+        <MainContent>
           <PdfPreview documentId={document.id}/>
           <AnalysisResults analysis={analysisResult}/>
-        </>
+        </MainContent>
       )}
     </div>
   );

@@ -1,4 +1,8 @@
-import {CreateGradingCriteriaCommand, GradingCriteriaDto} from "./GradingCriteriaTypes.ts";
+import {
+  CreateGradingCriteriaCommand,
+  GradingCriteriaDto,
+  UpdateGradingCriteriaCommand
+} from "./GradingCriteriaTypes.ts";
 
 export interface CreateAssignmentCommand {
   groupId: string;
@@ -19,4 +23,14 @@ export interface AssignmentDto {
   groupId: string;
   courseId: string;
   gradingCriteria: GradingCriteriaDto[] | undefined;
+}
+
+export interface UpdateAssignmentCommand {
+  id: string;
+  groupId: string;
+  title: string;
+  description: string;
+  maxAttempts: number;
+  dueDate: string;
+  gradingCriteria: UpdateGradingCriteriaCommand[];
 }

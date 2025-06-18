@@ -1,5 +1,5 @@
 import {useMutation, useQueries, useQuery, useQueryClient} from "@tanstack/react-query";
-import {CreateAssignmentCommand} from "../types/AssignmentTypes";
+import {CreateAssignmentCommand, UpdateAssignmentCommand} from "../types/AssignmentTypes";
 import * as assignmentApi from "../api/apiEndpoints/AssignmentAndCourseApi"
 import {StudentsGroupDto} from "../types/GroupTypes.ts";
 import {CourseDto} from "../types/CourseTypes.ts";
@@ -57,7 +57,14 @@ export const useAssignmentsMutation = () => {
     },
   });
 
-  return {createAssignmentMutation};
+  const updateAssignmentMutation = useMutation({
+    mutationFn: (data: UpdateAssignmentCommand) => assignmentApi.updateAssignment(data.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ["assignments"]});
+    },
+  });
+
+  return {createAssignmentMutation, updateAssignmentMutation};
 }
 
 export const useAssignmentsByGroups = (groups: StudentsGroupDto[], courses: CourseDto[]) => {

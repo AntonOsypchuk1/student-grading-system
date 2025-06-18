@@ -1,4 +1,4 @@
-import {AssignmentDto, CreateAssignmentCommand} from "../../types/AssignmentTypes.ts";
+import {AssignmentDto, CreateAssignmentCommand, UpdateAssignmentCommand} from "../../types/AssignmentTypes.ts";
 import api from "../api.ts";
 import {CourseDto, CreateCourseCommand} from "../../types/CourseTypes.ts";
 
@@ -7,6 +7,11 @@ export const createAssignment = async (data: CreateAssignmentCommand): Promise<A
   const response = await api.post<AssignmentDto>("/assignments/create", data);
   return response.data;
 };
+
+export const updateAssignment = async (id: string, data: UpdateAssignmentCommand): Promise<AssignmentDto> => {
+  const response = await api.put<AssignmentDto>(`/assignments/update/${id}`, data);
+  return response.data;
+}
 
 // export const getAssignments = async (): Promise<AssignmentDto[]> => {
 //   const response = await api.get<AssignmentDto[]>(`/assignments`);

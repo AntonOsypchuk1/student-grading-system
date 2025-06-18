@@ -33,14 +33,14 @@ const AssignmentDetails = () => {
   if (isError || !assignment) {
     return (
       <PageContainer>
-        <ErrorMessage>Failed to load assignment details</ErrorMessage>
+        <ErrorMessage>Помилка завантаження завдання</ErrorMessage>
       </PageContainer>
     );
   }
 
   return (
     <PageContainer>
-      <AssignmentDescription assignment={assignment}/>
+      <AssignmentDescription assignment={assignment} isStudent={isStudent}/>
       <AssignmentCriteria assignmentId={assignment.id}/>
       {isStudent && (
         <AssignmentSubmission

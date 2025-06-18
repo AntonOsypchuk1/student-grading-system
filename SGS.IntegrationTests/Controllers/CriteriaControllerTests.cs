@@ -7,17 +7,17 @@ using SGS.IntegrationTests.TestData;
 
 namespace SGS.IntegrationTests.Controllers;
 
-public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
+public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests
 {
+    private readonly HttpClient _client = factory.CreateClient();
+    
     private const string BaseUrl = "/api/criteria";
 
     [Fact]
     public async Task GetCriteria_WithValidId_ReturnsCriteria()
     {
-        TestContext.SimulationAuthorizedContext();
-        
         // Act
-        var response = await Client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidCriteria}");
+        var response = await _client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidCriteria}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -30,13 +30,11 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task GetCriteria_WithInvalidId_ReturnsNotFound()
     {
-        TestContext.SimulationAuthorizedContext();
-        
         // Arrange
         var invalidId = Guid.NewGuid();
 
         // Act
-        var response = await Client.GetAsync($"{BaseUrl}/{invalidId}");
+        var response = await _client.GetAsync($"{BaseUrl}/{invalidId}");
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -45,12 +43,9 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task GetAllCriteria_ReturnsAllCriteria()
     {
-        TestContext.SimulationAuthorizedContext();
-        
-        // Act
-        var response = await Client.GetAsync($"{BaseUrl}/all");
+        await AuthenticateAsTeacher(_client);
+        var response = await _client.GetAsync($"{BaseUrl}/all");
 
-        // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var criteria = await response.Content.ReadFromJsonAsync<IEnumerable<GradingCriteriaDto>>();
         Assert.NotNull(criteria);
@@ -60,10 +55,9 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task CreateCriteria_AsTeacher_ReturnsCreated()
     {
-        TestContext.SimulationAuthorizedContext();
+        await AuthenticateAsTeacher(_client);
         
         // Arrange
-        await AuthenticateAsTeacher();
         var command = new CreateGradingCriteriaCommand
         {
             Title = "New Test Criteria",
@@ -74,7 +68,7 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
         };
 
         // Act
-        var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
+        var response = await _client.PostAsJsonAsync($"{BaseUrl}/create", command);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -86,9 +80,6 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task CreateCriteria_WithoutAuth_ReturnsUnauthorized()
     {
-        TestContext.SimulateUnauthorizedScope();
-        
-        // Arrange
         var command = new CreateGradingCriteriaCommand
         {
             Title = "Unauthorized Criteria",
@@ -98,10 +89,12 @@ public class CriteriaControllerTests(CustomWebApplicationFactory<Program> factor
             AssignmentId = TestDataSeeder.GuidAssignment
         };
 
-        // Act
-        var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
+        HttpResponseMessage response;
+        using (TestContext.SimulateUnauthorizedScope())
+        {
+            response = await _client.PostAsJsonAsync($"{BaseUrl}/create", command);
+        }
 
-        // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }

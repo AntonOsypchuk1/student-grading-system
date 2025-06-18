@@ -7,18 +7,19 @@ using SGS.IntegrationTests.TestData;
 
 namespace SGS.IntegrationTests.Controllers;
 
-public class AssignmentControllerTests(CustomWebApplicationFactory<Program> factory)
-    : BaseControllerTests(factory)
+public class AssignmentControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests
 {
+    private readonly HttpClient _client = factory.CreateClient();
+    
     private const string BaseUrl = "/api/assignments";
 
     [Fact]
     public async Task GetAssignmentById_WithValidId_ReturnsAssignment()
     {
-        TestContext.SimulationAuthorizedContext();
+        await AuthenticateAsTeacher(_client);
         
         // Act
-        var response = await Client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidAssignment}");
+        var response = await _client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidAssignment}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -27,12 +28,13 @@ public class AssignmentControllerTests(CustomWebApplicationFactory<Program> fact
         Assert.Equal("Algebra Test", assignment.Title);
     }
 
-
     [Fact]
     public async Task GetAssignmentsByGroup_WithValidGroupId_ReturnsAssignments()
     {
+        await AuthenticateAsTeacher(_client);
+        
         // Act
-        var response = await Client.GetAsync($"{BaseUrl}/group/{TestDataSeeder.GuidGroup}");
+        var response = await _client.GetAsync($"{BaseUrl}/group/{TestDataSeeder.GuidGroup}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -45,8 +47,10 @@ public class AssignmentControllerTests(CustomWebApplicationFactory<Program> fact
     [Fact]
     public async Task CreateAssignment_AsTeacher_ReturnsCreated()
     {
+        await AuthenticateAsTeacher(_client);
+        TestAuthHandler.CurrentRole = "Teacher";
+        
         // Arrange
-        await AuthenticateAsTeacher();
         var command = new CreateAssignmentCommand
         {
             GroupId = TestDataSeeder.GuidGroup,
@@ -58,23 +62,18 @@ public class AssignmentControllerTests(CustomWebApplicationFactory<Program> fact
         };
 
         // Act
-        var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
+        var response = await _client.PostAsJsonAsync($"{BaseUrl}/create", command);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var assignment = await response.Content.ReadFromJsonAsync<AssignmentDto>();
         Assert.NotNull(assignment);
         Assert.Equal(command.Title, assignment.Title);
-
-        Dispose();
     }
-
 
     [Fact]
     public async Task CreateAssignment_WithoutAuth_ReturnsUnauthorized()
     {
-        TestContext.SimulateUnauthorizedScope();
-            
         // Arrange
         var command = new CreateAssignmentCommand
         {
@@ -87,7 +86,11 @@ public class AssignmentControllerTests(CustomWebApplicationFactory<Program> fact
         };
 
         // Act
-        var response = await Client.PostAsJsonAsync($"{BaseUrl}/create", command);
+        HttpResponseMessage response;
+        using (TestContext.SimulateUnauthorizedScope())
+        {
+            response = await _client.PostAsJsonAsync($"{BaseUrl}/create", command);
+        }
 
         // Assert
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);

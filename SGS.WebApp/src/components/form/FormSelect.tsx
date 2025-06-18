@@ -13,6 +13,7 @@ interface FormSelectProps {
   register: UseFormRegister<any>;
   rules?: RegisterOptions;
   errors: FieldErrors;
+  defaultValue?: string;
 }
 
 const SelectWrapper = styled.div`
@@ -39,16 +40,16 @@ const StyledSelect = styled.select<{ hasError: boolean }>`
     appearance: none;
     background-color: ${props => props.theme.colors.white};
     border: 1px solid ${props => props.hasError ?
-  props.theme.colors.danger :
-  props.theme.colors.gray[300]};
+            props.theme.colors.danger :
+            props.theme.colors.gray[300]};
     transition: all ${props => props.theme.transitions.default};
     box-shadow: ${props => props.theme.shadows.sm};
 
     &:focus {
         outline: none;
         box-shadow: 0 0 0 2px ${props => props.hasError ?
-  `${props.theme.colors.danger}33` :
-  `${props.theme.colors.primary}33`};
+                `${props.theme.colors.danger}33` :
+                `${props.theme.colors.primary}33`};
     }
 `;
 
@@ -74,6 +75,7 @@ export function FormSelect({
                              register,
                              rules,
                              errors,
+                             defaultValue
                            }: FormSelectProps) {
   return (
     <SelectWrapper>
@@ -85,7 +87,11 @@ export function FormSelect({
         >
           <option value="">Виберіть варіант</option>
           {options.map((option) => (
-            <option key={option.value} value={option.value}>
+            <option
+              key={option.value}
+              value={option.value}
+              selected={option.value === defaultValue}
+            >
               {option.label}
             </option>
           ))}

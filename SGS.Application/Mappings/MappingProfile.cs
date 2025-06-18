@@ -116,7 +116,7 @@ public class MappingProfile : Profile
     {
         CreateMap<Assignment, AssignmentDto>();
         CreateMap<CreateAssignmentCommand, Assignment>();
-        CreateMap<UpdateAssignmentDto, Assignment>()
+        CreateMap<UpdateAssignmentCommand, Assignment>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
     }
 
@@ -124,6 +124,7 @@ public class MappingProfile : Profile
     {
         CreateMap<GradingCriteria, GradingCriteriaDto>();
         CreateMap<CreateGradingCriteriaCommand, GradingCriteria>();
+        CreateMap<UpdateGradingCriteriaCommand, GradingCriteria>();
         CreateMap<CreateGradingCriteriaBatchCommand, List<GradingCriteria>>()
             .ConvertUsing((src, dest, ctx) =>
                 ctx.Mapper.Map<List<GradingCriteria>>(src.Criteria)

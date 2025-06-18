@@ -75,6 +75,7 @@ interface FormInputProps {
   max?: string | number;
   rows?: number;
   style?: React.CSSProperties;
+  defaultValue?: string | number;
 }
 
 export function FormInput({
@@ -89,7 +90,8 @@ export function FormInput({
                             min,
                             max,
                             rows,
-                            style
+                            style,
+                            defaultValue
                           }: FormInputProps) {
   const renderInput = () => {
     switch (type) {
@@ -105,6 +107,7 @@ export function FormInput({
             min={min}
             max={max}
             style={style}
+            value={defaultValue}
           />
         );
       case 'textarea':
@@ -116,6 +119,7 @@ export function FormInput({
             hasError={Boolean(errors[name])}
             rows={rows}
             style={style}
+            value={defaultValue}
           />
         );
       default:
@@ -127,6 +131,7 @@ export function FormInput({
             placeholder={placeholder}
             hasError={Boolean(errors[name])}
             style={style}
+            value={defaultValue}
           />
         );
     }

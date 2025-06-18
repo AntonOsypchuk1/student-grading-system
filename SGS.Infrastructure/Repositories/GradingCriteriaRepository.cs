@@ -45,4 +45,19 @@ public class GradingCriteriaRepository(AppDbContext context)
 
         await Context.GradingCriteria.AddRangeAsync(criteriaList, cancellationToken);
     }
+
+    public Task UpdateCriteriaBatchAsync(IEnumerable<GradingCriteria> criteriaList, CancellationToken cancellationToken = default)
+    {
+        if (criteriaList == null || !criteriaList.Any())
+            throw new ArgumentException("Criteria list cannot be null or empty");
+
+        foreach (var criteria in criteriaList)
+        {
+            if (string.IsNullOrEmpty(criteria.Description))
+                throw new ArgumentException($"Criteria for assignment {criteria.AssignmentId} must have a description");
+        }
+
+        Context.GradingCriteria.UpdateRange(criteriaList);
+        return Context.SaveChangesAsync(cancellationToken);
+    }
 }

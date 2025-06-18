@@ -46,7 +46,7 @@ export const AnalysisResults = ({analysis}: AnalysisResultsProps) => {
     <AnalysisContainer>
       <h2>Результат аналізу</h2>
       <GradeSection>
-        <Grade>{analysis.grade?.generatedGrade}</Grade>
+        <Grade>{analysis.grade?.editedGrade ?? analysis.grade?.generatedGrade}</Grade>
         <div>
           <div style={{fontSize: '0.875rem', color: '#666'}}>
             Проаналізовано: {new Date(analysis.createdAt).toLocaleDateString()}
@@ -57,8 +57,16 @@ export const AnalysisResults = ({analysis}: AnalysisResultsProps) => {
       <FeedbackSection>
         <h3>Результат</h3>
         <p>{analysis.generatedSummary}</p>
-        <p>{analysis.strengths}</p>
-        <p>{analysis.areasForImprovement}</p>
+        <br/>
+        <h3>Сильні сторони</h3>
+        <ul>{analysis.strengths.map(s => (
+          <li key={s}>{s}</li>
+        ))}</ul>
+        <br/>
+        <h3>Області для покращення</h3>
+        <ul>{analysis.areasForImprovement.map(a => (
+          <li key={a}>{a}</li>
+        ))}</ul>
       </FeedbackSection>
     </AnalysisContainer>
   );

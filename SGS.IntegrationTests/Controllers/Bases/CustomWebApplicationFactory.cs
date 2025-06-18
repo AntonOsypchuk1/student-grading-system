@@ -54,7 +54,7 @@ public class CustomWebApplicationFactory<TStartup>
             services.RemoveAll<AuthenticationSchemeOptions>();
             
             services.AddScoped<ITokenService, JwtTokenService>();
-            
+
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = "Test";

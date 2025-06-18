@@ -103,6 +103,7 @@ export const SidebarItem = styled.li<{ isActive: boolean }>`
 
 export const MainContent = styled.main`
     height: 78vh;
+    overflow: auto;
 `;
 
 export const FallbackItem = styled.div`

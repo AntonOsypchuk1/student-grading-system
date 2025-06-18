@@ -8,14 +8,18 @@ using SGS.IntegrationTests.TestData;
 
 namespace SGS.IntegrationTests.Controllers;
 
-public class DocumentControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests(factory)
+public class DocumentControllerTests(CustomWebApplicationFactory<Program> factory) : BaseControllerTests
 {
+    private readonly HttpClient _client = factory.CreateClient();
+    
     private const string BaseUrl = "/api/documents";
 
     [Fact]
     public async Task UploadDocument_ReturnsDocumentDto()
     {
-        await AuthenticateAsTeacher();
+        // TestContext.SimulationAuthorizedContext();
+        await AuthenticateAsStudent(_client);
+
         // Arrange
         var multipartContent = new MultipartFormDataContent();
 
@@ -28,7 +32,7 @@ public class DocumentControllerTests(CustomWebApplicationFactory<Program> factor
         multipartContent.Add(new StringContent(TestDataSeeder.GuidAssignment.ToString()), "AssignmentId");
 
         // Act
-        var response = await Client.PostAsync($"{BaseUrl}/upload", multipartContent);
+        var response = await _client.PostAsync($"{BaseUrl}/upload", multipartContent);
 
         // Assert
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -46,10 +50,11 @@ public class DocumentControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task GetDocumentById_WithValidId_ReturnsDocument()
     {
-        TestContext.SimulationAuthorizedContext();
+        // TestContext.SimulationAuthorizedContext();
+        await AuthenticateAsStudent(_client);
         
         // Act
-        var response = await Client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidDocument}");
+        var response = await _client.GetAsync($"{BaseUrl}/{TestDataSeeder.GuidDocument}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -62,10 +67,11 @@ public class DocumentControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task GetDocumentsByAssignment_ReturnsDocuments()
     {
-        TestContext.SimulationAuthorizedContext();
+        // TestContext.SimulationAuthorizedContext();
+        await AuthenticateAsStudent(_client);
         
         // Act
-        var response = await Client.GetAsync($"{BaseUrl}/assignment/{TestDataSeeder.GuidAssignment}");
+        var response = await _client.GetAsync($"{BaseUrl}/assignment/{TestDataSeeder.GuidAssignment}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -77,10 +83,11 @@ public class DocumentControllerTests(CustomWebApplicationFactory<Program> factor
     [Fact]
     public async Task GetDocumentsByUser_ReturnsDocuments()
     {
-        TestContext.SimulationAuthorizedContext();
+        // TestContext.SimulationAuthorizedContext();
+        await AuthenticateAsStudent(_client);
         
         // Act
-        var response = await Client.GetAsync($"{BaseUrl}/user/{TestDataSeeder.GuidStudent}");
+        var response = await _client.GetAsync($"{BaseUrl}/user/{TestDataSeeder.GuidStudent}");
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

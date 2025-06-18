@@ -9,14 +9,19 @@ namespace SGS.Infrastructure.Repositories;
 public class AssignmentRepository(AppDbContext context)
     : BaseRepository<Assignment>(context), IAssignmentRepository
 {
+    public override Task<Assignment?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Context.Assignments
+            .Include(a => a.GradingCriteria)
+            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+    }
+
     public async Task<IEnumerable<Assignment>> GetByGroupIdAndCourseIdAsync(Guid groupId, Guid courseId,
         CancellationToken cancellationToken = default)
     {
-        var assignments = await Context.Assignments
+        return await Context.Assignments
             .Where(a => a.GroupId == groupId && a.CourseId == courseId)
             .ToListAsync(cancellationToken);
-        
-        return assignments;
     }
     
     public async Task AddAssignmentAsync(Assignment assignment, CancellationToken cancellationToken = default)
