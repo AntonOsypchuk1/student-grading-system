@@ -4,9 +4,9 @@
 
 ---
 
-## 📂 Структура репозиторію
+## Структура репозиторію
 
-/
+```/
 ├── SGS/ # ASP.NET Core Web API
 │ ├── Tests/
 │ │ ├── SGS.IntegrationTests/
@@ -34,7 +34,7 @@
 │ │ ├── Prompts # Опис промтів
 │ │ ├── Services # Сервіси створення кернелів
 │ │ └── SemanticAnalysisModule.cs
-├── Client/ # React + Vite фронтенд
+├── SGS.Web/ # React + Vite фронтенд
 │ ├── src/
 │ │ ├── api/ # Axios-клієнт
 │ │ ├── hooks/ # React-Query hooks
@@ -44,22 +44,23 @@
 │ │ ├── context/ # Конекст для навігації
 │ │ └── App.tsx # Основний Router
 │ └── vite.config.ts # Проксі налаштування для /api
-
+```
 ---
 
-## 🚀 Початок роботи
+## Початок роботи
 
 ### 1. Передумови
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download)
 - [Node.js 18+ & npm](https://nodejs.org/)
-- PostgreSQL 14+
+- [PostgreSQL 14+](https://www.postgresql.org/download/)
+- Для роботи AI модуля [AzureOpenAI](https://ai.azure.com/) (або будь-який інший ресурс), чи локально розгортати AI модель (наприклад, [Ollama](https://ollama.com/search))
 - (опціонально) Azure Blob Storage або локальний диск
 
 ### 2. Клонування
 
 ```bash
-git clone https://github.com/your-org/student-grading-system.git
+git clone https://git.ztu.edu.ua/ipz/2021-2025/ipz-21-3/anton-osypchuk/student-grading-system.git
 cd student-grading-system
 ```
 
@@ -86,15 +87,15 @@ cd student-grading-system
   },
   "Storage": {
     "Provider": "Disk",
-    "BasePath": "Storage"
+    "BasePath": "<path-to-store-files>"
   }
 }
 ```
 
-Виконайте міграції та заліть БД:
+Виконайте міграції БД:
 
 ```bash
-cd Server
+cd SGS.Infrastructure/
 dotnet ef database update
 ```
 
@@ -121,7 +122,7 @@ npm run dev
 
 Відкрийте у браузері http://localhost:5173.
 
-#Основні технології
+## Основні технології
 Backend:
 - ASP.NET Core Web API
 - Entity Framework Core (Repository + Unit of Work)
@@ -140,23 +141,23 @@ Frontend:
 - xUnit + Moq (юніт-тести)
 - WebApplicationFactory (інтеграційні тести)
 
-Юніт-тести
+Юніт-тести:
 ```bash
-cd Tests/Unit
+cd Tests/SGS.ServicesTests/
 dotnet test
 ```
 
-Інтеграційні тести
+Інтеграційні тести:
 ```bash
-cd Tests/Integration
+cd Tests/SGS.IntegrationTests/
 dotnet test
 ```
 
-Тести SemanticAnalysis модулю
+Тести SemanticAnalysis модулю:
 ```bash
-cd Tests/Integration
+cd Tests/SGS.SemanticAnalysisTests/
 dotnet test
 ```
 
-📜 Ліцензія
-MIT © Осипчук Антон Олексійович
+Ліцензія
+[MIT © Осипчук Антон Олексійович](https://git.ztu.edu.ua/ipz/2021-2025/ipz-21-3/anton-osypchuk/student-grading-system/-/blob/0aaedaa2e4bc5825857a4c40e59de0013de5b946/LICENSE)
