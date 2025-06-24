@@ -130,12 +130,6 @@ public class SemanticAnalysisTestFixture : IDisposable
             ["Logging:LogLevel:System"] = "Information",
             ["Logging:LogLevel:Microsoft"] = "Information"
         };
-        // "SemanticKernelSettings": {
-        //     "Endpoint": "https://anash-mbfbu24s-eastus2.cognitiveservices.azure.com/",
-        //     "ApiKey": "ChpQosXsxaSNOp3Kejtd2JcKKuu7tNKovsEJd2dDnpjxIiUoRErzJQQJ99BFACHYHv6XJ3w3AAAAACOGXT9F",
-        //     "DeploymentName": "gpt-4.1",
-        //     "Language": "en"
-        // }
     }
 
     /// <summary>
