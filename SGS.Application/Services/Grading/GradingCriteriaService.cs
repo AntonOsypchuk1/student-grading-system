@@ -4,8 +4,7 @@ using SGS.Application.DTOs;
 using SGS.Application.Interfaces;
 using SGS.Application.Models;
 using SGS.Domain.Entities;
-using SGS.Domain.Enums;
-using SGS.Infrastructure.Repositories.UnitOfWork;
+using SGS.DbContext.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services.Grading;
 
@@ -105,7 +104,7 @@ public class GradingCriteriaService(
         try
         {
             var criteriaList = await UnitOfWork.GradingCriteria.GetAllAsync(cancellationToken);
-            Logger.LogInformation("Successfully retrieved {Count} grading criteria", 
+            Logger.LogInformation("Successfully retrieved {Count} grading criteria",
                 criteriaList.Count());
 
             return Result<IEnumerable<GradingCriteriaDto>>.Success(Mapper.Map<IEnumerable<GradingCriteriaDto>>(criteriaList));
@@ -125,7 +124,7 @@ public class GradingCriteriaService(
         try
         {
             var criteria = await UnitOfWork.GradingCriteria.GetByAssignmentIdAsync(assignmentId, cancellationToken);
-            Logger.LogInformation("Successfully retrieved {Count} criteria for assignment: {AssignmentId}", 
+            Logger.LogInformation("Successfully retrieved {Count} criteria for assignment: {AssignmentId}",
                 criteria.Count(), assignmentId);
 
             return Result<IEnumerable<GradingCriteriaDto>>.Success(Mapper.Map<IEnumerable<GradingCriteriaDto>>(criteria));

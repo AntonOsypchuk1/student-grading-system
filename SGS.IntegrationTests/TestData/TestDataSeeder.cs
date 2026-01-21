@@ -1,6 +1,6 @@
+using SGS.DbContext.Data;
 using SGS.Domain.Entities;
 using SGS.Domain.Enums;
-using SGS.Infrastructure.Data;
 
 namespace SGS.IntegrationTests.TestData;
 
@@ -15,7 +15,7 @@ public static class TestDataSeeder
     public static readonly Guid GuidAssignment = Guid.Parse("00000000-0000-0000-0000-000000000006");
     public static readonly Guid GuidDocument = Guid.Parse("00000000-0000-0000-0000-000000000007");
     public static readonly Guid GuidCriteria = Guid.Parse("00000000-0000-0000-0000-000000000008");
-    
+
     // Static properties for entity references
     public static User TeacherUser { get; private set; }
     public static User Student { get; private set; }
@@ -25,7 +25,7 @@ public static class TestDataSeeder
     public static Assignment Assignment { get; private set; }
     public static Document Document { get; private set; }
     public static GradingCriteria Criteria { get; private set; }
-    
+
     // Track if the seeder has been initialized
     private static bool _isInitialized;
     private static readonly object _lockObj = new();
@@ -38,22 +38,22 @@ public static class TestDataSeeder
         lock (_lockObj)
         {
             if (_isInitialized) return;
-            
+
             // Only seed if no users exist
             bool needSeeding = !context.Users.Any();
-            
+
             if (needSeeding)
             {
                 SeedDatabase(context);
             }
-            
+
             // Load entity references regardless if we just seeded
             LoadEntityReferences(context);
-            
+
             _isInitialized = true;
         }
     }
-    
+
     private static void SeedDatabase(AppDbContext context)
     {
         // Create teacher and student
@@ -67,7 +67,7 @@ public static class TestDataSeeder
             Role = UserRole.Teacher
         };
         var teacher = new Teacher { Id = GuidTeacher, UserId = TeacherUser.Id, Courses = [] };
-        
+
         Student = new User
         {
             Id = GuidStudent,
@@ -87,7 +87,7 @@ public static class TestDataSeeder
         // Insert group
         Group = new StudentsGroup
         {
-            Id = GuidGroup, 
+            Id = GuidGroup,
             Name = "Group A",
             Description = "Group A Description",
             Year = 2023,
@@ -155,7 +155,7 @@ public static class TestDataSeeder
         context.GradingCriteria.Add(Criteria);
         context.SaveChanges();
     }
-    
+
     private static void LoadEntityReferences(AppDbContext context)
     {
         // Load all entity references from the database
@@ -168,12 +168,12 @@ public static class TestDataSeeder
         Document = context.Documents.FirstOrDefault(d => d.Id == GuidDocument);
         Criteria = context.GradingCriteria.FirstOrDefault(c => c.Id == GuidCriteria);
     }
-    
+
     /// <summary>
     /// Creates and adds a new test assignment to the database.
     /// </summary>
     public static async Task<Assignment> CreateTestAssignmentAsync(
-        AppDbContext context, 
+        AppDbContext context,
         string title = "Test Assignment",
         string description = "Test Description")
     {
@@ -187,13 +187,13 @@ public static class TestDataSeeder
             MaxAttempts = 3,
             DueDate = DateTime.UtcNow.AddDays(7)
         };
-        
+
         context.Assignments.Add(assignment);
         await context.SaveChangesAsync();
-        
+
         return assignment;
     }
-    
+
     /// <summary>
     /// Creates a test document
     /// </summary>
@@ -213,12 +213,12 @@ public static class TestDataSeeder
             FilePath = $"/uploads/{fileName}",
             UploadedAt = DateTime.UtcNow
         };
-        
+
         context.Documents.Add(document);
         await context.SaveChangesAsync();
-        
+
         return document;
     }
-    
+
     // Add more helper methods for other entity types as needed
 }

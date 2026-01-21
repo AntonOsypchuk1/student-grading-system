@@ -4,8 +4,8 @@ using Moq;
 using SGS.Application.Interfaces;
 using SGS.Application.Services.Document;
 using SGS.Domain.Entities;
-using SGS.Infrastructure.Repositories.Interfaces;
-using SGS.Infrastructure.Repositories.UnitOfWork;
+using SGS.DbContext.Repositories.Interfaces;
+using SGS.DbContext.Repositories.UnitOfWork;
 using System.Text;
 
 namespace SGS.ServicesTests.Documents
@@ -29,7 +29,7 @@ namespace SGS.ServicesTests.Documents
                 _loggerMock.Object,
                 _mapperMock.Object
             );
-            
+
             // Setup test directory and files
             _testFilesPath = Path.Combine(Path.GetTempPath(), "SGS_DocumentService_Tests");
             Directory.CreateDirectory(_testFilesPath);
@@ -44,7 +44,7 @@ namespace SGS.ServicesTests.Documents
             var filePath = "test_document.txt";
             var expectedContent = "This is a real test document for document service testing.\r\nIt has multiple lines to ensure proper extraction.";
             var document = new Document { Id = documentId, FilePath = filePath };
-            
+
             var txtBytes = File.ReadAllBytes(Path.Combine(_testFilesPath, "test_document.txt"));
 
             var documentRepositoryMock = new Mock<IDocumentRepository>();
@@ -52,11 +52,11 @@ namespace SGS.ServicesTests.Documents
                 .ReturnsAsync(document);
 
             _unitOfWorkMock.Setup(x => x.Documents).Returns(documentRepositoryMock.Object);
-            
+
             // Instead of trying to mock the extension method, mock the underlying methods
             _fileStorageServiceMock.Setup(x => x.GetFileAsync(filePath, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(txtBytes);
-                
+
             _extractionManagerMock.Setup(x => x.ExtractTextAsync(filePath, txtBytes, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedContent);
 
@@ -78,7 +78,7 @@ namespace SGS.ServicesTests.Documents
             var documentId = Guid.NewGuid();
             var filePath = "test_document.txt";
             var document = new Document { Id = documentId, FilePath = filePath };
-            
+
             var expectedBytes = File.ReadAllBytes(Path.Combine(_testFilesPath, "test_document.txt"));
 
             var documentRepositoryMock = new Mock<IDocumentRepository>();
@@ -97,20 +97,20 @@ namespace SGS.ServicesTests.Documents
             Assert.Equal(expectedBytes, result.Data);
             _unitOfWorkMock.Verify(x => x.Documents.GetByIdAsync(documentId, It.IsAny<CancellationToken>()), Times.Once);
             _fileStorageServiceMock.Verify(x => x.GetFileAsync(filePath, It.IsAny<CancellationToken>()), Times.Once);
-            
+
             // Verify we can convert the bytes back to the original text
             var retrievedText = Encoding.UTF8.GetString(result.Data);
             Assert.Contains("This is a real test document", retrievedText);
         }
-        
+
         // Keep the existing tests...
-        
+
         [Fact]
         public async Task GetDocumentContentTextAsync_WhenDocumentDoesNotExist_ShouldReturnFailure()
         {
             // Arrange
             var documentId = Guid.NewGuid();
-            
+
             var documentRepositoryMock = new Mock<IDocumentRepository>();
             documentRepositoryMock.Setup(x => x.GetByIdAsync(documentId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Document)null!);
@@ -153,18 +153,18 @@ namespace SGS.ServicesTests.Documents
             _fileStorageServiceMock.Verify(x => x.DeleteFileAsync(filePath, It.IsAny<CancellationToken>()), Times.Once);
             documentRepositoryMock.Verify(x => x.Delete(document), Times.Once);
         }
-        
+
         // Create test files that our tests will use
         private void CreateTestFiles()
         {
             // Create a TXT test document
             string txtContent = "This is a real test document for document service testing.\r\nIt has multiple lines to ensure proper extraction.";
             File.WriteAllText(Path.Combine(_testFilesPath, "test_document.txt"), txtContent);
-            
+
             // Here you could also create a PDF test file if needed
             // For comprehensive testing, we should have a real small PDF file in test resources
         }
-        
+
         // Clean up test files after all tests run
         public void Dispose()
         {

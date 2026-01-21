@@ -5,7 +5,7 @@ using SGS.Application.Interfaces;
 using SGS.Application.Models;
 using SGS.Domain.Entities;
 using SGS.Domain.Enums;
-using SGS.Infrastructure.Repositories.UnitOfWork;
+using SGS.DbContext.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services.User;
 

@@ -4,7 +4,7 @@ using SGS.Application.DTOs;
 using SGS.Application.Extensions;
 using SGS.Application.Interfaces;
 using SGS.Application.Models;
-using SGS.Infrastructure.Repositories.UnitOfWork;
+using SGS.DbContext.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services.Document;
 

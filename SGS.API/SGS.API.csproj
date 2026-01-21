@@ -33,7 +33,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\SGS.Application\SGS.Application.csproj"/>
-        <ProjectReference Include="..\SGS.Infrastructure\SGS.Infrastructure.csproj"/>
+        <ProjectReference Include="..\SGS.DbContext\SGS.DbContext.csproj" />
+        <ProjectReference Include="..\SGS.SemanticAnalysis.Client\SGS.SemanticAnalysis.Client.csproj" />
     </ItemGroup>
 
 </Project>

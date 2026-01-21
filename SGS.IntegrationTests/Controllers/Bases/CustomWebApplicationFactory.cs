@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using SGS.API.Services;
 using SGS.API.Settings;
 using SGS.Application.Interfaces;
-using SGS.Infrastructure.Data;
+using SGS.DbContext.Data;
 using SGS.IntegrationTests.Controllers.Helpers;
 using SGS.IntegrationTests.TestData;
 
@@ -20,7 +20,7 @@ public class CustomWebApplicationFactory<TStartup>
     protected override IHost CreateHost(IHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
-        
+
         builder.ConfigureAppConfiguration((context, configBuilder) =>
         {
             var testConfig = new Dictionary<string, string>
@@ -39,7 +39,7 @@ public class CustomWebApplicationFactory<TStartup>
         builder.ConfigureServices(services =>
         {
             services.AddOptions();
-        
+
             services.Configure<JwtSettings>(options =>
             {
                 options.Secret = "test-secret-key-for-development-environment-only-12345";
@@ -52,7 +52,7 @@ public class CustomWebApplicationFactory<TStartup>
             services.RemoveAll<JwtBearerHandler>();
             services.RemoveAll<JwtBearerOptions>();
             services.RemoveAll<AuthenticationSchemeOptions>();
-            
+
             services.AddScoped<ITokenService, JwtTokenService>();
 
             services.AddAuthentication(options =>
@@ -65,7 +65,7 @@ public class CustomWebApplicationFactory<TStartup>
             services.AddAuthorizationBuilder()
                 .AddPolicy("RequireTeacherRole", policy => policy.RequireRole("Teacher"))
                 .AddPolicy("RequireStudentRole", policy => policy.RequireRole("Student"));
-            
+
             var sp = services.BuildServiceProvider();
 
             using var scope = sp.CreateScope();
@@ -75,7 +75,7 @@ public class CustomWebApplicationFactory<TStartup>
 
             TestDataSeeder.Seed(db);
         }).UseEnvironment("Testing");
-        
+
         return base.CreateHost(builder);
     }
 }
