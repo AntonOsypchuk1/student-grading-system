@@ -23,7 +23,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddApplication(builder.Configuration);
-builder.Services.AddSemanticKernel(builder.Configuration);
+builder.Services.AddSemanticAnalysisClient(builder.Configuration);
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
