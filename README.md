@@ -24,12 +24,14 @@
 │ ├── SGS.Domain/
 │ │ ├── Entities/ # Основні сутності бази даних
 │ │ └── Enums/
-│ ├── SGS.Infrastructure/ # Репозиторії + Unit of Work
-│ │ ├── Migrations # EF Core міграції
-│ │ ├── Interfaces
-│ │ ├── Repositories # Репозиторії для EF
-│ │ └── InfrastructureModule.cs
-│ ├── SGS.SemanticAnalysis/ # AI-модуль на базі Semantic Kernel
+│ ├── SGS.Infrastructure/
+│ │ ├── SGS.DbContext/ # Репозиторії + Unit of Work
+│ │ │ ├── Migrations # EF Core міграції
+│ │ │ ├── Interfaces
+│ │ │ ├── Repositories # Репозиторії для EF
+│ │ │ └── InfrastructureModule.cs
+│ │ └── SGS.SemanticAnalysis.Client/  Підключення до gRPC сервісу
+│ ├── SGS.SemanticAnalysis.Service/ # gRPC сервіс, AI-модуль на базі Semantic Kernel
 │ │ ├── Kernels # Конфігурація Semantic Kernel
 │ │ ├── Prompts # Опис промтів
 │ │ ├── Services # Сервіси створення кернелів
@@ -79,17 +81,27 @@ cd student-grading-system
     "ExpirationMinutes": 15,
     "RefreshTokenExpirationDays": 7
   },
-  "SemanticKernelSettings": {
-    "Endpoint": "<your-azure-endpoint>",
-    "ApiKey": "<your-azure-key>",
-    "DeploymentName": "gpt-4",
-    "Language": "en"
+  "Auth": {
+    "Url": "grpc://localhost:5042",
+    "ApiKey": "123"
   },
   "Storage": {
     "Provider": "Disk",
     "BasePath": "<path-to-store-files>"
   }
 }
+```
+Також, не забудьте додати відповідні налаштування в оновлений gRPC сервіс SemanticAnalysis. Наразі тут використано авторизацію за допомогою Api Key, тому переконайтесь що в обох проєктах він однаковий:
+```json
+"SemanticKernelSettings": {
+    "Endpoint": "<your-azure-endpoint>",
+    "ApiKey": "<your-azure-key>",
+    "DeploymentName": "gpt-4",
+    "Language": "en"
+},
+"Auth": {
+    "ApiKey": "123"
+},
 ```
 
 Виконайте міграції БД:
@@ -99,7 +111,7 @@ cd SGS.Infrastructure/
 dotnet ef database update
 ```
 
-Запустіть API:
+Запустіть API основного проекту та gRPC сервісу (окремо):
 ```bash
 dotnet run
 ```
