@@ -7,13 +7,13 @@ using SGS.Application.Interfaces;
 using SGS.Application.Models;
 using SGS.Application.Services.Analysis;
 using SGS.Domain.Entities;
-using SGS.SemanticAnalysis.Services.Bases;
 using SGS.SemanticAnalysis.Settings;
 using SGS.SemanticAnalysis.Structures.PromptRequests;
 using SGS.SemanticAnalysis.Structures.PromptResponses;
 using SGS.SemanticAnalysisTests.Bases;
 using SGS.SemanticAnalysisTests.TestData;
 using Xunit.Abstractions;
+using IPromptServiceExecutor = SGS.SemanticAnalysis.Client.IPromptServiceExecutor;
 
 namespace SGS.SemanticAnalysisTests;
 
@@ -24,7 +24,7 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
     {
         Language = "ua" // Set the language option for the kernel settings
     });
-    
+
     private readonly SemanticAnalysisTestFixture _fixture;
     private readonly IPromptServiceExecutor _promptServiceExecutor;
     private readonly ILogger<SemanticAnalysisIntegrationTests> _logger;
@@ -37,13 +37,13 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
         //     Language = languageOption
         // };
         // _kernelSettings.Value.Language = languageOption;
-            
+
         _fixture = fixture;
         _output = output;
-        
+
         // Configure the fixture for this test run
         _fixture.ConfigureForTest(output);
-        
+
         // Get services from the fixture
         _promptServiceExecutor = _fixture.GetService<IPromptServiceExecutor>();
         _logger = _fixture.GetService<ILogger<SemanticAnalysisIntegrationTests>>();
@@ -93,7 +93,7 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
         Assert.NotNull(response);
         Assert.NotNull(response.CriteriaResults);
         Assert.Equal(request.Criteria.Count(), response.CriteriaResults.Count);
-            
+
         foreach (var result in response.CriteriaResults)
         {
             Assert.NotNull(result.Id);
@@ -169,14 +169,14 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
         // Assert
         Assert.NotNull(response);
         Assert.NotNull(response.CriteriaResults);
-            
+
         // Validate that scores are lower than for a good document
         // We expect scores to be lower, but can't guarantee exact scores since it depends on the AI model
         foreach (var result in response.CriteriaResults)
         {
             // Check that scores are below 70 for poor quality document
             Assert.True(result.Score < 70, $"Expected score below 70 for poor document, got {result.Score} for {result.Title}");
-                
+
             // Also verify that improvements list contains items
             Assert.True(result.Improvements.Count > 0, "Poor document should have suggested improvements");
         }
@@ -189,12 +189,11 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
         using var scope = _fixture.CreateScope();
         var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
         var aiServiceLogger = loggerFactory.CreateLogger<SemanticKernelAiService>();
-        
+
         // Arrange - Set up a mock document service and the real analysis service
         var mockDocumentService = new Mock<IDocumentService>();
-            
+
         var aiService = new SemanticKernelAiService(
-            _kernelSettings,
             _promptServiceExecutor,
             mockDocumentService.Object,
             aiServiceLogger
@@ -214,7 +213,7 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
         _logger.LogInformation("Starting end-to-end document analysis test");
         var result = await aiService.AnalyzeDocumentAsync(document, criteria);
         stopWatch.Stop();
-        
+
         // Log results
         _output.WriteLine($"Document analysis took {stopWatch.ElapsedMilliseconds / 1000} s");
         _output.WriteLine($"Document analysis result:");
@@ -265,7 +264,7 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
         Assert.NotNull(response);
         Assert.NotNull(response.CriteriaResults);
         Assert.Equal(request.Criteria.Count(), response.CriteriaResults.Count);
-            
+
         // Verify that the API documentation criterion was properly evaluated
         var apiDocsResult = response.CriteriaResults.FirstOrDefault(r => r.Title.Contains("API Documentation"));
         Assert.NotNull(apiDocsResult);
@@ -303,7 +302,7 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
         Assert.NotNull(response);
         Assert.NotNull(response.CriteriaResults);
         Assert.Equal(request.Criteria.Count(), response.CriteriaResults.Count);
-            
+
         // The longer document with proper structure should score reasonably well
         foreach (var result in response.CriteriaResults)
         {
@@ -311,7 +310,7 @@ public class SemanticAnalysisIntegrationTests : IClassFixture<SemanticAnalysisTe
             Assert.True(result.Score >= 70, $"Expected score of at least 70 for well-structured long document, got {result.Score} for {result.Title}");
         }
     }
-    
+
     private class TestResult<T>(bool isSuccess, T? data, string? error)
         : Result<T>(isSuccess, data, error);
 }

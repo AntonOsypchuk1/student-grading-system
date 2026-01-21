@@ -28,7 +28,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SGS.Application\SGS.Application.csproj" />
-      <ProjectReference Include="..\SGS.SemanticAnalysis\SGS.SemanticAnalysis.csproj" />
     </ItemGroup>
 
 </Project>

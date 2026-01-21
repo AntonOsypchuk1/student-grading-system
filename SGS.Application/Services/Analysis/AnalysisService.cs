@@ -5,12 +5,12 @@ using SGS.Application.Interfaces;
 using SGS.Application.Models;
 using SGS.Application.Services.Grading;
 using SGS.Domain.Entities;
-using SGS.Infrastructure.Repositories.UnitOfWork;
+using SGS.DbContext.Repositories.UnitOfWork;
 
 namespace SGS.Application.Services.Analysis;
 
 public class AnalysisService(
-    IAIService aiService,
+    IAiService aiService,
     IUnitOfWork unitOfWork,
     ILogger<GradingService> logger,
     IMapper mapper)

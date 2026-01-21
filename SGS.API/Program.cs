@@ -2,9 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using SGS.API.Extensions.Configurations;
 using SGS.API.Middleware;
 using SGS.Application;
-using SGS.Infrastructure;
-using SGS.Infrastructure.Data;
+using SGS.DbContext;
+using SGS.DbContext.Data;
 using SGS.SemanticAnalysis;
+using SGS.SemanticAnalysis.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +23,7 @@ if (!builder.Environment.IsEnvironment("Testing"))
 
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddApplication(builder.Configuration);
-builder.Services.AddSemanticKernel(builder.Configuration);
+builder.Services.AddSemanticAnalysisClient(builder.Configuration);
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();

@@ -34,7 +34,7 @@ public static class ApplicationModule
         services.AddScoped<IGradingCriteriaService, GradingCriteriaService>();
         services.AddScoped<IGradingService, GradingService>();
         services.AddScoped<IAnalysisService, AnalysisService>();
-        services.AddScoped<IAIService, SemanticKernelAiService>();
+        services.AddScoped<IAiService, SemanticKernelAiService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IStudentsGroupService, StudentsGroupService>();
 
@@ -63,7 +63,7 @@ public static class ApplicationModule
         {
             configuration.GetSection("Storage").Bind(options);
         });
-        
+
         var providerSettings = configuration.GetSection("Storage");
         var provider = providerSettings["Provider"] ?? "Disk";
 
@@ -76,14 +76,14 @@ public static class ApplicationModule
             services.AddSingleton<IFileStorageService, DiskFileStorageService>();
         }
     }
-    
+
     private static void AddDocumentServices(this IServiceCollection services)
     {
         services.AddSingleton<IDocumentTextExtractor, PdfDocumentTextExtractor>();
         services.AddSingleton<IDocumentTextExtractor, TxtDocumentTextExtractor>();
 
         services.AddSingleton<IDocumentTextExtractionManager, DocumentTextExtractionManager>();
-        
+
         services.AddScoped<IDocumentService, DocumentService>();
     }
 

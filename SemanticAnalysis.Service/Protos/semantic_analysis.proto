@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+option csharp_namespace = "SemanticAnalysis.Service.Protos";
+
+package semanticanalysis.v1;
+
+// Service for semantic analysis operations: evaluating criteria and generating summaries
+service SemanticAnalysisService {
+  // Evaluates a document against multiple criteria
+  rpc EvaluateCriteria(EvaluateCriteriaRequest) returns (EvaluateCriteriaResponse);
+
+  // Generates a comprehensive summary based on evaluation results
+  rpc GenerateSummary(GenerateSummaryRequest) returns (GenerateSummaryResponse);
+}
+
+// ==================== Evaluate Criteria Messages ====================
+
+// Request to evaluate a document against multiple criteria
+message EvaluateCriteriaRequest {
+  // The full text of the student's document
+  string document_text = 1;
+
+  // Collection of criteria to evaluate against
+  repeated CriterionInfoRequest criteria = 2;
+}
+
+message CriterionInfoRequest {
+  // Unique identifier for the criterion
+  string id = 1;
+
+  // Title of the criterion
+  string title = 2;
+
+  // Detailed description of the criterion requirements
+  string description = 3;
+
+  // Maximum possible grade for this criterion
+  double max_grade = 4;
+
+  // Weight of this criterion in the overall assessment (0-1)
+  double weight = 5;
+}
+
+// Response from evaluating a document against multiple criteria
+message EvaluateCriteriaResponse {
+  // Collection of individual criterion evaluation results
+  repeated CriterionResultResponse criteria_results = 1;
+}
+
+// Result of evaluating a single criterion
+message CriterionResultResponse {
+  // ID matching the criterion from the request
+  string id = 1;
+
+  // Title of the criterion
+  string title = 2;
+
+  // Numeric score assigned (0-100)
+  double score = 3;
+
+  // Weight of this criterion (copied from request)
+  double weight = 4;
+
+  // Detailed justification for the score
+  string justification = 5;
+
+  // Specific strengths identified in the submission for this criterion
+  repeated string strengths = 6;
+
+  // Areas needing improvement for this criterion
+  repeated string improvements = 7;
+}
+
+// ==================== Generate Summary Messages ====================
+
+// Request to generate a summary based on evaluation results
+message GenerateSummaryRequest {
+  // Combined results from all criteria evaluations
+  string evaluation_result = 1;
+
+  // Overall calculated score
+  double score = 2;
+
+  // The maximum possible score (typically 100)
+  double max_score = 3;
+}
+
+// Response containing the generated summary
+message GenerateSummaryResponse {
+  // Comprehensive summary of the evaluation
+  string summary = 1;
+
+  // Key strengths highlighted in the summary
+  repeated string strengths = 2;
+
+  // Key areas for improvement highlighted in the summary
+  repeated string improvements = 3;
+}

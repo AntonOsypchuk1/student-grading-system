@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Protobuf Include="..\SemanticAnalysis.Service\Protos\semantic_analysis.proto" GrpcServices="Client" Link="Protos\semantic_analysis.proto" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Grpc.Net.ClientFactory" Version="2.67.0" />
+        <PackageReference Include="Google.Protobuf" Version="3.29.3" />
+        <PackageReference Include="Grpc.Tools" Version="2.67.0" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.3" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SGS.Domain\SGS.Domain.csproj" />
+    </ItemGroup>
+
+</Project>
