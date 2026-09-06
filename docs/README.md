@@ -1,6 +1,4 @@
-# SGS Master Thesis Plan v2
-
-This package reorganizes the previous SGS / AIGradingService work into a single master-thesis direction.
+# SGS Master Thesis Plan
 
 ## Core thesis direction
 
@@ -9,8 +7,6 @@ This package reorganizes the previous SGS / AIGradingService work into a single 
 > Розробка адаптивного методу гібридного ШІ-оцінювання студентських робіт відкритого типу з оцінюванням ризику помилки
 
 ## Central idea
-
-The master thesis is not another feature for SGS and not another comparison of LLMs.
 
 The research contribution is an **adaptive evidence-fusion method** for grading different types of open-ended student work. The method combines multiple grading signals, estimates the risk of an incorrect AI recommendation, and routes uncertain cases to a teacher.
 
@@ -25,9 +21,3 @@ The research contribution is an **adaptive evidence-fusion method** for grading 
 7. `07_IMPLEMENTATION_ROADMAP.md` — practical sequence of work.
 8. `08_THESIS_STRUCTURE.md` — proposed structure of the final thesis.
 9. `09_ONE_PAGE_SUMMARY.md` — compact summary for discussion with a supervisor.
-
-## One-sentence summary
-
-The old work becomes a progression:
-
-**SGS product → AI-service reengineering → grading-method experiments → adaptive cross-domain grading with risk-aware human review.**

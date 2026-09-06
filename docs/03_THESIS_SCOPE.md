@@ -4,12 +4,6 @@
 
 > **Розробка адаптивного методу гібридного ШІ-оцінювання студентських робіт відкритого типу з оцінюванням ризику помилки**
 
-Alternative title:
-
-> **Адаптивний метод гібридного ШІ-оцінювання студентських робіт відкритого типу на основі комбінування різнорідних оцінювальних сигналів**
-
-The first version is preferable because it clearly includes the risk-estimation component.
-
 ---
 
 ## Problem statement
@@ -75,8 +69,6 @@ To develop and experimentally evaluate an adaptive hybrid grading method that co
 ---
 
 ## Expected scientific novelty
-
-Potential novelty should be claimed carefully and only after literature review.
 
 The intended contribution is:
 
