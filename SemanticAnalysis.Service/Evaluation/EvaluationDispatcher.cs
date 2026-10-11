@@ -6,6 +6,7 @@ public sealed class EvaluationDispatcher(IEnumerable<IEvaluationPipeline> pipeli
     {
         var pipeline = pipelines.SingleOrDefault(p => p.Name == request.Pipeline)
             ?? throw new ArgumentException("Unsupported evaluation pipeline.");
+        
         return pipeline.EvaluateAsync(request, cancellationToken);
     }
 }

@@ -8,6 +8,7 @@ public static class EvaluationModule
     public static IServiceCollection AddEvaluation(this IServiceCollection services)
     {
         services.AddHttpClient("GradingModel", client => client.Timeout = TimeSpan.FromSeconds(60));
+        services.AddSingleton<ISemanticKernelFactory, SemanticKernelFactory>();
         services.AddScoped<IStructuredPromptRunner, SemanticKernelPromptRunner>();
         services.AddScoped<IGradingEvidenceProvider, LlmRubricEvidenceProvider>();
         services.AddScoped<IGradingEvidenceProvider, LexicalConceptEvidenceProvider>();

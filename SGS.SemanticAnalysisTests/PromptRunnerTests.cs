@@ -38,6 +38,18 @@ public sealed class PromptRunnerTests
     }
 
     [Fact]
+    public async Task OpenRouterPoolUsesOpenAiCompatibleEndpointAndModel()
+    {
+        using var handler = new ModelHandler([ValidOutput]);
+        var output = await Runner(handler, useOpenRouter: true).RunAsync<RubricResponse>(
+            "EvaluateRubric", new { DocumentText = "answer" }, default);
+
+        Assert.Equal(8, output.Value.Criteria.Single().Score);
+        Assert.Contains("/chat/completions", handler.LastUri);
+        Assert.Contains("openrouter/test-model", handler.LastBody);
+    }
+
+    [Fact]
     public async Task MissingRequiredResponseFieldsFailsAfterBoundedRetry()
     {
         using var handler = new ModelHandler(["{}", "{}"]);
@@ -47,11 +59,27 @@ public sealed class PromptRunnerTests
     }
 
     private const string ValidOutput = "{\"criteria\":[{\"id\":\"x\",\"score\":8,\"explanation\":\"Good explanation.\",\"quotes\":[\"Independent encoding.\"]}]}";
-    private static SemanticKernelPromptRunner Runner(ModelHandler handler) => new(
-        Options.Create(new SemanticKernelSettings
+    private static SemanticKernelPromptRunner Runner(ModelHandler handler, bool useOpenRouter = false)
+    {
+        var options = Options.Create(new SemanticKernelSettings
         {
-            Provider = "OpenAI", Endpoint = "https://model.invalid/v1", ApiKey = "test-key", DeploymentName = "test-model"
-        }), new TestEnvironment(), new TestClientFactory(handler), NullLogger<SemanticKernelPromptRunner>.Instance);
+            Provider = useOpenRouter ? ModelProvider.OpenRouter : ModelProvider.OpenAI,
+            OpenAI = new ModelProviderSettings
+            {
+                Endpoint = "https://model.invalid/v1", ApiKey = "test-key", Model = "test-model"
+            },
+            OpenRouter = new ModelProviderSettings
+            {
+                Endpoint = "https://openrouter.invalid/api/v1", ApiKey = "test-key",
+                Model = "openrouter/test-model"
+            }
+        });
+
+        return new(
+            new SemanticKernelFactory(options, new TestClientFactory(handler)),
+            new TestEnvironment(),
+            NullLogger<SemanticKernelPromptRunner>.Instance);
+    }
 
     private sealed class TestClientFactory(HttpMessageHandler handler) : IHttpClientFactory
     {
@@ -68,8 +96,10 @@ public sealed class PromptRunnerTests
     {
         public int Calls { get; private set; }
         public string LastBody { get; private set; } = "";
+        public string LastUri { get; private set; } = "";
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            LastUri = request.RequestUri!.ToString();
             LastBody = await request.Content!.ReadAsStringAsync(cancellationToken);
             var content = outputs[Calls++];
             var response = JsonSerializer.Serialize(new
