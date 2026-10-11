@@ -5,7 +5,9 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using SemanticAnalysis.Service.Evaluation.Models;
 using SemanticAnalysis.Service.Evaluation.Providers;
+using SemanticAnalysis.Service.Prompts.Abstractions;
 using SemanticAnalysis.Service.Prompts;
 using SemanticAnalysis.Service.Settings;
 

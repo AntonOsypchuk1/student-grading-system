@@ -1,6 +1,7 @@
-namespace SemanticAnalysis.Service.Prompts;
+using SemanticAnalysis.Service.Prompts.Models;
 
-public sealed record PromptOutput<T>(T Value, bool HadRetry);
+namespace SemanticAnalysis.Service.Prompts.Abstractions;
+
 public interface IStructuredPromptRunner
 {
     Task<PromptOutput<T>> RunAsync<T>(string prompt, object input, CancellationToken cancellationToken);

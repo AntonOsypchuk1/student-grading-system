@@ -2,6 +2,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using SemanticAnalysis.Service.Settings;
+using SemanticAnalysis.Service.Prompts.Abstractions;
+using SemanticAnalysis.Service.Prompts.Models;
 
 namespace SemanticAnalysis.Service.Prompts;
 

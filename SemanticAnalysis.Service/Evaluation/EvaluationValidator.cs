@@ -1,3 +1,5 @@
+using SemanticAnalysis.Service.Evaluation.Models;
+
 namespace SemanticAnalysis.Service.Evaluation;
 
 public static class EvaluationValidator

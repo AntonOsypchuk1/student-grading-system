@@ -1,4 +1,6 @@
 using SemanticAnalysis.Service.Evaluation.Providers;
+using SemanticAnalysis.Service.Evaluation.Abstractions;
+using SemanticAnalysis.Service.Prompts.Abstractions;
 using SemanticAnalysis.Service.Prompts;
 
 namespace SemanticAnalysis.Service.Evaluation;

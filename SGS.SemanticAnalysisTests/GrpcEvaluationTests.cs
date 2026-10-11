@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using SemanticAnalysis.Service.Prompts;
+using SemanticAnalysis.Service.Prompts.Abstractions;
 using SemanticAnalysis.Service.Protos;
 using GrpcService = SemanticAnalysis.Service.Protos.SemanticAnalysisService;
 

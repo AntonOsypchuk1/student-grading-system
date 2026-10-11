@@ -1,3 +1,6 @@
+using SemanticAnalysis.Service.Evaluation.Abstractions;
+using SemanticAnalysis.Service.Evaluation.Models;
+
 namespace SemanticAnalysis.Service.Evaluation;
 
 public sealed class EvaluationDispatcher(IEnumerable<IEvaluationPipeline> pipelines)

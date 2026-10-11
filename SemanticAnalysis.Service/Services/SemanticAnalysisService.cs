@@ -1,10 +1,13 @@
 using Grpc.Core;
 using SemanticAnalysis.Service.Evaluation;
+using SemanticAnalysis.Service.Evaluation.Abstractions;
+using SemanticAnalysis.Service.Evaluation.Models;
 using SemanticAnalysis.Service.Evaluation.Providers;
-using SemanticAnalysis.Service.Prompts;
+using SemanticAnalysis.Service.Prompts.Abstractions;
+using SemanticAnalysis.Service.Prompts.Models;
 using SemanticAnalysis.Service.Protos;
-using InternalRequest = SemanticAnalysis.Service.Evaluation.EvaluationRequest;
-using InternalConcept = SemanticAnalysis.Service.Evaluation.ExpectedConcept;
+using InternalRequest = SemanticAnalysis.Service.Evaluation.Models.EvaluationRequest;
+using InternalConcept = SemanticAnalysis.Service.Evaluation.Models.ExpectedConcept;
 
 namespace SemanticAnalysis.Service.Services;
 
@@ -156,9 +159,3 @@ public sealed class SemanticAnalysisService(
     }
 }
 
-public sealed class SummaryOutput
-{
-    public required string Summary { get; init; }
-    public required List<string> Strengths { get; init; }
-    public required List<string> Improvements { get; init; }
-}

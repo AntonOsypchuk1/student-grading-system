@@ -1,7 +1,10 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using SemanticAnalysis.Service.Evaluation;
+using SemanticAnalysis.Service.Evaluation.Abstractions;
+using SemanticAnalysis.Service.Evaluation.Models;
 using SemanticAnalysis.Service.Evaluation.Providers;
-using SemanticAnalysis.Service.Prompts;
+using SemanticAnalysis.Service.Prompts.Abstractions;
+using SemanticAnalysis.Service.Prompts.Models;
 
 namespace SGS.SemanticAnalysisTests;
 
@@ -181,7 +184,7 @@ internal sealed class FakePromptRunner(double score) : IStructuredPromptRunner
         cancellationToken.ThrowIfCancellationRequested();
         if (Failure is not null) throw Failure;
         if (prompt == "GenerateSummary")
-            return Task.FromResult(new PromptOutput<T>((T)(object)new SemanticAnalysis.Service.Services.SummaryOutput
+            return Task.FromResult(new PromptOutput<T>((T)(object)new SummaryOutput
             {
                 Summary = "Deterministic summary.", Strengths = ["Clear explanation"], Improvements = []
             }, HadRetry));

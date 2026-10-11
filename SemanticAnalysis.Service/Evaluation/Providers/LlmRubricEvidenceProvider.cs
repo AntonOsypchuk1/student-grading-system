@@ -1,4 +1,6 @@
-using SemanticAnalysis.Service.Prompts;
+using SemanticAnalysis.Service.Evaluation.Abstractions;
+using SemanticAnalysis.Service.Evaluation.Models;
+using SemanticAnalysis.Service.Prompts.Abstractions;
 
 namespace SemanticAnalysis.Service.Evaluation.Providers;
 
@@ -48,17 +50,4 @@ public sealed class LlmRubricEvidenceProvider(IStructuredPromptRunner prompts) :
         
         return new EvidenceBatch(Source, items);
     }
-}
-
-public sealed class RubricResponse
-{
-    public required List<RubricRow> Criteria { get; init; }
-}
-
-public sealed class RubricRow
-{
-    public required string Id { get; init; }
-    public required double Score { get; init; }
-    public required string Explanation { get; init; }
-    public required List<string> Quotes { get; init; }
 }

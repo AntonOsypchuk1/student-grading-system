@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
+using SemanticAnalysis.Service.Prompts.Abstractions;
+using SemanticAnalysis.Service.Prompts.Models;
 
 namespace SemanticAnalysis.Service.Prompts;
 
