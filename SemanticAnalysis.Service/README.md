@@ -19,7 +19,7 @@ dotnet test SGS.SemanticAnalysisTests/SGS.SemanticAnalysisTests.csproj
 dotnet run --project SemanticAnalysis.Service
 ```
 
-Configure `Auth__ApiKey`, `SemanticKernelSettings__ApiKey`, `SemanticKernelSettings__Endpoint`, `SemanticKernelSettings__DeploymentName`, `SemanticKernelSettings__Provider=AzureOpenAI` (default) or `OpenAI` (compatible endpoint), and optionally `SemanticKernelSettings__Language=ua`. Authenticate gRPC calls with `x-api-key`. The existing launch profile supplies the local ports; use TLS for remote hosting.
+Configure `Auth__ApiKey`, the provider pools, and optionally `SemanticKernelSettings__Language=ua`. Select a provider with `SemanticKernelSettings__Provider=AzureOpenAI`, `OpenAI`, or `OpenRouter`. Configure the selected provider's `Model`, `Endpoint`, and `ApiKey` under `SemanticKernelSettings__AzureOpenAI__*`, `SemanticKernelSettings__OpenAI__*`, or `SemanticKernelSettings__OpenRouter__*`. Authenticate gRPC calls with `x-api-key`. The existing launch profile supplies the local ports; use TLS for remote hosting.
 
 Import `Protos/semantic_analysis.proto` in Postman and invoke `EvaluateDocument`:
 
