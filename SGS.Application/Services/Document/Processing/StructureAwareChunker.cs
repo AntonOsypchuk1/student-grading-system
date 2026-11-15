@@ -51,6 +51,7 @@ public sealed class StructureAwareChunker(ITextTokenEstimator? estimator = null)
         ChunkingOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(document);
+        System.Text.Json.JsonSerializer.Serialize(document);
         options ??= new ChunkingOptions();
         options.Validate();
         var words = Tokenize(document.Blocks, options.MaxEstimatedTokens);
@@ -117,6 +118,8 @@ public sealed class StructureAwareChunker(ITextTokenEstimator? estimator = null)
             }
             index = nextStart;
         }
+        
+        System.Text.Json.JsonSerializer.Serialize(chunks);
         return chunks;
     }
 
