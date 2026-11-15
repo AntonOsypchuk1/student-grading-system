@@ -6,6 +6,7 @@ package semanticanalysis.v1;
 
 // Service for semantic analysis operations: evaluating criteria and generating summaries
 service SemanticAnalysisService {
+  rpc EvaluateDocument(EvaluateDocumentRequest) returns (EvaluateDocumentResponse);
   // Evaluates a document against multiple criteria
   rpc EvaluateCriteria(EvaluateCriteriaRequest) returns (EvaluateCriteriaResponse);
 
@@ -95,4 +96,49 @@ message GenerateSummaryResponse {
 
   // Key areas for improvement highlighted in the summary
   repeated string improvements = 3;
+}
+
+// Versioned, standalone evaluation; document_text is already-extracted plain text.
+message EvaluateDocumentRequest {
+  string document_text = 1;
+  string question = 2;
+  repeated EvaluationCriterion criteria = 3;
+  optional double max_score = 4; // Defaults to 100 when omitted.
+  string pipeline = 5; // Empty selects open-answer-v1.
+}
+message EvaluationCriterion {
+  string id = 1;
+  string description = 2;
+  double max_score = 3;
+  double weight = 4; // Relative positive weight; normalized by the service.
+  repeated ExpectedConcept concepts = 5;
+}
+message ExpectedConcept {
+  string id = 1;
+  repeated string alternatives = 2;
+  bool required = 3;
+}
+message EvaluateDocumentResponse {
+  optional double score = 1; // Absent when evidence collection fails.
+  double max_score = 2;
+  repeated HybridCriterionResult criteria = 3;
+  double risk_indicator = 4; // Uncalibrated heuristic, NOT an error probability.
+  bool requires_teacher_review = 5;
+  repeated string risk_factors = 6;
+  string method_version = 7;
+}
+message HybridCriterionResult {
+  string id = 1;
+  double normalized_score = 2;
+  double effective_llm_weight = 3;
+  double disagreement = 4;
+  repeated GradingEvidence evidence = 5;
+}
+message GradingEvidence {
+  string source = 1;
+  double normalized_score = 2;
+  repeated string quotes = 3;
+  repeated string missing_required_concepts = 4;
+  string explanation = 5;
+  bool had_retry = 6;
 }

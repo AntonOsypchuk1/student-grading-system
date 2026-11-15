@@ -21,3 +21,7 @@ The research contribution is an **adaptive evidence-fusion method** for grading 
 7. `07_IMPLEMENTATION_ROADMAP.md` — practical sequence of work.
 8. `08_THESIS_STRUCTURE.md` — proposed structure of the final thesis.
 9. `09_ONE_PAGE_SUMMARY.md` — compact summary for discussion with a supervisor.
+
+## Current production-practice scope
+
+See [10_PRACTICE_PLAN.md](10_PRACTICE_PLAN.md). It takes precedence over the older repository-placement roadmap for this practice; the broader thesis plan remains future work.
