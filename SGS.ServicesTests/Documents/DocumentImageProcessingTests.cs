@@ -71,14 +71,14 @@ public sealed class DocumentImageProcessingTests(ITestOutputHelper output)
     }
 
     [Fact]
-    public async Task Missing_ocr_engine_is_reported_without_losing_native_text()
+    public async Task Missing_ocr_language_data_is_reported_without_losing_native_text()
     {
-        var provider = new TesseractImageOcrProvider(new TesseractOcrOptions
+        using var provider = new TesseractImageOcrProvider(new TesseractOcrOptions
         {
-            ExecutablePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "tesseract")
+            TessDataPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "tessdata")
         });
         var bytes = await Fixture("lab1.pdf");
-        var processor = Processor(provider);
+        using var processor = Processor(provider);
         var baseline = await processor.ProcessAsync("lab1.pdf", bytes);
         var result = await processor.ProcessWithOcrAsync("lab1.pdf", bytes);
         Assert.Contains(result.Document.OcrResults, r => r.Status == OcrStatus.Failed);
@@ -106,17 +106,29 @@ public sealed class DocumentImageProcessingTests(ITestOutputHelper output)
             .ProcessWithOcrAsync("lab1.pdf", [1], cancellationToken: cancellation.Token));
     }
 
-    [OcrIntegrationFact]
+    [Fact]
     public async Task Lab1_real_tesseract_recovers_console_and_ip_configuration_evidence()
     {
-        var result = await Processor().ProcessWithOcrAsync("lab1.pdf", await Fixture("lab1.pdf"));
+        using var provider = new TesseractImageOcrProvider(new TesseractOcrOptions
+        {
+            TessDataPath = Environment.GetEnvironmentVariable("SGS_OCR_TESSDATA_PATH") ?? "tessdata",
+            NativeLibraryDirectory = Environment.GetEnvironmentVariable("SGS_OCR_NATIVE_LIBRARY_DIRECTORY")
+        });
+        using var processor = Processor(provider);
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var result = await processor.ProcessWithOcrAsync("lab1.pdf", await Fixture("lab1.pdf"));
+        stopwatch.Stop();
         var document = result.Document;
         output.WriteLine($"Detected images: {document.Images.Count}; " +
             $"OCR recognized: {document.OcrResults.Count(r => r.Status == OcrStatus.Recognized)}; " +
             $"skipped: {document.OcrResults.Count(r => r.Status == OcrStatus.Skipped)}; " +
             $"no text: {document.OcrResults.Count(r => r.Status == OcrStatus.NoText)}; " +
             $"OCR sources: {document.Sources.Count(s => s.ImageId is not null)}; " +
-            $"chunks: {result.Chunks.Count}.");
+            $"chunks: {result.Chunks.Count}; elapsed: {stopwatch.Elapsed.TotalSeconds:F2}s.");
+        var recognized = document.OcrResults.Where(r => r.Status == OcrStatus.Recognized).ToArray();
+        Assert.NotEmpty(recognized);
+        Assert.All(recognized, r => Assert.InRange(Assert.IsType<float>(r.MeanConfidence), 0f, 1f));
+        output.WriteLine($"Mean image OCR confidence: {recognized.Average(r => r.MeanConfidence):P1}.");
         Assert.DoesNotContain(document.OcrResults, r => r.Status == OcrStatus.Failed);
         Assert.Contains(document.OcrResults, r => r.Status == OcrStatus.Skipped);
         Assert.Contains(document.Sources, s => s.ImageId is not null && s.PageNumber == 5 &&
@@ -148,6 +160,6 @@ public sealed class OcrIntegrationFactAttribute : FactAttribute
     public OcrIntegrationFactAttribute()
     {
         if (Environment.GetEnvironmentVariable("SGS_RUN_OCR_TESTS") != "1")
-            Skip = "Set SGS_RUN_OCR_TESTS=1 with Tesseract 5 and English language data installed.";
+            Skip = "Set SGS_RUN_OCR_TESTS=1 with native libraries and English traineddata configured.";
     }
 }

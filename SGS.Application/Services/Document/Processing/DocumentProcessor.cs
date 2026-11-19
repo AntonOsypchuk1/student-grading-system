@@ -11,11 +11,18 @@ public sealed class DocumentProcessor(
     IEnumerable<IStructuredDocumentTextExtractor> extractors,
     IDocumentChunker chunker,
     IDocumentImageExtractor? imageExtractor = null,
-    IImageOcrProvider? ocrProvider = null) : IDocumentProcessor
+    IImageOcrProvider? ocrProvider = null) : IDocumentProcessor, IDisposable
 {
     private const int MaxBytes = 32 * 1024 * 1024;
     private readonly IDocumentImageExtractor _imageExtractor = imageExtractor ?? new DocumentImageExtractor();
     private readonly IImageOcrProvider _ocrProvider = ocrProvider ?? new TesseractImageOcrProvider(new TesseractOcrOptions());
+    private readonly bool _ownsOcrProvider = ocrProvider is null;
+
+    public void Dispose()
+    {
+        if (_ownsOcrProvider && _ocrProvider is IDisposable disposable)
+            disposable.Dispose();
+    }
 
     public Task<DocumentProcessingResult> ProcessAsync(
         string fileName, byte[] fileBytes, ChunkingOptions? options = null,
@@ -87,7 +94,10 @@ public sealed class DocumentProcessor(
                 ? ExtractionTextUtilities.Normalize(recognition.Text).Trim() : "";
             var status = recognition.Status == OcrStatus.Recognized && text.Length == 0
                 ? OcrStatus.NoText : recognition.Status;
-            results.Add(new ImageOcrResult(image.ImageId, status, text, recognition.Reason));
+            results.Add(new ImageOcrResult(image.ImageId, status, text, recognition.Reason)
+            {
+                MeanConfidence = status == OcrStatus.Recognized ? recognition.MeanConfidence : null
+            });
             if (status != OcrStatus.Recognized)
             {
                 if (status == OcrStatus.Failed)

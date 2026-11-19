@@ -23,6 +23,12 @@ public sealed record DocumentImage(
 
 public enum OcrStatus { Recognized, NoText, Skipped, Failed }
 
-public sealed record OcrRecognition(OcrStatus Status, string Text = "", string? Reason = null);
+public sealed record OcrRecognition(OcrStatus Status, string Text = "", string? Reason = null)
+{
+    public float? MeanConfidence { get; init; }
+}
 
-public sealed record ImageOcrResult(string ImageId, OcrStatus Status, string Text, string? Reason);
+public sealed record ImageOcrResult(string ImageId, OcrStatus Status, string Text, string? Reason)
+{
+    public float? MeanConfidence { get; init; }
+}
