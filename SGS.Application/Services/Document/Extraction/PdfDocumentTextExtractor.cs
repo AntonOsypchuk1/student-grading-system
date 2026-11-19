@@ -29,9 +29,7 @@ public class PdfDocumentTextExtractor(ILogger<PdfDocumentTextExtractor> logger)
     {
         ArgumentNullException.ThrowIfNull(fileBytes);
         var sources = new List<DocumentSource>();
-        var blocks = new List<DocumentBlock>();
         var warnings = new List<string>();
-        string? section = null;
         try
         {
             using var stream = new MemoryStream(fileBytes, writable: false);
@@ -56,8 +54,6 @@ public class PdfDocumentTextExtractor(ILogger<PdfDocumentTextExtractor> logger)
                     warnings.Add($"PDF page {pageNumber} contains no extractable text; OCR or manual review may be needed.");
                 if (hasImages)
                     warnings.Add($"PDF page {pageNumber} contains images that were not interpreted.");
-                if (!empty)
-                    ExtractionTextUtilities.AddPageBlocks(text, sourceId, blocks, ref section);
             }
         }
         catch (OperationCanceledException) { throw; }
@@ -67,11 +63,12 @@ public class PdfDocumentTextExtractor(ILogger<PdfDocumentTextExtractor> logger)
             throw;
         }
 
+        var (cleanedSources, cleanedBlocks) = PdfBoilerplateCleaner.Clean(sources, warnings);
         return Task.FromResult(ExtractionTextUtilities.Build(
             ExtractionTextUtilities.DocumentId(fileBytes),
             ProcessingFormat.Pdf,
-            sources,
-            blocks,
+            cleanedSources,
+            cleanedBlocks,
             warnings));
     }
 

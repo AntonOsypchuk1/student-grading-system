@@ -12,6 +12,8 @@ public sealed record ChunkingOptions
     public int MaxEstimatedTokens { get; init; } = 512;
     public int OverlapEstimatedTokens { get; init; } = 64;
     public bool SplitAtSectionBoundaries { get; init; } = true;
+    public bool SplitAtPageBoundaries { get; init; } = true;
+    public bool PreferBlockBoundaries { get; init; } = true;
 
     public void Validate()
     {
@@ -51,7 +53,6 @@ public sealed class StructureAwareChunker(ITextTokenEstimator? estimator = null)
         ChunkingOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(document);
-        System.Text.Json.JsonSerializer.Serialize(document);
         options ??= new ChunkingOptions();
         options.Validate();
         var words = Tokenize(document.Blocks, options.MaxEstimatedTokens);
@@ -63,18 +64,41 @@ public sealed class StructureAwareChunker(ITextTokenEstimator? estimator = null)
             var start = index;
             var section = words[index].Block.SectionPath;
             int budget = 0;
+            int lastBlockBoundary = -1;
+            int weightAtLastBlockBoundary = 0;
             while (index < words.Count)
             {
                 var next = words[index];
                 if (index > start && options.SplitAtSectionBoundaries &&
                     !string.Equals(section, next.Block.SectionPath, StringComparison.Ordinal))
                     break;
+                if (index > start && options.SplitAtPageBoundaries &&
+                    !string.Equals(words[index - 1].Block.SourceId, next.Block.SourceId,
+                        StringComparison.Ordinal))
+                    break;
+                if (index > start &&
+                    !string.Equals(words[index - 1].Block.BlockId, next.Block.BlockId,
+                        StringComparison.Ordinal))
+                {
+                    lastBlockBoundary = index;
+                    weightAtLastBlockBoundary = budget;
+                }
                 if (budget + next.Weight > options.MaxEstimatedTokens) break;
                 budget += next.Weight;
                 index++;
             }
             if (index == start)
                 throw new InvalidOperationException("A word exceeds the estimated chunk budget.");
+            // When an oversized paragraph would be split, prefer completing the
+            // preceding paragraph if that already fills a meaningful chunk.
+            if (options.PreferBlockBoundaries && index < words.Count &&
+                index > start && words[index - 1].Block.BlockId == words[index].Block.BlockId &&
+                lastBlockBoundary > start &&
+                weightAtLastBlockBoundary >= options.MaxEstimatedTokens * 0.6)
+            {
+                index = lastBlockBoundary;
+                budget = weightAtLastBlockBoundary;
+            }
 
             var slices = new List<ChunkSourceSpan>();
             var pieces = new List<string>();
@@ -112,14 +136,15 @@ public sealed class StructureAwareChunker(ITextTokenEstimator? estimator = null)
                 bool sameSection = !options.SplitAtSectionBoundaries ||
                     string.Equals(prev.Block.SectionPath, words[index].Block.SectionPath,
                         StringComparison.Ordinal);
-                if (!sameSection || overlap + prev.Weight > options.OverlapEstimatedTokens) break;
+                bool samePage = !options.SplitAtPageBoundaries ||
+                    string.Equals(prev.Block.SourceId, words[index].Block.SourceId,
+                        StringComparison.Ordinal);
+                if (!sameSection || !samePage || overlap + prev.Weight > options.OverlapEstimatedTokens) break;
                 overlap += prev.Weight;
                 nextStart--;
             }
             index = nextStart;
         }
-        
-        System.Text.Json.JsonSerializer.Serialize(chunks);
         return chunks;
     }
 
