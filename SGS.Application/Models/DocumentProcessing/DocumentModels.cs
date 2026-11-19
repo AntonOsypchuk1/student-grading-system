@@ -2,7 +2,7 @@ namespace SGS.Application.Models.DocumentProcessing;
 
 public enum DocumentFormat { Pdf, Docx }
 
-public enum DocumentContentKind { Heading, Paragraph, Table }
+public enum DocumentContentKind { Heading, Paragraph, Table, OcrText }
 
 public enum ExtractionStatus
 {
@@ -25,7 +25,11 @@ public sealed record DocumentSource(
     int? PageNumber,
     string Text,
     SourceExtractionStatus Status,
-    bool HasNonTextContent = false);
+    bool HasNonTextContent = false)
+{
+    // OCR has its own canonical text source; native text offsets never change.
+    public string? ImageId { get; init; }
+}
 
 public sealed record DocumentBlock(
     string BlockId,
@@ -46,6 +50,9 @@ public sealed record ExtractedDocument(
     ExtractionStatus Status,
     IReadOnlyList<string> Warnings)
 {
+    public IReadOnlyList<DocumentImage> Images { get; init; } = [];
+    public IReadOnlyList<ImageOcrResult> OcrResults { get; init; } = [];
+
     public DocumentSource Resolve(string sourceId) =>
         Sources.Single(s => s.SourceId == sourceId);
 }

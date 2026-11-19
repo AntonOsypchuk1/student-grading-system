@@ -24,7 +24,7 @@ public static class ApplicationModule
         services.AddServices();
         services.AddAutoMapper();
         services.AddDocumentStorageServices(configuration);
-        services.AddDocumentServices();
+        services.AddDocumentServices(configuration);
         services.AddLocalization();
     }
 
@@ -78,7 +78,7 @@ public static class ApplicationModule
         }
     }
 
-    private static void AddDocumentServices(this IServiceCollection services)
+    private static void AddDocumentServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<PdfDocumentTextExtractor>();
         services.AddSingleton<DocxDocumentTextExtractor>();
@@ -90,6 +90,9 @@ public static class ApplicationModule
         services.AddSingleton<IDocumentTextExtractionManager, DocumentTextExtractionManager>();
         services.AddSingleton<ITextTokenEstimator, Utf8TokenEstimator>();
         services.AddSingleton<IDocumentChunker, StructureAwareChunker>();
+        services.AddSingleton<IDocumentImageExtractor, DocumentImageExtractor>();
+        services.AddSingleton<IImageOcrProvider>(_ => new TesseractImageOcrProvider(
+            configuration.GetSection("DocumentOcr").Get<TesseractOcrOptions>() ?? new TesseractOcrOptions()));
         services.AddSingleton<IDocumentProcessor, DocumentProcessor>();
 
         services.AddScoped<IDocumentService, DocumentService>();
