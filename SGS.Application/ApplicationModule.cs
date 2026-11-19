@@ -9,6 +9,7 @@ using SGS.Application.Services.Auth;
 using SGS.Application.Services.Course;
 using SGS.Application.Services.Document;
 using SGS.Application.Services.Document.Extraction;
+using SGS.Application.Services.Document.Processing;
 using SGS.Application.Services.Document.Storage;
 using SGS.Application.Services.Grading;
 using SGS.Application.Services.User;
@@ -79,10 +80,17 @@ public static class ApplicationModule
 
     private static void AddDocumentServices(this IServiceCollection services)
     {
-        services.AddSingleton<IDocumentTextExtractor, PdfDocumentTextExtractor>();
+        services.AddSingleton<PdfDocumentTextExtractor>();
+        services.AddSingleton<DocxDocumentTextExtractor>();
+        services.AddSingleton<IDocumentTextExtractor>(sp => sp.GetRequiredService<PdfDocumentTextExtractor>());
+        services.AddSingleton<IDocumentTextExtractor>(sp => sp.GetRequiredService<DocxDocumentTextExtractor>());
         services.AddSingleton<IDocumentTextExtractor, TxtDocumentTextExtractor>();
-
+        services.AddSingleton<IStructuredDocumentTextExtractor>(sp => sp.GetRequiredService<PdfDocumentTextExtractor>());
+        services.AddSingleton<IStructuredDocumentTextExtractor>(sp => sp.GetRequiredService<DocxDocumentTextExtractor>());
         services.AddSingleton<IDocumentTextExtractionManager, DocumentTextExtractionManager>();
+        services.AddSingleton<ITextTokenEstimator, Utf8TokenEstimator>();
+        services.AddSingleton<IDocumentChunker, StructureAwareChunker>();
+        services.AddSingleton<IDocumentProcessor, DocumentProcessor>();
 
         services.AddScoped<IDocumentService, DocumentService>();
     }

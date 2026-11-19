@@ -17,6 +17,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Update="Documents\Fixtures\*.pdf;Documents\Fixtures\*.docx" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Using Include="Xunit"/>
     </ItemGroup>
 
