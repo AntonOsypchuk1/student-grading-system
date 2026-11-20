@@ -9,9 +9,9 @@
     <Content Include="Prompts/*.yaml" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore" Version="2.64.0" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.49.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" Version="1.49.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Yaml" Version="1.49.0" />
+    <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="Microsoft.SemanticKernel" />
+    <PackageReference Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" />
+    <PackageReference Include="Microsoft.SemanticKernel.Yaml" />
   </ItemGroup>
 </Project>

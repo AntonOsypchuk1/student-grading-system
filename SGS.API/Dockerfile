@@ -7,7 +7,12 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["Directory.Packages.props", "./"]
 COPY ["SGS.API/SGS.API.csproj", "SGS.API/"]
+COPY ["SGS.Application/SGS.Application.csproj", "SGS.Application/"]
+COPY ["SGS.DbContext/SGS.DbContext.csproj", "SGS.DbContext/"]
+COPY ["SGS.Domain/SGS.Domain.csproj", "SGS.Domain/"]
+COPY ["SGS.SemanticAnalysis.Client/SGS.SemanticAnalysis.Client.csproj", "SGS.SemanticAnalysis.Client/"]
 RUN dotnet restore "SGS.API/SGS.API.csproj"
 COPY . .
 WORKDIR "/src/SGS.API"
