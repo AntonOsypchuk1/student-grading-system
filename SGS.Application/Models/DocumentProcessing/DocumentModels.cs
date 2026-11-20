@@ -1,6 +1,6 @@
 namespace SGS.Application.Models.DocumentProcessing;
 
-public enum DocumentFormat { Pdf, Docx }
+public enum DocumentFormat { Pdf, Docx, Text }
 
 public enum DocumentContentKind { Heading, Paragraph, Table, OcrText }
 

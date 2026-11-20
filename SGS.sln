@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastru
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SGS.SemanticAnalysis.Client", "SGS.SemanticAnalysis.Client\SGS.SemanticAnalysis.Client.csproj", "{013DE9A0-294C-4579-8E9B-B3750F50D48D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SGS.Experiments", "SGS.Experiments\SGS.Experiments.csproj", "{46CA3C3A-EBB1-44AB-8820-FF623B0E42B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,10 @@ Global
 		{013DE9A0-294C-4579-8E9B-B3750F50D48D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{013DE9A0-294C-4579-8E9B-B3750F50D48D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{013DE9A0-294C-4579-8E9B-B3750F50D48D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46CA3C3A-EBB1-44AB-8820-FF623B0E42B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46CA3C3A-EBB1-44AB-8820-FF623B0E42B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46CA3C3A-EBB1-44AB-8820-FF623B0E42B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46CA3C3A-EBB1-44AB-8820-FF623B0E42B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{EC9BAC94-75F7-4627-8F05-2D6E2280D87B} = {51C369F5-FB04-43CC-9972-D1E97A1CC897}

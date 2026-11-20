@@ -1,0 +1,45 @@
+{
+  "id": "sgs-smoke",
+  "version": "1",
+  "cases": [
+    {
+      "id": "theory-correct",
+      "workType": "theoretical",
+      "question": "Explain how a bi-encoder retrieves relevant documents.",
+      "maxScore": 10,
+      "submissionText": "Questions and documents are encoded independently into vectors. Document vectors can be indexed in advance, and retrieval ranks candidates by vector similarity to the question vector.",
+      "criteria": [{"id":"mechanism","description":"Explain independent encoding (4 points), similarity ranking (4 points) and precomputed document index (2 points).","maxScore":10,"weight":1,"concepts":[{"id":"encoding","alternatives":["encoded independently","independent encoding"],"required":true},{"id":"similarity","alternatives":["vector similarity"],"required":true},{"id":"index","alternatives":["indexed in advance","precomputed"],"required":false}]}],
+      "reference": {"kind":"synthetic","score":10,"note":"Constructed complete answer; illustrative rubric label, not teacher-graded."}
+    },
+    {
+      "id": "theory-partial",
+      "workType": "theoretical",
+      "question": "Explain how a bi-encoder retrieves relevant documents.",
+      "maxScore": 10,
+      "submissionText": "Questions and documents are encoded independently into vectors.",
+      "criteria": [{"id":"mechanism","description":"Explain independent encoding (4 points), similarity ranking (4 points) and precomputed document index (2 points).","maxScore":10,"weight":1,"concepts":[{"id":"encoding","alternatives":["encoded independently","independent encoding"],"required":true},{"id":"similarity","alternatives":["vector similarity"],"required":true},{"id":"index","alternatives":["indexed in advance","precomputed"],"required":false}]}],
+      "reference": {"kind":"synthetic","score":4,"note":"Constructed partial answer; illustrative rubric label, not teacher-graded."}
+    },
+    {
+      "id": "theory-keyword-negation",
+      "workType": "theoretical",
+      "question": "Explain how a bi-encoder retrieves relevant documents.",
+      "maxScore": 10,
+      "submissionText": "There is no independent encoding: the question and document must always be joined. Vector similarity is never used, and documents cannot be indexed in advance.",
+      "criteria": [{"id":"mechanism","description":"Explain independent encoding (4 points), similarity ranking (4 points) and precomputed document index (2 points).","maxScore":10,"weight":1,"concepts":[{"id":"encoding","alternatives":["encoded independently","independent encoding"],"required":true},{"id":"similarity","alternatives":["vector similarity"],"required":true},{"id":"index","alternatives":["indexed in advance","precomputed"],"required":false}]}],
+      "reference": {"kind":"synthetic","score":0,"note":"Constructed negation case to expose literal keyword bias; not teacher-graded."}
+    },
+    {
+      "id": "lab1-pilot",
+      "workType": "laboratory",
+      "question": "Assess whether the submitted RouterOS lab report documents console interaction and IP address configuration with supporting evidence.",
+      "maxScore": 10,
+      "submissionFile": "../../SGS.ServicesTests/Documents/Fixtures/lab1.pdf",
+      "criteria": [
+        {"id":"console","description":"Document console interaction using actual command/output evidence, not merely an assertion.","maxScore":5,"weight":1,"concepts":[{"id":"console","alternatives":["console","terminal","консоль"],"required":true}]},
+        {"id":"ip","description":"Document IP address configuration with relevant commands or readable configuration evidence.","maxScore":5,"weight":1,"concepts":[{"id":"address","alternatives":["ip address","ip-адреса"],"required":true}]}
+      ],
+      "reference": {"kind":"unlabeled","score":null,"note":"Existing lab1 fixture; pilot rubric, official assignment rubric and teacher grade not supplied. Excluded from grade error metrics."}
+    }
+  ]
+}
