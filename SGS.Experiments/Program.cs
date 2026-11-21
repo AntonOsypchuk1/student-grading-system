@@ -14,13 +14,21 @@ try
 {
     if (!ExperimentConfiguration.IsSupportedCommand(args))
     {
-        Console.WriteLine("Configure SGS.Experiments/appsettings.json or .env, then run:\n  prepare\n  run");
+        Console.WriteLine("Configure SGS.Experiments/appsettings.json or .env, then run:\n  prepare\n  run\n  compare");
         return 1;
     }
 
     var settings = ExperimentConfiguration.Load(args, AppContext.BaseDirectory);
     switch (args[0])
     {
+        case "compare":
+        {
+            var comparison = await StrategyComparison.CompareAsync(settings.PreparedPath,
+                settings.ComparisonSourceDirectory, cancellation.Token);
+            await WriteNewJsonAsync(settings.ComparisonOutputPath, comparison, cancellation.Token);
+            Console.WriteLine($"Compared {comparison.Methods.Count} strategies on {comparison.PairedAttempts}/{comparison.PlannedAttempts} shared evidence sets. No model calls.");
+            return comparison.PairedAttempts > 0 ? 0 : 2;
+        }
         case "prepare":
         {
             var ocrOptions = settings.Ocr;
@@ -86,6 +94,7 @@ try
                 endpoint = uri.GetLeftPart(UriPartial.Path),
                 startedUtc = DateTimeOffset.UtcNow,
                 timeoutSeconds = settings.TimeoutSeconds,
+                delayBetweenRequestsMs = settings.DelayBetweenRequestsMs,
                 dataset.ExtractionMode,
                 dataset.OcrLanguages,
                 dataset.Chunking,
@@ -106,7 +115,8 @@ try
             await using (var stream = new FileStream(Path.Combine(output, "results.jsonl"), FileMode.CreateNew, FileAccess.Write))
             await using (var writer = new StreamWriter(stream))
             {
-                await foreach (var attempt in runner.RunAsync(dataset, pipeline, repetitions, cancellation.Token))
+                await foreach (var attempt in runner.RunAsync(dataset, pipeline, repetitions, cancellation.Token,
+                    settings.DelayBetweenRequestsMs))
                 {
                     attempts.Add(attempt);
                     await writer.WriteLineAsync(JsonSerializer.Serialize(attempt, BenchmarkJson.Lines).AsMemory(), cancellation.Token);

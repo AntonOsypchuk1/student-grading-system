@@ -3,7 +3,8 @@ namespace SGS.Experiments;
 public sealed record MetricGroup(ReferenceKind ReferenceKind, WorkType? WorkType, int Cases, int Attempts,
     int Scored, int Failed, int LabeledScored, double FailureRate, double ReviewRate, double AutomaticCoverage,
     double? Mae, double? Rmse, double? Within10Points, double? Bias, double? OverestimationRate, double? UnderestimationRate,
-    double? MeanLatencyMs, double? MeanRepeatedScoreRange, int RepeatedCases);
+    double? MeanLatencyMs, double? MeanRepeatedScoreRange, int RepeatedCases,
+    int AutomaticLabeledScored, double? AutomaticMae, int LargeErrors, double? LargeErrorReviewRecall);
 
 public static class ExperimentMetrics
 {
@@ -19,6 +20,10 @@ public static class ExperimentMetrics
             .Select(a => (a.Score!.Value - a.ReferenceScore!.Value) / a.MaxScore * 100).ToArray();
         var ranges = scored.GroupBy(a => a.CaseId).Where(g => g.Count() >= 2)
             .Select(g => g.Max(a => a.Score!.Value / a.MaxScore * 100) - g.Min(a => a.Score!.Value / a.MaxScore * 100)).ToArray();
+        var automaticErrors = scored.Where(a => !a.RequiresReview && a.ReferenceScore.HasValue)
+            .Select(a => Math.Abs(a.Score!.Value - a.ReferenceScore!.Value) / a.MaxScore * 100).ToArray();
+        var largeErrors = scored.Where(a => a.ReferenceScore.HasValue &&
+            Math.Abs(a.Score!.Value - a.ReferenceScore!.Value) / a.MaxScore * 100 >= 20 - 1e-9).ToArray();
         return new(kind, workType, attempts.Select(a => a.CaseId).Distinct().Count(), attempts.Length, scored.Length,
             attempts.Length - scored.Length, errors.Length,
             (double)(attempts.Length - scored.Length) / attempts.Length,
@@ -27,7 +32,9 @@ public static class ExperimentMetrics
             Mean(errors.Select(Math.Abs)), errors.Length == 0 ? null : Math.Sqrt(errors.Average(e => e * e)),
             Fraction(errors, e => Math.Abs(e) <= 10 + 1e-9), Mean(errors),
             Fraction(errors, e => e > 1e-9), Fraction(errors, e => e < -1e-9),
-            Mean(attempts.Where(a => a.LatencyMs.HasValue).Select(a => a.LatencyMs!.Value)), Mean(ranges), ranges.Length);
+            Mean(attempts.Where(a => a.LatencyMs.HasValue).Select(a => a.LatencyMs!.Value)), Mean(ranges), ranges.Length,
+            automaticErrors.Length, Mean(automaticErrors), largeErrors.Length,
+            largeErrors.Length == 0 ? null : (double)largeErrors.Count(a => a.RequiresReview) / largeErrors.Length);
     }
 
     private static double? Mean(IEnumerable<double> values) => values.Select(v => (double?)v).Average();

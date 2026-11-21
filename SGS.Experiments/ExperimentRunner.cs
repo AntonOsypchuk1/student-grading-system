@@ -30,7 +30,7 @@ public sealed record EvaluationAttempt(
 public sealed class ExperimentRunner(Func<EvaluateDocumentRequest, CancellationToken, Task<EvaluateDocumentResponse>> evaluate)
 {
     public async IAsyncEnumerable<EvaluationAttempt> RunAsync(PreparedDataset prepared, string pipeline, int repetitions,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        [EnumeratorCancellation] CancellationToken cancellationToken = default, int delayBetweenRequestsMs = 0)
     {
         DatasetPreparer.Validate(prepared.Dataset);
         
@@ -38,6 +38,8 @@ public sealed class ExperimentRunner(Func<EvaluateDocumentRequest, CancellationT
         {
             throw new ArgumentException("A pipeline and positive repetition count are required.");
         }
+        if (delayBetweenRequestsMs is < 0 or > 60000)
+            throw new ArgumentOutOfRangeException(nameof(delayBetweenRequestsMs));
         
         if (prepared.Submissions.Count != prepared.Dataset.Cases.Count ||
             prepared.Submissions.Select(s => s.CaseId).Distinct(StringComparer.Ordinal).Count() != prepared.Submissions.Count ||
@@ -48,6 +50,7 @@ public sealed class ExperimentRunner(Func<EvaluateDocumentRequest, CancellationT
         }
         
         var submissions = prepared.Submissions.ToDictionary(s => s.CaseId, StringComparer.Ordinal);
+        var firstAttempt = true;
         
         // Interleave cases by repetition instead of running all repetitions per case consecutively.
         for (int repetition = 1; repetition <= repetitions; repetition++)
@@ -55,6 +58,9 @@ public sealed class ExperimentRunner(Func<EvaluateDocumentRequest, CancellationT
             foreach (var c in prepared.Dataset.Cases)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                if (!firstAttempt && delayBetweenRequestsMs > 0)
+                    await Task.Delay(delayBetweenRequestsMs, cancellationToken);
+                firstAttempt = false;
                 yield return await EvaluateOneAsync(c, submissions[c.Id], pipeline, repetition, cancellationToken);
             }
         }
@@ -79,6 +85,7 @@ public sealed class ExperimentRunner(Func<EvaluateDocumentRequest, CancellationT
         var request = new EvaluateDocumentRequest
         {
             DocumentText = submission.Text, Question = c.Question, MaxScore = c.MaxScore, Pipeline = pipeline,
+            PartialExtraction = submission.Status == ExtractionStatus.Partial,
             Criteria = { c.Criteria.Select(criterion => new EvaluationCriterion
             {
                 Id = criterion.Id, Description = criterion.Description, MaxScore = criterion.MaxScore, Weight = criterion.Weight,
@@ -113,7 +120,9 @@ public sealed class ExperimentRunner(Func<EvaluateDocumentRequest, CancellationT
         
         if (!response.HasScore)
         {
-            return Failed(AttemptStatus.NoScore, "Evaluator returned no grade.", watch.Elapsed.TotalMilliseconds, raw);
+            return Failed(AttemptStatus.NoScore, "Evaluator returned no grade.", watch.Elapsed.TotalMilliseconds, raw)
+                with { RiskIndicator = double.IsFinite(response.RiskIndicator) && response.RiskIndicator is >= 0 and <= 1
+                    ? response.RiskIndicator : null, MethodVersion = response.MethodVersion };
         }
         
         if (response.MaxScore != c.MaxScore || !double.IsFinite(response.Score) || response.Score < 0 ||

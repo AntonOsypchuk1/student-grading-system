@@ -13,6 +13,8 @@
     <PackageReference Include="Grpc.Net.Client" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="../SGS.Experiments/experiments/datasets/strategy-stress-v1.json"
+          Link="Fixtures/strategy-stress-v1.json" CopyToOutputDirectory="PreserveNewest" />
     <Using Include="Xunit" />
     <ProjectReference Include="../SemanticAnalysis.Service/SemanticAnalysis.Service.csproj" />
   </ItemGroup>

@@ -105,6 +105,7 @@ message EvaluateDocumentRequest {
   repeated EvaluationCriterion criteria = 3;
   optional double max_score = 4; // Defaults to 100 when omitted.
   string pipeline = 5; // Empty selects open-answer-v1.
+  bool partial_extraction = 6; // Extraction was incomplete; informs review in newer strategies.
 }
 message EvaluationCriterion {
   string id = 1;
