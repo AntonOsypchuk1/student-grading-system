@@ -7,5 +7,12 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../SGS.Application/SGS.Application.csproj" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Update="appsettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Remove=".env.example" />
   </ItemGroup>
 </Project>

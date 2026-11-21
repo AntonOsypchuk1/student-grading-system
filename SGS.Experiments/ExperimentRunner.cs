@@ -10,10 +10,22 @@ namespace SGS.Experiments;
 
 public enum AttemptStatus { Scored, ExtractionUnavailable, InputTooLong, NoScore, InvalidResponse, RpcFailure }
 
-public sealed record EvaluationAttempt(string CaseId, WorkType WorkType, ReferenceKind ReferenceKind,
-    int Repetition, AttemptStatus Status, ExtractionStatus ExtractionStatus, double MaxScore,
-    double? ReferenceScore, double? Score, bool RequiresReview, double? RiskIndicator, double? LatencyMs,
-    string? MethodVersion, string? Failure, JsonElement? Response);
+public sealed record EvaluationAttempt(
+    string CaseId,
+    WorkType WorkType,
+    ReferenceKind ReferenceKind,
+    int Repetition,
+    AttemptStatus Status,
+    ExtractionStatus ExtractionStatus,
+    double MaxScore,
+    double? ReferenceScore,
+    double? Score,
+    bool RequiresReview,
+    double? RiskIndicator,
+    double? LatencyMs,
+    string? MethodVersion,
+    string? Failure,
+    JsonElement? Response);
 
 public sealed class ExperimentRunner(Func<EvaluateDocumentRequest, CancellationToken, Task<EvaluateDocumentResponse>> evaluate)
 {
@@ -21,14 +33,22 @@ public sealed class ExperimentRunner(Func<EvaluateDocumentRequest, CancellationT
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         DatasetPreparer.Validate(prepared.Dataset);
+        
         if (string.IsNullOrWhiteSpace(pipeline) || repetitions < 1)
+        {
             throw new ArgumentException("A pipeline and positive repetition count are required.");
+        }
+        
         if (prepared.Submissions.Count != prepared.Dataset.Cases.Count ||
             prepared.Submissions.Select(s => s.CaseId).Distinct(StringComparer.Ordinal).Count() != prepared.Submissions.Count ||
             !prepared.Dataset.Cases.Select(c => c.Id).ToHashSet(StringComparer.Ordinal)
                 .SetEquals(prepared.Submissions.Select(s => s.CaseId)))
+        {
             throw new InvalidDataException("Prepared submissions must match dataset case IDs exactly.");
+        }
+        
         var submissions = prepared.Submissions.ToDictionary(s => s.CaseId, StringComparer.Ordinal);
+        
         // Interleave cases by repetition instead of running all repetitions per case consecutively.
         for (int repetition = 1; repetition <= repetitions; repetition++)
         {

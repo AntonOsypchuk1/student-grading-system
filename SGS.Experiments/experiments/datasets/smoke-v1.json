@@ -34,7 +34,7 @@
       "workType": "laboratory",
       "question": "Assess whether the submitted RouterOS lab report documents console interaction and IP address configuration with supporting evidence.",
       "maxScore": 10,
-      "submissionFile": "../../SGS.ServicesTests/Documents/Fixtures/lab1.pdf",
+      "submissionFile": "../../../SGS.ServicesTests/Documents/Fixtures/lab1.pdf",
       "criteria": [
         {"id":"console","description":"Document console interaction using actual command/output evidence, not merely an assertion.","maxScore":5,"weight":1,"concepts":[{"id":"console","alternatives":["console","terminal","консоль"],"required":true}]},
         {"id":"ip","description":"Document IP address configuration with relevant commands or readable configuration evidence.","maxScore":5,"weight":1,"concepts":[{"id":"address","alternatives":["ip address","ip-адреса"],"required":true}]}

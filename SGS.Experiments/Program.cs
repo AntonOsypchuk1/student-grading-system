@@ -3,7 +3,6 @@ using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging.Abstractions;
 using SemanticAnalysis.Service.Protos;
-using SGS.Application.Common.Options;
 using SGS.Application.Services.Document.Extraction;
 using SGS.Application.Services.Document.Processing;
 using SGS.Experiments;
@@ -13,16 +12,18 @@ Console.CancelKeyPress += (_, e) => { e.Cancel = true; cancellation.Cancel(); };
 
 try
 {
-    switch (args)
+    if (!ExperimentConfiguration.IsSupportedCommand(args))
     {
-        case ["prepare", var manifest, var prepared, var mode]:
+        Console.WriteLine("Configure SGS.Experiments/appsettings.json or .env, then run:\n  prepare\n  run");
+        return 1;
+    }
+
+    var settings = ExperimentConfiguration.Load(args, AppContext.BaseDirectory);
+    switch (args[0])
+    {
+        case "prepare":
         {
-            var ocrOptions = new TesseractOcrOptions
-            {
-                TessDataPath = Environment.GetEnvironmentVariable("SGS_OCR_TESSDATA_PATH") ?? "tessdata",
-                NativeLibraryDirectory = Environment.GetEnvironmentVariable("SGS_OCR_NATIVE_LIBRARY_DIRECTORY"),
-                Languages = Environment.GetEnvironmentVariable("SGS_OCR_LANGUAGES") ?? "eng"
-            };
+            var ocrOptions = settings.Ocr;
 
             var pdfExtractor = new PdfDocumentTextExtractor(NullLogger<PdfDocumentTextExtractor>.Instance);
             var docxExtractor = new DocxDocumentTextExtractor();
@@ -34,17 +35,22 @@ try
                 ocrProvider: provider);
         
             var result = await DatasetPreparer
-                .PrepareAsync(manifest, processor, mode, ocrOptions.Languages, cancellation.Token);
+                .PrepareAsync(settings.DatasetPath, processor, settings.ExtractionMode, ocrOptions.Languages,
+                    cancellation.Token, settings.Chunking, ocrOptions.PageSegmentationMode);
         
-            await WriteNewJsonAsync(prepared, result, cancellation.Token);
+            await WriteNewJsonAsync(settings.PreparedPath, result, cancellation.Token);
             Console.WriteLine($"Prepared {result.Submissions.Count} cases; " +
                               $"{result.Submissions.Count(s => s.Status != SGS.Application.Models.DocumentProcessing.ExtractionStatus.Complete)} partial/unreadable. No model calls.");
             return 0;
         }
-        case ["run", var input, var output, var endpoint, var pipeline, var modelLabel, var repeatText]
-            when int.TryParse(repeatText, out int repetitions) && repetitions is >= 1 and <= 100:
+        case "run":
         {
-            if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var uri) ||
+            var output = settings.OutputDirectory;
+            var pipeline = settings.Pipeline;
+            var modelLabel = settings.ModelLabel;
+            var repetitions = settings.Repetitions;
+            var key = settings.ApiKey!;
+            if (!Uri.TryCreate(settings.ServiceUrl, UriKind.Absolute, out var uri) ||
                 (uri.Scheme != "https" && !(uri.Scheme == "http" && uri.IsLoopback)) ||
                 !string.IsNullOrEmpty(uri.UserInfo) || !string.IsNullOrEmpty(uri.Query) ||
                 !string.IsNullOrEmpty(uri.Fragment))
@@ -57,14 +63,7 @@ try
                 throw new ArgumentException("Pipeline and model label are required.");
             }
             
-            var key = Environment.GetEnvironmentVariable("SGS_EXPERIMENT_API_KEY");
-            
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentException("Set SGS_EXPERIMENT_API_KEY to the semantic service's API key.");
-            }
-            
-            var bytes = await File.ReadAllBytesAsync(input, cancellation.Token);
+            var bytes = await File.ReadAllBytesAsync(settings.PreparedPath, cancellation.Token);
             var dataset = JsonSerializer.Deserialize<PreparedDataset>(bytes, BenchmarkJson.Options)
                           ?? throw new InvalidDataException("Prepared dataset is empty.");
             
@@ -86,10 +85,12 @@ try
                 repetitions,
                 endpoint = uri.GetLeftPart(UriPartial.Path),
                 startedUtc = DateTimeOffset.UtcNow,
-                timeoutSeconds = 120,
+                timeoutSeconds = settings.TimeoutSeconds,
                 dataset.ExtractionMode,
                 dataset.OcrLanguages,
-                revision = Environment.GetEnvironmentVariable("SGS_EXPERIMENT_REVISION")
+                dataset.Chunking,
+                dataset.OcrPageSegmentationMode,
+                revision = string.IsNullOrWhiteSpace(settings.Revision) ? null : settings.Revision
             }, cancellation.Token);
 
             using var channel = GrpcChannel.ForAddress(uri);
@@ -98,7 +99,7 @@ try
                 .EvaluateDocumentAsync(
                     request,
                     headers: new Metadata { { "x-api-key", key } },
-                    deadline: DateTime.UtcNow.AddSeconds(120),
+                    deadline: DateTime.UtcNow.AddSeconds(settings.TimeoutSeconds),
                     cancellationToken: token));
             
             var attempts = new List<EvaluationAttempt>();
@@ -119,8 +120,6 @@ try
             return attempts.Any(a => a.Status == AttemptStatus.Scored) ? 0 : 2;
         }
         default:
-            Console.WriteLine("Usage:\n  prepare <dataset.json> <prepared.json> <native|ocr>\n" +
-                              "  run <prepared.json> <output-directory> <service-url> <pipeline> <model-label> <repetitions:1-100>");
             return 1;
     }
 }
@@ -129,7 +128,7 @@ catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
     Console.Error.WriteLine("Cancelled. Completed result lines remain on disk.");
     return 130;
 }
-catch (Exception ex) when (ex is ArgumentException or IOException or JsonException or RpcException or InvalidOperationException)
+catch (Exception ex) when (ex is ArgumentException or IOException or InvalidDataException or JsonException or RpcException or InvalidOperationException)
 {
     Console.Error.WriteLine(ex.Message);
     return 1;

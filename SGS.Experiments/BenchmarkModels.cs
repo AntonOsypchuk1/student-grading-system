@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SGS.Application.Models.DocumentProcessing;
+using SGS.Application.Services.Document.Processing;
 
 namespace SGS.Experiments;
 
@@ -56,7 +57,9 @@ public sealed record PreparedDataset(
     string ManifestSha256,
     string ExtractionMode,
     string OcrLanguages,
-    IReadOnlyList<PreparedCase> Submissions);
+    IReadOnlyList<PreparedCase> Submissions,
+    ChunkingOptions? Chunking = null,
+    int? OcrPageSegmentationMode = null);
 
 public sealed record PreparedCase(
     string CaseId,

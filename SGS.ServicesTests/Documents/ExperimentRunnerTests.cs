@@ -4,6 +4,7 @@ using Moq;
 using SemanticAnalysis.Service.Protos;
 using SGS.Application.Interfaces;
 using SGS.Application.Models.DocumentProcessing;
+using SGS.Application.Services.Document.Processing;
 using SGS.Experiments;
 
 namespace SGS.ServicesTests.Documents;
@@ -40,6 +41,29 @@ public sealed class ExperimentRunnerTests
             var roundtrip = JsonSerializer.Deserialize<PreparedDataset>(JsonSerializer.Serialize(prepared, BenchmarkJson.Options), BenchmarkJson.Options)!;
             Assert.Equal(submission.Text, Assert.Single(roundtrip.Submissions).Text);
             processor.VerifyNoOtherCalls();
+        }
+        finally { dir.Delete(recursive: true); }
+    }
+
+    [Fact]
+    public async Task Preparation_freezes_configured_chunking_for_inline_answers()
+    {
+        var dir = Directory.CreateTempSubdirectory("sgs-experiment-chunking-");
+        try
+        {
+            var manifest = Path.Combine(dir.FullName, "dataset.json");
+            var answer = string.Join(" ", Enumerable.Repeat("isolation isolates processes", 15));
+            await File.WriteAllTextAsync(manifest, JsonSerializer.Serialize(
+                new BenchmarkDataset("test", "1", [Case("a") with { SubmissionText = answer }]), BenchmarkJson.Options));
+            var processor = new Mock<IDocumentProcessor>(MockBehavior.Strict);
+            var chunking = new ChunkingOptions { MaxEstimatedTokens = 16, OverlapEstimatedTokens = 2 };
+            var prepared = await DatasetPreparer.PrepareAsync(manifest, processor.Object, "ocr", "eng",
+                chunking: chunking, ocrPageSegmentationMode: 6);
+
+            Assert.Equal(chunking, prepared.Chunking);
+            Assert.Equal(6, prepared.OcrPageSegmentationMode);
+            Assert.True(Assert.Single(prepared.Submissions).Chunks.Count > 1);
+            Assert.Equal(answer, Assert.Single(prepared.Submissions).Text);
         }
         finally { dir.Delete(recursive: true); }
     }

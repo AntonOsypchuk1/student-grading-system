@@ -63,13 +63,16 @@ public static class DatasetPreparer
     }
 
     public static async Task<PreparedDataset> PrepareAsync(string manifestPath, IDocumentProcessor processor,
-        string extractionMode, string ocrLanguages, CancellationToken cancellationToken = default)
+        string extractionMode, string ocrLanguages, CancellationToken cancellationToken = default,
+        ChunkingOptions? chunking = null, int? ocrPageSegmentationMode = null)
     {
         if (extractionMode is not ("native" or "ocr"))
         {
             throw new ArgumentException("Mode must be native or ocr.");
         }
         
+        chunking ??= new ChunkingOptions();
+        chunking.Validate();
         var manifest = await File.ReadAllBytesAsync(manifestPath, cancellationToken);
         var dataset = JsonSerializer.Deserialize<BenchmarkDataset>(manifest, BenchmarkJson.Options)
             ?? throw new InvalidDataException("Dataset is empty.");
@@ -82,7 +85,7 @@ public static class DatasetPreparer
             cancellationToken.ThrowIfCancellationRequested();
             if (!string.IsNullOrWhiteSpace(c.SubmissionText))
             {
-                submissions.Add(FromText(c.Id, c.SubmissionText, Sha256(Encoding.UTF8.GetBytes(c.SubmissionText))));
+                submissions.Add(FromText(c.Id, c.SubmissionText, Sha256(Encoding.UTF8.GetBytes(c.SubmissionText)), chunking));
                 continue;
             }
             
@@ -96,7 +99,7 @@ public static class DatasetPreparer
             string hash = Sha256(bytes);
             if (Path.GetExtension(path).Equals(".txt", StringComparison.OrdinalIgnoreCase))
             {
-                submissions.Add(FromText(c.Id, new UTF8Encoding(false, true).GetString(bytes).TrimStart('\uFEFF'), hash));
+                submissions.Add(FromText(c.Id, new UTF8Encoding(false, true).GetString(bytes).TrimStart('\uFEFF'), hash, chunking));
                 continue;
             }
             
@@ -108,8 +111,8 @@ public static class DatasetPreparer
             try
             {
                 var result = extractionMode == "ocr"
-                    ? await processor.ProcessWithOcrAsync(path, bytes, cancellationToken: cancellationToken)
-                    : await processor.ProcessAsync(path, bytes, cancellationToken: cancellationToken);
+                    ? await processor.ProcessWithOcrAsync(path, bytes, chunking, cancellationToken)
+                    : await processor.ProcessAsync(path, bytes, chunking, cancellationToken);
                 var document = result.Document;
                 // Use canonical blocks, not concatenated overlapping chunks.
                 submissions.Add(new(c.Id, hash, string.Join("\n\n", document.Blocks.Select(b => b.Text)),
@@ -121,10 +124,11 @@ public static class DatasetPreparer
                     [$"Extraction failed ({ex.GetType().Name})."], [], []));
             }
         }
-        return new(dataset, Sha256(manifest), extractionMode, ocrLanguages, submissions);
+        return new(dataset, Sha256(manifest), extractionMode, ocrLanguages, submissions, chunking,
+            extractionMode == "ocr" ? ocrPageSegmentationMode : null);
     }
 
-    private static PreparedCase FromText(string id, string text, string hash)
+    private static PreparedCase FromText(string id, string text, string hash, ChunkingOptions chunking)
     {
         text = text.Replace("\r\n", "\n").Replace('\r', '\n').Trim();
         if (string.IsNullOrWhiteSpace(text))
@@ -135,7 +139,7 @@ public static class DatasetPreparer
         var source = new DocumentSource("text", null, text, SourceExtractionStatus.Extracted);
         var block = new DocumentBlock("b-000001", DocumentContentKind.Paragraph, text, null, source.SourceId, 0);
         var document = new ExtractedDocument(hash, ProcessingFormat.Text, [source], [block], ExtractionStatus.Complete, []);
-        return new(id, hash, text, document.Status, [], document.Sources, new StructureAwareChunker().Chunk(document));
+        return new(id, hash, text, document.Status, [], document.Sources, new StructureAwareChunker().Chunk(document, chunking));
     }
 
     private static bool Positive(double value) => double.IsFinite(value) && value > 0;
