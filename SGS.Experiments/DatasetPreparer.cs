@@ -64,7 +64,8 @@ public static class DatasetPreparer
 
     public static async Task<PreparedDataset> PrepareAsync(string manifestPath, IDocumentProcessor processor,
         string extractionMode, string ocrLanguages, CancellationToken cancellationToken = default,
-        ChunkingOptions? chunking = null, int? ocrPageSegmentationMode = null)
+        ChunkingOptions? chunking = null, int? ocrPageSegmentationMode = null,
+        int? ocrImageScaleFactor = null, bool? ocrConvertToGrayscale = null)
     {
         if (extractionMode is not ("native" or "ocr"))
         {
@@ -125,7 +126,9 @@ public static class DatasetPreparer
             }
         }
         return new(dataset, Sha256(manifest), extractionMode, ocrLanguages, submissions, chunking,
-            extractionMode == "ocr" ? ocrPageSegmentationMode : null);
+            extractionMode == "ocr" ? ocrPageSegmentationMode : null,
+            extractionMode == "ocr" ? ocrImageScaleFactor : null,
+            extractionMode == "ocr" ? ocrConvertToGrayscale : null);
     }
 
     private static PreparedCase FromText(string id, string text, string hash, ChunkingOptions chunking)

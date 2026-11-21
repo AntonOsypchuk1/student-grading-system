@@ -106,6 +106,27 @@ public sealed class DocumentImageProcessingTests(ITestOutputHelper output)
             .ProcessWithOcrAsync("lab1.pdf", [1], cancellationToken: cancellation.Token));
     }
 
+    [Theory]
+    [InlineData(1000, 800, 3, 3)]
+    [InlineData(2500, 2000, 3, 2)]
+    [InlineData(4000, 3000, 2, 1)]
+    [InlineData(1000, 800, 1, 1)]
+    public void Upscaling_respects_pixel_budget(int width, int height, int requested, int expected)
+    {
+        var options = new TesseractOcrOptions { ImageScaleFactor = requested };
+        Assert.Equal(expected, options.GetEffectiveScaleFactor(width, height));
+        Assert.True((long)width * height * expected * expected <= TesseractOcrOptions.MaxImagePixels);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(4)]
+    public void Invalid_upscaling_factor_is_rejected(int factor)
+    {
+        var options = new TesseractOcrOptions { ImageScaleFactor = factor };
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.GetEffectiveScaleFactor(100, 100));
+    }
+
     [Fact]
     public async Task Lab1_real_tesseract_recovers_console_and_ip_configuration_evidence()
     {

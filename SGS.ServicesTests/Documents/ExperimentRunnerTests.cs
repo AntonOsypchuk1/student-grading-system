@@ -58,10 +58,17 @@ public sealed class ExperimentRunnerTests
             var processor = new Mock<IDocumentProcessor>(MockBehavior.Strict);
             var chunking = new ChunkingOptions { MaxEstimatedTokens = 16, OverlapEstimatedTokens = 2 };
             var prepared = await DatasetPreparer.PrepareAsync(manifest, processor.Object, "ocr", "eng",
-                chunking: chunking, ocrPageSegmentationMode: 6);
+                chunking: chunking, ocrPageSegmentationMode: 6, ocrImageScaleFactor: 2,
+                ocrConvertToGrayscale: false);
 
             Assert.Equal(chunking, prepared.Chunking);
             Assert.Equal(6, prepared.OcrPageSegmentationMode);
+            Assert.Equal(2, prepared.OcrImageScaleFactor);
+            Assert.False(prepared.OcrConvertToGrayscale);
+            var restored = JsonSerializer.Deserialize<PreparedDataset>(JsonSerializer.Serialize(prepared,
+                BenchmarkJson.Options), BenchmarkJson.Options);
+            Assert.Equal(2, restored!.OcrImageScaleFactor);
+            Assert.False(restored.OcrConvertToGrayscale);
             Assert.True(Assert.Single(prepared.Submissions).Chunks.Count > 1);
             Assert.Equal(answer, Assert.Single(prepared.Submissions).Text);
         }

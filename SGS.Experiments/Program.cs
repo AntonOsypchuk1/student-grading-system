@@ -26,7 +26,7 @@ try
             var comparison = await StrategyComparison.CompareAsync(settings.PreparedPath,
                 settings.ComparisonSourceDirectory, cancellation.Token);
             await WriteNewJsonAsync(settings.ComparisonOutputPath, comparison, cancellation.Token);
-            Console.WriteLine($"Compared {comparison.Methods.Count} strategies on {comparison.PairedAttempts}/{comparison.PlannedAttempts} shared evidence sets. No model calls.");
+            Console.WriteLine($"Compared {comparison.Methods.Count} strategies on {comparison.PairedAttempts}/{comparison.PlannedAttempts} shared evidence sets.");
             return comparison.PairedAttempts > 0 ? 0 : 2;
         }
         case "prepare":
@@ -44,7 +44,8 @@ try
         
             var result = await DatasetPreparer
                 .PrepareAsync(settings.DatasetPath, processor, settings.ExtractionMode, ocrOptions.Languages,
-                    cancellation.Token, settings.Chunking, ocrOptions.PageSegmentationMode);
+                    cancellation.Token, settings.Chunking, ocrOptions.PageSegmentationMode,
+                    ocrOptions.ImageScaleFactor, ocrOptions.ConvertToGrayscale);
         
             await WriteNewJsonAsync(settings.PreparedPath, result, cancellation.Token);
             Console.WriteLine($"Prepared {result.Submissions.Count} cases; " +
@@ -99,6 +100,8 @@ try
                 dataset.OcrLanguages,
                 dataset.Chunking,
                 dataset.OcrPageSegmentationMode,
+                dataset.OcrImageScaleFactor,
+                dataset.OcrConvertToGrayscale,
                 revision = string.IsNullOrWhiteSpace(settings.Revision) ? null : settings.Revision
             }, cancellation.Token);
 

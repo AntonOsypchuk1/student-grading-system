@@ -26,7 +26,9 @@ public sealed class TesseractImageOcrProvider(TesseractOcrOptions options) : IIm
         cancellationToken.ThrowIfCancellationRequested();
         if (image.ContentType is not ("image/png" or "image/jpeg" or "image/tiff" or "image/bmp" or "image/gif" or "image/webp"))
             return new(OcrStatus.Skipped, Reason: $"Unsupported OCR image format: {image.ContentType}.");
-        if (options.PageSegmentationMode is < 0 or > 13 || string.IsNullOrWhiteSpace(options.Languages)
+        if (options.PageSegmentationMode is < 0 or > 13 
+            || options.ImageScaleFactor is < 1 or > 3
+            || string.IsNullOrWhiteSpace(options.Languages)
             || string.IsNullOrWhiteSpace(options.TessDataPath))
             throw new InvalidOperationException("Invalid DocumentOcr configuration.");
 
@@ -43,12 +45,28 @@ public sealed class TesseractImageOcrProvider(TesseractOcrOptions options) : IIm
             {
                 ConfigureNativeLibraries();
                 _engine ??= new Engine(dataPath, options.Languages, EngineMode.LstmOnly);
+                
                 using var pix = OcrImage.LoadFromMemory(image.Bytes);
-                if ((long)pix.Width * pix.Height > 20_000_000)
+                if ((long)pix.Width * pix.Height > TesseractOcrOptions.MaxImagePixels)
+                {
                     return new(OcrStatus.Skipped, Reason: "Image exceeds OCR pixel limit.");
-                using var page = _engine.Process(pix, (PageSegMode)options.PageSegmentationMode);
+                }
+                
+                // Preprocess only a temporary native image; never mutate the source bytes.
+                var scale = options.GetEffectiveScaleFactor(pix.Width, pix.Height);
+                
+                using var gray = options.ConvertToGrayscale && pix.Depth == 32
+                    ? pix.ConvertRGBToGray()
+                    : null;
+                
+                var input = gray ?? pix;
+                using var scaled = scale > 1 ? input.Scale(scale, scale) : null;
+                cancellationToken.ThrowIfCancellationRequested();
+                
+                using var page = _engine.Process(scaled ?? input, (PageSegMode)options.PageSegmentationMode);
                 var text = ExtractionTextUtilities.Normalize(page.Text).Trim();
                 cancellationToken.ThrowIfCancellationRequested();
+                
                 return string.IsNullOrWhiteSpace(text)
                     ? new(OcrStatus.NoText)
                     : new(OcrStatus.Recognized, text) { MeanConfidence = page.MeanConfidence };

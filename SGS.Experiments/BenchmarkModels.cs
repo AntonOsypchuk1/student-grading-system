@@ -61,7 +61,9 @@ public sealed record PreparedDataset(
     string OcrLanguages,
     IReadOnlyList<PreparedCase> Submissions,
     ChunkingOptions? Chunking = null,
-    int? OcrPageSegmentationMode = null);
+    int? OcrPageSegmentationMode = null,
+    int? OcrImageScaleFactor = null,
+    bool? OcrConvertToGrayscale = null);
 
 public sealed record PreparedCase(
     string CaseId,

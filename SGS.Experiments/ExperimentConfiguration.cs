@@ -114,11 +114,12 @@ public static class ExperimentConfiguration
             settings.Chunking.Validate();
             if (settings.ExtractionMode == "ocr" &&
                 (settings.Ocr.PageSegmentationMode is < 0 or > 13 ||
+                 settings.Ocr.ImageScaleFactor is < 1 or > 3 ||
                  string.IsNullOrWhiteSpace(settings.Ocr.Languages) ||
                  string.IsNullOrWhiteSpace(settings.Ocr.TessDataPath)))
             {
                 throw new ArgumentException(
-                    "Invalid Experiment:Ocr settings (languages, tessdata path or page segmentation mode).");
+                    "Invalid Experiment:Ocr settings (languages, tessdata path, page segmentation mode or image scale factor 1–3).");
             }
             return;
         }

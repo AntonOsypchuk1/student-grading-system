@@ -22,7 +22,7 @@ public sealed class ExperimentConfigurationTests : IDisposable
                 "ModelLabel": "test-model",
                 "Repetitions": 3,
                 "Chunking": { "MaxEstimatedTokens": 256, "OverlapEstimatedTokens": 32 },
-                "Ocr": { "Languages": "eng", "PageSegmentationMode": 6 }
+                "Ocr": { "Languages": "eng", "PageSegmentationMode": 6, "ImageScaleFactor": 3, "ConvertToGrayscale": true }
               }
             }
             """);
@@ -38,6 +38,8 @@ public sealed class ExperimentConfigurationTests : IDisposable
         Assert.Equal(256, settings.Chunking.MaxEstimatedTokens);
         Assert.Equal(32, settings.Chunking.OverlapEstimatedTokens);
         Assert.Equal(6, settings.Ocr.PageSegmentationMode);
+        Assert.Equal(3, settings.Ocr.ImageScaleFactor);
+        Assert.True(settings.Ocr.ConvertToGrayscale);
         Assert.Null(settings.ApiKey);
     }
 
@@ -103,6 +105,8 @@ public sealed class ExperimentConfigurationTests : IDisposable
             new Dictionary<string, string?>()));
         Assert.Throws<ArgumentOutOfRangeException>(() => ExperimentConfiguration.Load(["prepare"], _applicationDirectory,
             new Dictionary<string, string?> { ["Experiment__Chunking__OverlapEstimatedTokens"] = "256" }));
+        Assert.Throws<ArgumentException>(() => ExperimentConfiguration.Load(["prepare"], _applicationDirectory,
+            new Dictionary<string, string?> { ["Experiment__Ocr__ImageScaleFactor"] = "4" }));
         File.WriteAllText(Path.Combine(_project.FullName, ".env"), "a malformed secret");
         var error = Assert.Throws<InvalidDataException>(() => ExperimentConfiguration.Load(["prepare"], _applicationDirectory,
             new Dictionary<string, string?>()));

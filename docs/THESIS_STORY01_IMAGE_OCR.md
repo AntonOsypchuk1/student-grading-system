@@ -24,7 +24,9 @@ The default path already works; override it only when necessary:
   "DocumentOcr": {
     "TessDataPath": "tessdata",
     "Languages": "eng",
-    "PageSegmentationMode": 11
+    "PageSegmentationMode": 6,
+    "ImageScaleFactor": 2,
+    "ConvertToGrayscale": false
   }
 }
 ```
@@ -52,7 +54,9 @@ Linux configuration (paths depend on distribution and architecture):
     "TessDataPath": "tessdata",
     "NativeLibraryDirectory": "/opt/sgs/ocr-native",
     "Languages": "eng",
-    "PageSegmentationMode": 11
+    "PageSegmentationMode": 6,
+    "ImageScaleFactor": 2,
+    "ConvertToGrayscale": false
   }
 }
 ```
@@ -61,8 +65,9 @@ On Debian you may also copy the installed `eng.traineddata` and `ukr.traineddata
 into `SGS.Application/tessdata/` or override the default path to use the installed
 system data directly. Use `eng+ukr` when both language files are available. Default `eng` suffices for
 the English RouterOS UI in `lab1.pdf`. Use the same language configuration for
-all documents in a controlled experiment. The default PSM 11 targets sparse text
-in screenshots; it may misorder tables or omit small text. OCR is disabled for
+all documents in a controlled experiment. Default PSM 6 targets a contiguous text
+block, and the 2× resize makes small characters larger. PSM 11 remains available
+for sparse screenshots. OCR is disabled for
 ordinary `ProcessAsync` calls. Docker needs compatible libraries and traineddata
 in its runtime image as well. Other OS/architecture combinations have not been
 validated. The Linux loader path is process-wide.
@@ -178,6 +183,52 @@ One run took 5.16 seconds (extraction, OCR and chunking), with mean per-image
 OCR confidence of 70.3%. This is a smoke-test measurement, not a controlled
 performance comparison or an accuracy score. All 37 active service tests
 passed; two existing tests were skipped. Windows execution was not tested.
+
+## OCR quality refinement for the RouterOS pilot
+
+The original screenshots were checked against the native .NET wrapper on 18
+embedded raster images from labs 2–4. Nine of these screenshots supplied 43
+manually transcribed technical text fragments (addresses with CIDR prefixes,
+commands, table entries, ping output and UI labels). Matching ignored case and
+collapsed whitespace but did not correct characters, punctuation or addresses.
+
+| Profile | Recovered fragments | Mean engine confidence (18 images) |
+| --- | ---: | ---: |
+| Original pixels, PSM 11 (previous baseline) | 24/43 | 67.3% |
+| Original pixels, PSM 6 | 31/43 | 72.6% |
+| 2× color, PSM 6 (selected) | 32/43 | 76.6% |
+| Grayscale, PSM 6, no scaling | 28/43 | 72.1% |
+| Grayscale, 2×, PSM 6 | 30/43 | 77.9% |
+| Grayscale, 3×, PSM 6 | 30/43 | 76.2% |
+| Grayscale, 2×, PSM 11 | 29/43 | 80.6% |
+| Grayscale, 3×, PSM 11 | 32/43 | 78.9% |
+
+These are development spot checks, not a representative accuracy benchmark.
+For example, the unscaled PSM 6 profile recovered more route-table values than
+the selected profile; confidence alone is not a reliable selection metric.
+We select 2× color PSM 6 over the tied 3× grayscale profile to limit the number
+of pixels processed and preserve the original colors. No OCR text is rewritten
+to match expected rubric answers. Each image still has one OCR result.
+
+`ImageScaleFactor` supports integers 1–3. The effective factor is reduced if
+needed to keep the processed image at or below 20 megapixels. Grayscale is
+optional for RGB images. The original bytes and source IDs are unchanged.
+To reproduce the previous baseline use PSM 11, factor 1, grayscale false.
+
+`Experiment:Ocr` in `SGS.Experiments/appsettings.json` uses these same fields;
+they can also be overridden via `Experiment__Ocr__ImageScaleFactor`,
+`Experiment__Ocr__ConvertToGrayscale` and `Experiment__Ocr__PageSegmentationMode`.
+The prepared dataset and subsequent run metadata record these settings. Older
+prepared snapshots remain readable, with the new fields null. Prepare a fresh
+snapshot before the grading experiments (the configured path is now
+`experiments/prepared/routeros-pilot-ocr-v2.json`) and reuse it across strategies
+and models. Preparation invokes no AI model.
+
+End-to-end validation on all four committed lab PDFs with both profiles produced
+101 OCR sources and 162 combined chunks (22/31, 23/35, 24/38, 32/58 by lab).
+Both snapshots contained all four cases, with zero OCR failure warnings. All
+documents remained Partial, as expected. The 56 active service tests passed
+(including real-engine lab1 OCR); two existing tests were skipped.
 
 Compare text-only and text+OCR against identical human labels. Track image/page
 coverage, OCR failures, grading error, runtime, and false evidence. Keep OCR and
