@@ -7,11 +7,79 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using SemanticAnalysis.Service.Prompts.Abstractions;
 using SemanticAnalysis.Service.Protos;
 using GrpcService = SemanticAnalysis.Service.Protos.SemanticAnalysisService;
+using System.Text.Json;
 
 namespace SGS.SemanticAnalysisTests;
 
 public sealed class GrpcEvaluationTests
 {
+    [Theory]
+    [InlineData("llm-only-v1")]
+    [InlineData("lexical-only-v1")]
+    [InlineData("fixed-hybrid-v1")]
+    [InlineData("agreement-hybrid-v1")]
+    [InlineData("llm-criterionwise-v1")]
+    public async Task NewStrategiesAreDispatchedThroughGrpc(string method)
+    {
+        using var factory = Factory(new FakePromptRunner(10));
+        var request = Request();
+        request.Pipeline = method;
+        request.PartialExtraction = true;
+        var response = await Client(factory).EvaluateDocumentAsync(request, Headers());
+        Assert.Equal(method, response.MethodVersion);
+        Assert.True(response.HasScore);
+        Assert.Equal(100, response.Score);
+        Assert.True(response.RequiresTeacherReview);
+        Assert.Contains("partial_extraction", response.RiskFactors);
+    }
+
+    [Fact]
+    public async Task Stress_dataset_lexical_baseline_runs_entirely_without_model_calls()
+    {
+        using var factory = Factory(new FakePromptRunner(10) { Failure = new InvalidOperationException("Must not call LLM.") });
+        var client = Client(factory);
+        using var file = JsonDocument.Parse(await File.ReadAllTextAsync(
+            Path.Combine(AppContext.BaseDirectory, "Fixtures", "strategy-stress-v1.json")));
+        var scores = new Dictionary<string, double>();
+        foreach (var item in file.RootElement.GetProperty("cases").EnumerateArray())
+        {
+            var request = new EvaluateDocumentRequest
+            {
+                Pipeline = "lexical-only-v1",
+                DocumentText = item.GetProperty("submissionText").GetString(),
+                Question = item.GetProperty("question").GetString(),
+                MaxScore = item.GetProperty("maxScore").GetDouble()
+            };
+            foreach (var criterion in item.GetProperty("criteria").EnumerateArray())
+            {
+                var c = new EvaluationCriterion
+                {
+                    Id = criterion.GetProperty("id").GetString(),
+                    Description = criterion.GetProperty("description").GetString(),
+                    MaxScore = criterion.GetProperty("maxScore").GetDouble(),
+                    Weight = criterion.GetProperty("weight").GetDouble()
+                };
+                foreach (var concept in criterion.GetProperty("concepts").EnumerateArray())
+                    c.Concepts.Add(new ExpectedConcept
+                    {
+                        Id = concept.GetProperty("id").GetString(),
+                        Required = concept.GetProperty("required").GetBoolean(),
+                        Alternatives = { concept.GetProperty("alternatives").EnumerateArray().Select(a => a.GetString()) }
+                    });
+                request.Criteria.Add(c);
+            }
+            var response = await client.EvaluateDocumentAsync(request, Headers());
+            Assert.True(response.HasScore);
+            Assert.True(response.RequiresTeacherReview);
+            scores.Add(item.GetProperty("id").GetString()!, response.Score);
+        }
+        Assert.Equal(13, scores.Count);
+        Assert.Equal(10, scores["negative-keywords"]);
+        Assert.Equal(0, scores["correct-paraphrase"]);
+        Assert.Equal(10, scores["lab-wrong-interface"]);
+        Assert.Equal(10, scores["uk-negation"]);
+    }
+
     private static WebApplicationFactory<Program> Factory(IStructuredPromptRunner runner)
         => new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {

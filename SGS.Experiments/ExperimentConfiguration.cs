@@ -18,7 +18,7 @@ public static class ExperimentConfiguration
 
     public static bool IsSupportedCommand(string[] args) =>
         args is ["prepare"] or ["prepare", _, _, _]
-            or ["run"] or ["run", _, _, _, _, _, _];
+            or ["run"] or ["run", _, _, _, _, _, _] or ["compare"];
 
     public static ExperimentSettings Load(
         string[] args,
@@ -26,7 +26,7 @@ public static class ExperimentConfiguration
         IReadOnlyDictionary<string, string?>? environment = null)
     {
         if (!IsSupportedCommand(args))
-            throw new ArgumentException("Expected prepare or run.");
+            throw new ArgumentException("Expected prepare, run or compare.");
 
         var directory = FindConfigurationDirectory(applicationDirectory);
         var variables = environment ?? Environment.GetEnvironmentVariables()
@@ -46,6 +46,8 @@ public static class ExperimentConfiguration
         settings.DatasetPath = ResolvePath(settings.DatasetPath, directory);
         settings.PreparedPath = ResolvePath(settings.PreparedPath, directory);
         settings.OutputDirectory = ResolvePath(settings.OutputDirectory, directory);
+        settings.ComparisonSourceDirectory = ResolvePath(settings.ComparisonSourceDirectory, directory);
+        settings.ComparisonOutputPath = ResolvePath(settings.ComparisonOutputPath, directory);
 
         // Keep previous positional commands working, with their original CWD-relative paths.
         switch (args)
@@ -90,6 +92,14 @@ public static class ExperimentConfiguration
         if (string.IsNullOrWhiteSpace(settings.PreparedPath))
             throw new ArgumentException("Experiment:PreparedPath is required.");
 
+        if (command == "compare")
+        {
+            if (string.IsNullOrWhiteSpace(settings.ComparisonSourceDirectory) ||
+                string.IsNullOrWhiteSpace(settings.ComparisonOutputPath))
+                throw new ArgumentException("ComparisonSourceDirectory and ComparisonOutputPath are required.");
+            return;
+        }
+
         if (command == "prepare")
         {
             if (string.IsNullOrWhiteSpace(settings.DatasetPath))
@@ -125,6 +135,8 @@ public static class ExperimentConfiguration
         {
             throw new ArgumentException("Experiment:TimeoutSeconds must be positive.");
         }
+        if (settings.DelayBetweenRequestsMs is < 0 or > 60000)
+            throw new ArgumentException("Experiment:DelayBetweenRequestsMs must be between 0 and 60000.");
         if (string.IsNullOrWhiteSpace(settings.ApiKey))
         {
             throw new ArgumentException(

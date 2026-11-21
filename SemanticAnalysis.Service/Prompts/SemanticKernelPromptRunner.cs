@@ -1,4 +1,6 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Unicode;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using SemanticAnalysis.Service.Prompts.Abstractions;
@@ -11,11 +13,15 @@ public sealed class SemanticKernelPromptRunner(
     IHostEnvironment environment,
     ILogger<SemanticKernelPromptRunner> logger) : IStructuredPromptRunner
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions JsonOptions =
+        new(JsonSerializerDefaults.Web)
+        {
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+        };
 
     public async Task<PromptOutput<T>> RunAsync<T>(string prompt, object input, CancellationToken cancellationToken)
     {
-        if (prompt is not ("EvaluateRubric" or "GenerateSummary"))
+        if (prompt is not ("EvaluateRubric" or "RepairRubricEvidence" or "GenerateSummary"))
         {
             throw new ArgumentException("Unknown prompt.", nameof(prompt));
         }

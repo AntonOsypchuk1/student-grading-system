@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../SGS.Application/SGS.Application.csproj" />
+    <ProjectReference Include="../SGS.Grading/SGS.Grading.csproj" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
@@ -14,5 +15,11 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Remove=".env.example" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="experiments\datasets\submissions\" />
+    <Folder Include="experiments\prepared\" />
+    <Folder Include="experiments\runs\strategy-stress-criterionwise-01\" />
+    <Folder Include="experiments\runs\strategy-stress-shared-01\" />
   </ItemGroup>
 </Project>

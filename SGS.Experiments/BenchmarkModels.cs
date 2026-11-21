@@ -1,5 +1,7 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Unicode;
 using SGS.Application.Models.DocumentProcessing;
 using SGS.Application.Services.Document.Processing;
 
@@ -75,9 +77,18 @@ public static class BenchmarkJson
     public static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true,
+        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, allowIntegerValues: false) }
+        Converters =
+        {
+            new JsonStringEnumConverter(
+                JsonNamingPolicy.CamelCase,
+                allowIntegerValues: false)
+        }
     };
 
-    public static readonly JsonSerializerOptions Lines = new(Options) { WriteIndented = false };
+    public static readonly JsonSerializerOptions Lines = new(Options)
+    {
+        WriteIndented = false
+    };
 }

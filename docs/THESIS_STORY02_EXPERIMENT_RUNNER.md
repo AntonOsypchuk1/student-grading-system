@@ -149,6 +149,9 @@ student text or screenshot contents. `experiments/private`, `prepared`, and
 
 ## Tests
 
+For the comparative pipelines, additional stress dataset and offline replay
+command, see [Story 03](THESIS_STORY03_GRADING_STRATEGIES.md).
+
 ```powershell
 dotnet test SGS.ServicesTests --filter "FullyQualifiedName~ExperimentRunnerTests|FullyQualifiedName~ExperimentConfigurationTests"
 ```

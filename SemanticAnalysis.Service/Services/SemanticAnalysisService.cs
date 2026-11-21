@@ -35,7 +35,8 @@ public sealed class SemanticAnalysisService(
                 request.Question,
                 criteria,
                 request.HasMaxScore ? request.MaxScore : 100,
-                string.IsNullOrEmpty(request.Pipeline) ? "open-answer-v1" : request.Pipeline);
+                string.IsNullOrEmpty(request.Pipeline) ? "open-answer-v1" : request.Pipeline,
+                request.PartialExtraction);
             
             var result = await dispatcher.EvaluateAsync(input, context.CancellationToken);
             

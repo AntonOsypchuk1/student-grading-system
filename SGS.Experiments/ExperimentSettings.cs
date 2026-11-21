@@ -8,12 +8,15 @@ public sealed class ExperimentSettings
     public string DatasetPath { get; set; } = "";
     public string PreparedPath { get; set; } = "";
     public string OutputDirectory { get; set; } = "";
+    public string ComparisonSourceDirectory { get; set; } = "";
+    public string ComparisonOutputPath { get; set; } = "";
     public string ExtractionMode { get; set; } = "ocr";
     public string ServiceUrl { get; set; } = "";
     public string Pipeline { get; set; } = "";
     public string ModelLabel { get; set; } = "";
     public int Repetitions { get; set; } = 3;
     public int TimeoutSeconds { get; set; } = 120;
+    public int DelayBetweenRequestsMs { get; set; }
     public string? Revision { get; set; }
     public string? ApiKey { get; set; }
     public TesseractOcrOptions Ocr { get; set; } = new();
