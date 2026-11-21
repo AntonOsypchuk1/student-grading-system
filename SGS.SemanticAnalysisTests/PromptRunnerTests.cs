@@ -40,6 +40,26 @@ public sealed class PromptRunnerTests
     }
 
     [Fact]
+    public async Task ParsedButInvalidEvidenceUsesRepairPromptThroughActualConnector()
+    {
+        using var handler = new ModelHandler([
+            ValidOutput.Replace("Independent encoding.", "Invented quotation."),
+            ValidOutput]);
+        var request = EvaluationTests.Request("Independent encoding.") with
+        {
+            Criteria = [EvaluationTests.Request().Criteria[0] with { Id = "x" }]
+        };
+        var batch = await new LlmRubricEvidenceProvider(Runner(handler)).CollectAsync(request, default);
+        var evidence = Assert.Single(batch.Items);
+        Assert.Equal(0.8, evidence.NormalizedScore, 8);
+        Assert.Equal("Independent encoding.", Assert.Single(evidence.Quotes));
+        Assert.True(evidence.HadRetry);
+        Assert.Equal(2, handler.Calls);
+        Assert.Contains("unmatched_quote", handler.LastBody);
+        Assert.DoesNotContain("Invented quotation.", handler.LastBody);
+    }
+
+    [Fact]
     public async Task OpenRouterPoolUsesOpenAiCompatibleEndpointAndModel()
     {
         using var handler = new ModelHandler([ValidOutput]);

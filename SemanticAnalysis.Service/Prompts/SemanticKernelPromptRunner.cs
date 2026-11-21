@@ -15,7 +15,7 @@ public sealed class SemanticKernelPromptRunner(
 
     public async Task<PromptOutput<T>> RunAsync<T>(string prompt, object input, CancellationToken cancellationToken)
     {
-        if (prompt is not ("EvaluateRubric" or "GenerateSummary"))
+        if (prompt is not ("EvaluateRubric" or "RepairRubricEvidence" or "GenerateSummary"))
         {
             throw new ArgumentException("Unknown prompt.", nameof(prompt));
         }

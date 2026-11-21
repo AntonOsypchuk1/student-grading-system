@@ -8,6 +8,7 @@ public sealed class PromptTemplateTests
 {
     [Theory]
     [InlineData("EvaluateRubric")]
+    [InlineData("RepairRubricEvidence")]
     [InlineData("GenerateSummary")]
     public async Task PackagedYamlRendersSerializedInputAndLanguage(string prompt)
     {

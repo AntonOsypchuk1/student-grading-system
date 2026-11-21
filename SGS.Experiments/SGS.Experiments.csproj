@@ -18,6 +18,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="experiments\prepared\" />
+    <Folder Include="experiments\runs\strategy-stress-criterionwise-01\" />
     <Folder Include="experiments\runs\strategy-stress-shared-01\" />
   </ItemGroup>
 </Project>

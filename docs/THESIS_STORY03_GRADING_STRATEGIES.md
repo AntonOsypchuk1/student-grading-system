@@ -58,14 +58,28 @@ The strategy ID is both the request pipeline and the returned MethodVersion.
 | agreement-hybrid-v1 | Disagreement-gated lexical contribution | 1 |
 | llm-criterionwise-v1 | One independently evaluated rubric criterion at a time | number of criteria |
 
-Each LLM call may retry once on invalid JSON; transport-level retries may
-also occur. Criterion-wise evaluation is sequential, fails the entire
+Each rubric prompt invocation may retry once on invalid JSON. A parsed
+response that fails evidence validation triggers one additional corrective
+rubric invocation with diagnostic codes (not previous grades or quotations).
+Thus at most four model invocations per rubric request are possible at this
+application layer, excluding transport-level retries. The correction is
+applied per criterion in criterion-wise evaluation. HTTP failures are not
+retried by the evidence validator. Criterion-wise evaluation is sequential, fails the entire
 evaluation if a criterion fails, and sends the full document on every call.
 It trades more requests for simpler scoring tasks; no assumption that
 accuracy or cost will improve. Retrieval is a separate story.
 
 LLM responses must match criterion IDs/scales and contain supporting exact
-quotes for positive scores. Lexical-only is a diagnostic baseline and must
+quotes for positive scores. When a model copies a contiguous passage with
+different whitespace, the validator restores the exact original source
+substring. Case, punctuation, words and language are never normalized or
+fuzzily matched. Persistent invalid evidence is rejected; diagnostics include
+the failure type, expected criterion ID (where applicable), and quote index,
+without recording model-generated quotations or document contents. A successful
+corrective prompt sets the existing prompt-retry review flag. This evidence
+validation policy changes the service revision; compare fresh runs made with
+the same revision, dataset, prepared text and model rather than mixing with
+pre-repair results. Lexical-only is a diagnostic baseline and must
 not automatically assign student grades. No provider failure silently
 switches the strategy or assigns zero. New strategies include sanitized
 failure codes (HTTP status, invalid JSON/evidence, timeout, generic error)
