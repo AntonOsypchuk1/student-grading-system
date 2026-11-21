@@ -27,6 +27,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SGS.Application\SGS.Application.csproj" />
+      <ProjectReference Include="..\SGS.Experiments\SGS.Experiments.csproj" />
     </ItemGroup>
 
 </Project>
